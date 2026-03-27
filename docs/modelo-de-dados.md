@@ -2,120 +2,202 @@
 
 ## 1. Visão geral
 
-O sistema é composto por entidades que representam usuários, alunos, instrutores, comuns congregações, aulas, presenças e progresso acadêmico.
+O banco de dados do sistema foi modelado para representar os principais elementos do domínio do GEM, incluindo pessoas, instrutores, administradores, alunos, comuns congregações, instrumentos, métodos e aulas.
 
-## 2. Entidades principais
+A modelagem atual busca atender ao controle cadastral e ao registro básico de aulas, servindo como base inicial para a evolução do sistema.
 
-## 2.1 Usuário
+---
 
-Representa a conta de acesso ao sistema.
+## 2. Entidades do sistema
 
-### Atributos sugeridos
-- id
-- nome
-- email
-- senha
-- perfil
-- ativo
+### 2.1 Pessoa
 
-## 2.2 ComumCongregacao
+Representa uma pessoa cadastrada no sistema, contendo dados básicos de autenticação e vínculo com a comum congregação.
 
-Representa a identificação da comum congregação.
+**Atributos:**
+- `cpf`
+- `id_comum`
+- `nome`
+- `usuario`
+- `senha`
 
-### Atributos sugeridos
-- id
-- nome
-- cidade
-- estado
-- bairro
+**Observação:**
+A entidade `pessoa` serve de base para os perfis de administrador e instrutor.
 
-## 2.3 Aluno
+---
 
-Representa o aluno cadastrado no sistema.
+### 2.2 Admin
 
-### Atributos sugeridos
-- id
-- nome
-- idade
-- instrumento
-- data_ingresso
-- classificacao
-- comum_congregacao_id
-- usuario_id
+Representa um usuário com permissões administrativas no sistema.
 
-## 2.4 Instrutor
+**Atributos:**
+- `cpf_pessoa`
 
-Representa o instrutor cadastrado no sistema.
+**Relacionamento:**
+- cada administrador está vinculado a uma pessoa cadastrada no sistema.
 
-### Atributos sugeridos
-- id
-- nome
-- idade
-- instrumento_oficializacao
-- comum_congregacao_id
-- usuario_id
+---
 
-## 2.5 Aula
+### 2.3 Instrutor
 
-Representa uma aula ministrada por um instrutor.
+Representa um instrutor do GEM.
 
-### Atributos sugeridos
-- id
-- data_aula
-- conteudo
-- observacoes
-- instrutor_id
+**Atributos:**
+- `cpf_pessoa`
 
-## 2.6 ParticipacaoAula
+**Relacionamento:**
+- cada instrutor está vinculado a uma pessoa cadastrada no sistema.
 
-Representa a participação do aluno em uma aula.
+---
 
-### Atributos sugeridos
-- id
-- aula_id
-- aluno_id
-- presente
-- avaliacao
-- proximas_atividades
+### 2.4 Aluno
 
-## 2.7 ProgressoAluno
+Representa um aluno cadastrado no sistema.
 
-Representa o progresso acadêmico ou musical do aluno.
+**Atributos:**
+- `id`
+- `id_instrumento`
+- `id_metodo`
+- `id_comum`
+- `nome`
 
-### Atributos sugeridos
-- id
-- aluno_id
-- tipo_conteudo
-- descricao
-- status
-- data_registro
-- observacao
+**Relacionamentos:**
+- um aluno está vinculado a uma comum congregação;
+- um aluno possui um instrumento associado;
+- um aluno possui um método associado.
 
-## 3. Relacionamentos
+**Observação:**
+Na modelagem atual, o aluno não está vinculado diretamente à entidade `pessoa`, diferentemente de instrutores e administradores.
 
-- Um **usuário** possui um **perfil**.
-- Um **aluno** pode estar vinculado a um **usuário**.
-- Um **instrutor** pode estar vinculado a um **usuário**.
-- Uma **comum congregação** pode possuir vários **alunos**.
-- Uma **comum congregação** pode possuir vários **instrutores**.
-- Um **instrutor** pode ministrar várias **aulas**.
-- Uma **aula** possui um único **instrutor responsável**.
-- Um **aluno** pode participar de várias **aulas**.
-- Uma **aula** pode possuir vários **alunos participantes**.
-- Um **aluno** pode possuir vários registros de **progresso**.
+---
 
-## 4. Observações de modelagem
+### 2.5 Comum
 
-- A entidade `ParticipacaoAula` resolve o relacionamento muitos-para-muitos entre `Aluno` e `Aula`.
-- A entidade `ProgressoAluno` permite manter histórico em vez de sobrescrever informações anteriores.
-- O vínculo entre `Usuário` e `Aluno` ou `Instrutor` pode ser opcional, dependendo da decisão do grupo sobre acesso individual ao sistema.
+Representa a comum congregação associada ao aluno ou à pessoa.
 
-## 5. Modelo conceitual resumido
+**Atributos:**
+- `id`
+- `sigla`
+- `endereco`
+- `nome`
 
-- Usuário
-- Aluno
-- Instrutor
-- ComumCongregacao
-- Aula
-- ParticipacaoAula
-- ProgressoAluno
+**Relacionamentos:**
+- uma comum pertence a um estado;
+- uma comum pode estar associada a várias pessoas e alunos.
+
+---
+
+### 2.6 Estado
+
+Representa o estado ao qual uma comum congregação pertence.
+
+**Atributos:**
+- `sigla`
+- `estado`
+
+---
+
+### 2.7 Instrumento
+
+Representa o instrumento estudado pelo aluno.
+
+**Atributos:**
+- `id`
+- `nome`
+
+---
+
+### 2.8 Metodo
+
+Representa o método de estudo associado ao aluno.
+
+**Atributos:**
+- `id`
+- `nome`
+
+---
+
+### 2.9 Aula
+
+Representa um registro de aula ministrada por um instrutor para um aluno.
+
+**Atributos:**
+- `id`
+- `cpf_instrutor`
+- `id_aluno`
+- `data`
+- `descricao`
+- `presenca`
+
+**Relacionamentos:**
+- uma aula está vinculada a um instrutor;
+- uma aula está vinculada a um aluno.
+
+**Observação:**
+Na modelagem atual, a tabela `aula` concentra tanto os dados da aula quanto a presença do aluno, o que indica uma relação direta entre aula e aluno.
+
+---
+
+## 3. Relacionamentos principais
+
+- uma **pessoa** pode estar vinculada a uma **comum**;
+- um **administrador** referencia uma **pessoa**;
+- um **instrutor** referencia uma **pessoa**;
+- um **aluno** referencia uma **comum**;
+- um **aluno** referencia um **instrumento**;
+- um **aluno** referencia um **método**;
+- uma **comum** referencia um **estado**;
+- uma **aula** referencia um **instrutor**;
+- uma **aula** referencia um **aluno**.
+
+---
+
+## 4. Análise da modelagem atual
+
+A modelagem atual atende parcialmente ao domínio do sistema e já apresenta os principais elementos necessários para o cadastro e controle básico do GEM. Entretanto, alguns pontos podem ser melhorados para representar de forma mais fiel o funcionamento real do sistema.
+
+### 4.1 Pontos positivos
+- separação entre pessoa, instrutor e administrador;
+- existência das entidades principais do domínio;
+- uso de chaves estrangeiras para garantir relacionamento entre tabelas.
+
+### 4.2 Limitações identificadas
+
+#### a) Aluno não vinculado à entidade Pessoa
+Atualmente, o aluno possui dados próprios e não herda da entidade `pessoa`, o que torna a modelagem inconsistente em relação a instrutores e administradores.
+
+#### b) Aula vinculada diretamente a um único aluno
+A tabela `aula` associa diretamente um aluno à aula e registra a presença no mesmo registro. Isso dificulta a expansão do sistema caso uma aula envolva mais de um aluno ou seja necessário armazenar avaliações e atividades por aluno.
+
+#### c) Ausência de histórico de progresso
+A modelagem atual associa apenas um método ao aluno, mas não mantém histórico de evolução, conteúdo estudado, hinos praticados ou mudanças de classificação.
+
+#### d) Ausência de classificação do aluno
+A classificação do aluno, prevista nos requisitos do sistema, ainda não aparece explicitamente no modelo atual.
+
+#### e) Falta de atributos relevantes
+Ainda não foram incluídos alguns atributos importantes para o domínio, como data de ingresso, idade, instrumento de oficialização do instrutor e informações mais completas para acompanhamento do aluno.
+
+---
+
+## 5. Sugestões de evolução
+
+Para aproximar melhor o modelo do funcionamento real do GEM, recomenda-se considerar as seguintes melhorias:
+
+- vincular `aluno` à entidade `pessoa`, caso o aluno também deva ser tratado como uma pessoa do sistema;
+- separar o conceito de `aula` do conceito de `participação do aluno na aula`;
+- criar uma entidade para histórico ou progresso do aluno;
+- incluir classificação do aluno no banco de dados;
+- ampliar os atributos cadastrais de aluno e instrutor.
+
+Uma possível evolução seria incluir entidades como:
+
+- `participacao_aula`
+- `progresso_aluno`
+- `classificacao`
+
+---
+
+## 6. Considerações finais
+
+O modelo atual representa uma boa base inicial para o projeto, mas ainda precisa de ajustes para atender com mais fidelidade às funcionalidades previstas e ao domínio real do GEM. As principais melhorias recomendadas envolvem a representação do histórico do aluno, a separação adequada entre aula e presença, e a padronização da estrutura cadastral entre os diferentes tipos de pessoa do sistema.
