@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/aluno.dart';
 import '../../services/aluno_service.dart';
+import '../aluno_form/aluno_form_page.dart';
 
 class AlunoListPage extends StatefulWidget {
   @override
@@ -33,13 +34,33 @@ class _AlunoListPageState extends State<AlunoListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Alunos'),
-      ),
-      body: Column(
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Alunos'),
+        ),
+
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            final novoAluno = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AlunoFormPage(),
+              ),
+            );
+
+            if (novoAluno != null) {
+              setState(() {
+                alunos.add(novoAluno);
+                alunosFiltrados = alunos;
+              });
+            }
+          },
+          child: Icon(Icons.add),
+        ),
+
+        body: Column(
         children: [
-          // 🔍 CAMPO DE BUSCA
+          // CAMPO DE BUSCA
           Padding(
             padding: EdgeInsets.all(8),
             child: TextField(
@@ -52,7 +73,7 @@ class _AlunoListPageState extends State<AlunoListPage> {
             ),
           ),
 
-          // 📋 LISTA
+          // LISTA
           Expanded(
             child: ListView.builder(
               itemCount: alunosFiltrados.length,
@@ -64,8 +85,21 @@ class _AlunoListPageState extends State<AlunoListPage> {
                     child: Text(aluno.nome[0]),
                   ),
                   title: Text(aluno.nome),
-                  onTap: () {
-                    print('Selecionou ${aluno.nome}');
+                  onTap: () async {
+                    final alunoEditado = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AlunoFormPage(aluno: aluno),
+                      ),
+                    );
+
+                    if (alunoEditado != null) {
+                      setState(() {
+                        final index = alunos.indexWhere((a) => a.id == aluno.id);
+                        alunos[index] = alunoEditado;
+                        alunosFiltrados = alunos;
+                      });
+                    }
                   },
                 );
               },
