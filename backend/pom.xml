@@ -27,7 +27,7 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>26</java.version>
+		<java.version>26</java.version> <start-class>com.gem.backend.BackendApplication</start-class>
 	</properties>
 	<dependencies>
 		<dependency>
