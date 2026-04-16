@@ -22,17 +22,47 @@ public class Aluno {
     @Column(nullable = false, length = 16)
     private String senha;
 
-    @Column(name = "cpf_pessoa", nullable = false, length = 11, unique = true)
-    private String cpfPessoa;
+    @OneToOne
+    @JoinColumn(name = "pessoa_cpf", referencedColumnName = "cpf")
+    private Pessoa pessoa;
+
+    @ManyToOne
+    @JoinColumn(name = "comum_id", referencedColumnName = "id")
+    private Comum comum;
 
     public Aluno() {}
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getSenha() { return senha; }
-    public void setSenha(String senha) { this.senha = senha; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getCpfPessoa() { return cpfPessoa; }
-    public void setCpfPessoa(String cpfPessoa) { this.cpfPessoa = cpfPessoa; }
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    public Pessoa getPessoa() {
+        return pessoa;
+    }
+
+    public void setPessoa(Pessoa pessoa) {
+        this.pessoa = pessoa;
+    }
+
+    public Comum getComum() {
+        return comum;
+    }
+
+    public void setComum(Comum comum) {
+        this.comum = comum;
+    }
+
+    
 }

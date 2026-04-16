@@ -11,9 +11,13 @@ package com.gem.backend.dto;
 
 import com.gem.backend.model.Aluno;
 
-public record AlunoResponseDTO(Long id, String cpfPessoa) {
+public record AlunoResponseDTO(Long id, String nome, String comum) {
     
     public AlunoResponseDTO(Aluno aluno) {
-        this(aluno.getId(), aluno.getCpfPessoa());
+        this(
+            aluno.getId(),
+            aluno.getPessoa() != null ? aluno.getPessoa().getNome() : "",
+            aluno.getComum() != null ? aluno.getComum().getNome() : ""
+        );
     }
 }

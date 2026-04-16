@@ -29,24 +29,23 @@ public class AlunoController {
     }
 
     @PostMapping
-    public ResponseEntity<AlunoResponseDTO> criar(@RequestBody Aluno aluno) {
-        AlunoResponseDTO novoAluno = service.criarAluno(aluno);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoAluno);
+    public ResponseEntity<AlunoResponseDTO> create(@RequestBody Aluno aluno) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.createAluno(aluno));
     }
 
     @GetMapping
-    public ResponseEntity<List<AlunoResponseDTO>> listar() {
-        return ResponseEntity.ok(service.listarTodos());
+    public ResponseEntity<List<AlunoResponseDTO>> getList() {
+        return ResponseEntity.ok(service.getListAluno());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AlunoResponseDTO> atualizar(@PathVariable Long id, @RequestBody Aluno aluno) {
-        return ResponseEntity.ok(service.atualizar(id, aluno));
+    public ResponseEntity<AlunoResponseDTO> update(@PathVariable Long id, @RequestBody Aluno aluno) {
+        return ResponseEntity.ok(service.updateAluno(id, aluno));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        service.deletar(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.deleteAluno(id);
         return ResponseEntity.noContent().build();
     }
 }
