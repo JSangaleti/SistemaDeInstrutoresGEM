@@ -13,6 +13,7 @@ import com.gem.backend.dto.AlunoResponseDTO;
 import com.gem.backend.model.Aluno;
 import com.gem.backend.repository.AlunoRepository;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -24,28 +25,35 @@ public class AlunoService {
         this.repository = repository;
     }
 
-    public AlunoResponseDTO criarAluno(Aluno aluno) {
+    public AlunoResponseDTO createAluno(Aluno aluno) {
         Aluno alunoSalvo = repository.save(aluno);
         return new AlunoResponseDTO(alunoSalvo);
     }
 
-    public List<AlunoResponseDTO> listarTodos() {
+    public List<AlunoResponseDTO> getListAluno() {
         return repository.findAll().stream()
                 .map(AlunoResponseDTO::new)
-                .toList();
+                .toList(); 
     }
 
-    public AlunoResponseDTO atualizar(Long id, Aluno dadosAtualizados) {
+    public AlunoResponseDTO getAluno(Long id) {
+        Aluno aluno = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Aluno não encontrado!"));
+        return new AlunoResponseDTO(aluno);
+    }
+
+    public AlunoResponseDTO updateAluno(Long id, Aluno dadosAtualizados) {
         Aluno alunoExistente = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Aluno não encontrado!"));
         
         alunoExistente.setSenha(dadosAtualizados.getSenha());
-        alunoExistente.setCpfPessoa(dadosAtualizados.getCpfPessoa());
+        alunoExistente.setPessoa(dadosAtualizados.getPessoa());
+        alunoExistente.setComum(dadosAtualizados.getComum());
         
         return new AlunoResponseDTO(repository.save(alunoExistente));
     }
 
-    public void deletar(Long id) {
+    public void deleteAluno(Long id) {
         repository.deleteById(id);
     }
 }
