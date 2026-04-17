@@ -8,11 +8,11 @@ package com.gem.backend.repository;
  *
  * @author leonardo
  */
-import com.gem.backend.model.Aluno;
+import com.gem.backend.model.Comum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AlunoRepository extends JpaRepository<Aluno, Long> {
+public interface ComumRepository extends JpaRepository<Comum, Integer> {
 
 }

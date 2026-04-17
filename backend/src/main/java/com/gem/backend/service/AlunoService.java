@@ -8,7 +8,6 @@ package com.gem.backend.service;
  *
  * @author leonardo
  */
-
 import com.gem.backend.dto.AlunoResponseDTO;
 import com.gem.backend.model.Aluno;
 import com.gem.backend.repository.AlunoRepository;
@@ -33,7 +32,7 @@ public class AlunoService {
     public List<AlunoResponseDTO> getListAluno() {
         return repository.findAll().stream()
                 .map(AlunoResponseDTO::new)
-                .toList(); 
+                .toList();
     }
 
     public AlunoResponseDTO getAluno(Long id) {
@@ -45,11 +44,11 @@ public class AlunoService {
     public AlunoResponseDTO updateAluno(Long id, Aluno dadosAtualizados) {
         Aluno alunoExistente = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Aluno não encontrado!"));
-        
+
         alunoExistente.setSenha(dadosAtualizados.getSenha());
         alunoExistente.setPessoa(dadosAtualizados.getPessoa());
         alunoExistente.setComum(dadosAtualizados.getComum());
-        
+
         return new AlunoResponseDTO(repository.save(alunoExistente));
     }
 

@@ -8,11 +8,10 @@ package com.gem.backend.model;
  *
  * @author leonardo
  */
-
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "pessoas")
+@Table(name = "pessoa")
 public class Pessoa {
 
     @Id
@@ -26,14 +25,30 @@ public class Pessoa {
     @JoinColumn(name = "id_comum", referencedColumnName = "id")
     private Comum comum;
 
-    public Pessoa() {}
+    public Pessoa() {
+    }
 
-    public String getCpf() { return cpf; }
-    public void setCpf(String cpf) { this.cpf = cpf; }
+    public String getCpf() {
+        return cpf;
+    }
 
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
 
-    public Comum getComum() { return comum; }
-    public void setComum(Comum comum) { this.comum = comum; }
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public Comum getComum() {
+        return comum;
+    }
+
+    public void setComum(Comum comum) {
+        this.comum = comum;
+    }
 }
