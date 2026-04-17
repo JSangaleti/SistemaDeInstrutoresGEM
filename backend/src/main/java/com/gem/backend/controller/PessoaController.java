@@ -37,17 +37,17 @@ public class PessoaController {
         return ResponseEntity.ok(service.getListPessoa());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{cpf}")
     public ResponseEntity<PessoaResponseDTO> get(@PathVariable String cpf) {
         return ResponseEntity.ok(service.getPessoa(cpf));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{cpf}")
     public ResponseEntity<PessoaResponseDTO> update(@PathVariable String cpf, @RequestBody Pessoa pessoa) {
         return ResponseEntity.ok(service.updatePessoa(cpf, pessoa));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{cpf}")
     public ResponseEntity<Void> delete(@PathVariable String cpf) {
         service.deletePessoa(cpf);
         return ResponseEntity.noContent().build();
