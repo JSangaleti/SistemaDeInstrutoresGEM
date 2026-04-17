@@ -8,4 +8,12 @@ class Aluno {
     required this.nome,
     this.comum,
   });
+
+  factory Aluno.fromJson(Map<String, dynamic> json) {
+    return Aluno(
+      id: json['id'],
+      nome: json['nome'] ?? '',
+      comum: json['comum'],
+    );
+  }
 }
