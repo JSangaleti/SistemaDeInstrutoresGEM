@@ -8,7 +8,6 @@ package com.gem.backend.controller;
  *
  * @author leonardo
  */
-
 import com.gem.backend.dto.AlunoResponseDTO;
 import com.gem.backend.model.Aluno;
 import com.gem.backend.service.AlunoService;
@@ -36,6 +35,11 @@ public class AlunoController {
     @GetMapping
     public ResponseEntity<List<AlunoResponseDTO>> getList() {
         return ResponseEntity.ok(service.getListAluno());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AlunoResponseDTO> get(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getAluno(id));
     }
 
     @PutMapping("/{id}")
