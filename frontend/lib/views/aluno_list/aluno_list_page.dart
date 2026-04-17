@@ -55,18 +55,57 @@ class _AlunoListPageState extends State<AlunoListPage> {
     });
   }
 
-Future<void> adicionarAluno() async {
-  final resultado = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const AlunoFormPage(),
-    ),
-  );
+  Future<void> adicionarAluno() async {
+    final resultado = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AlunoFormPage(),
+      ),
+    );
 
-  if (resultado == true) {
-    carregarAlunos();
+    if (resultado == true) {
+      carregarAlunos();
+    }
   }
-}
+
+  Future<void> confirmarExclusao(Aluno aluno) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Excluir aluno'),
+          content: Text('Deseja excluir o aluno ${aluno.nome}?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Excluir'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmar == true) {
+      try {
+        await service.deletarAluno(aluno.id);
+        await carregarAlunos();
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Aluno excluído com sucesso.')),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao excluir: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,18 +172,6 @@ Future<void> adicionarAluno() async {
                                     final aluno = alunosFiltrados[index];
 
                                     return ListTile(
-                                      onTap: () async {
-                                        final resultado = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => AlunoFormPage(aluno: aluno),
-                                          ),
-                                        );
-
-                                        if (resultado == true) {
-                                          carregarAlunos();
-                                        }
-                                      },
                                       leading: CircleAvatar(
                                         child: Text(
                                           aluno.nome.isNotEmpty
@@ -153,10 +180,33 @@ Future<void> adicionarAluno() async {
                                         ),
                                       ),
                                       title: Text(aluno.nome),
-                                      subtitle: Text(
-                                        aluno.comum?.isNotEmpty == true
-                                            ? aluno.comum!
-                                            : 'Sem comum'
+                                      subtitle: Text(aluno.comum ?? 'Sem comum'),
+                                      onTap: () async {
+                                        try {
+                                          final alunoCompleto = await service.getAlunoById(aluno.id);
+
+                                          if (!context.mounted) return;
+
+                                          final resultado = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => AlunoFormPage(aluno: alunoCompleto),
+                                            ),
+                                          );
+
+                                          if (resultado == true) {
+                                            carregarAlunos();
+                                          }
+                                        } catch (e) {
+                                          if (!context.mounted) return;
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Erro ao carregar dados do aluno: $e')),
+                                          );
+                                        }
+                                      },
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.delete),
+                                        onPressed: () => confirmarExclusao(aluno),
                                       ),
                                     );
                                   },
