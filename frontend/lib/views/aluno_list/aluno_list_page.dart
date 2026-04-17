@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/aluno.dart';
 import '../../services/aluno_service.dart';
+import '../aluno_form/aluno_form_page.dart';
 
 class AlunoListPage extends StatefulWidget {
   const AlunoListPage({super.key});
@@ -54,13 +55,18 @@ class _AlunoListPageState extends State<AlunoListPage> {
     });
   }
 
-  void adicionarAluno() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tela de cadastro ainda não integrada.'),
-      ),
-    );
+Future<void> adicionarAluno() async {
+  final resultado = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const AlunoFormPage(),
+    ),
+  );
+
+  if (resultado == true) {
+    carregarAlunos();
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +133,18 @@ class _AlunoListPageState extends State<AlunoListPage> {
                                     final aluno = alunosFiltrados[index];
 
                                     return ListTile(
+                                      onTap: () async {
+                                        final resultado = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => AlunoFormPage(aluno: aluno),
+                                          ),
+                                        );
+
+                                        if (resultado == true) {
+                                          carregarAlunos();
+                                        }
+                                      },
                                       leading: CircleAvatar(
                                         child: Text(
                                           aluno.nome.isNotEmpty
@@ -138,7 +156,7 @@ class _AlunoListPageState extends State<AlunoListPage> {
                                       subtitle: Text(
                                         aluno.comum?.isNotEmpty == true
                                             ? aluno.comum!
-                                            : 'Sem comum',
+                                            : 'Sem comum'
                                       ),
                                     );
                                   },
