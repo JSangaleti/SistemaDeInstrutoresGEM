@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'views/aluno_list/aluno_list_page.dart';
+import 'views/pessoa_list/pessoa_list_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AlunoListPage(),
+      home: PessoaListPage(),
     );
   }
 }
