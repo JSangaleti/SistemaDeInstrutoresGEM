@@ -19,7 +19,7 @@ public class Metodo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, length = 64) // Corrigido de smallint para String
+    @Column(nullable = false, length = 64) 
     private String nome;
 
     @ManyToOne
@@ -32,7 +32,6 @@ public class Metodo {
 
     public Metodo() {}
 
-    // Getters e Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 
