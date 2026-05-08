@@ -4,9 +4,8 @@ class Aluno {
   final String? cpf;
   final int? comumId;
   final String? comumNome;
-  final String? comumUF;
   final String? comumCidade;
-  final String? comumEstado;
+  final String? comumUF;
 
   Aluno({
     required this.id,
@@ -14,9 +13,8 @@ class Aluno {
     this.cpf,
     this.comumId,
     this.comumNome,
-    this.comumUF,
     this.comumCidade,
-    this.comumEstado,
+    this.comumUF,
   });
 
   factory Aluno.fromJson(Map<String, dynamic> json) {
@@ -37,32 +35,28 @@ class Aluno {
     String? comumNomeExtraida;
 
     if (json['comumNome'] != null) {
-      comumNomeExtraida = json['comumNome'];
+      comumNomeExtraida = json['comumNome'].toString();
     } else if (json['comum'] is String) {
-      comumNomeExtraida = json['comum'];
-    } else {
-      comumNomeExtraida = comumObj?['nome'];
+      comumNomeExtraida = json['comum'].toString();
+    } else if (comumObj != null && comumObj['nome'] != null) {
+      comumNomeExtraida = comumObj['nome'].toString();
     }
 
     return Aluno(
       id: json['id'],
-      nome: json['nome'] ?? pessoa?['nome'] ?? '',
-      cpf: json['cpf'] ?? pessoa?['cpf'],
+      nome: json['nome']?.toString() ?? pessoa?['nome']?.toString() ?? '',
+      cpf: json['cpf']?.toString() ?? pessoa?['cpf']?.toString(),
       comumId: json['comumId'] ?? comumObj?['id'],
       comumNome: comumNomeExtraida,
-      comumCidade: json['comumCidade'] ?? json['cidade'] ?? comumObj?['cidade'],
-      comumUF: json['comumUF'] ??
-          json['uf'] ??
-          json['estado'] ??
-          json['comumEstado'] ??
-          comumObj?['uf'] ??
-          comumObj?['estado'],
-      comumEstado: json['comumEstado'] ??
-          json['estado'] ??
-          json['comumUF'] ??
-          json['uf'] ??
-          comumObj?['estado'] ??
-          comumObj?['uf'],
+      comumCidade: json['comumCidade']?.toString() ??
+          json['cidade']?.toString() ??
+          comumObj?['cidade']?.toString(),
+      comumUF: json['comumUF']?.toString() ??
+          json['uf']?.toString() ??
+          json['estado']?.toString() ??
+          json['comumEstado']?.toString() ??
+          comumObj?['uf']?.toString() ??
+          comumObj?['estado']?.toString(),
     );
   }
 
@@ -70,7 +64,7 @@ class Aluno {
     final partes = <String>[
       comumNome ?? '',
       comumCidade ?? '',
-      comumEstado ?? comumUF ?? '',
+      comumUF ?? '',
     ].where((item) => item.trim().isNotEmpty).toList();
 
     return partes.isEmpty ? 'Sem comum' : partes.join(' - ');

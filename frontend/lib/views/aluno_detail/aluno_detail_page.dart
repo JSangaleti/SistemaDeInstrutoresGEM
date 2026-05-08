@@ -132,7 +132,7 @@ class _AlunoDetailPageState extends State<AlunoDetailPage> {
                         ),
                         _InfoCard(
                           titulo: 'Comum',
-                          valor: alunoAtual.comumNome ?? 'Não informada',
+                          valor: alunoAtual.comumCompleta,
                           icone: Icons.location_city,
                         ),
                         _InfoCard(
@@ -142,9 +142,7 @@ class _AlunoDetailPageState extends State<AlunoDetailPage> {
                         ),
                         _InfoCard(
                           titulo: 'Estado/UF',
-                          valor: alunoAtual.comumEstado ??
-                              alunoAtual.comumUF ??
-                              'Não informado',
+                          valor: alunoAtual.comumUF ?? 'Não informado',
                           icone: Icons.map,
                         ),
                         const SizedBox(height: 16),
