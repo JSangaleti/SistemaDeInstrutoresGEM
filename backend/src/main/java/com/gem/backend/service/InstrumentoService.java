@@ -8,6 +8,8 @@ package com.gem.backend.service;
  *
  * @author leonardo
  */
+import com.gem.backend.dto.InstrumentoResponseDTO;
+import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Instrumento;
 import com.gem.backend.repository.InstrumentoRepository;
@@ -21,8 +23,13 @@ public class InstrumentoService {
     @Autowired
     private InstrumentoRepository repository;
 
-    public Instrumento createInstrumento(Instrumento instrumento) {
-        return repository.save(instrumento);
+    public InstrumentoResponseDTO createInstrumento(Instrumento instrumento) {
+        if (repository.existsById(instrumento.getId())) {
+            throw new DuplicateResourceException("Já existe um instrumento cadastrado com este ID.");
+        }
+
+        Instrumento instrumentoSalvo = repository.save(instrumento);
+        return new InstrumentoResponseDTO(instrumentoSalvo);
     }
 
     public List<Instrumento> getListInstrumento() {

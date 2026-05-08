@@ -9,6 +9,7 @@ package com.gem.backend.service;
  * @author leonardo
  */
 import com.gem.backend.dto.PessoaResponseDTO;
+import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Pessoa;
 import com.gem.backend.repository.PessoaRepository;
@@ -26,6 +27,10 @@ public class PessoaService {
     }
 
     public PessoaResponseDTO createPessoa(Pessoa pessoa) {
+        if (repository.existsById(pessoa.getCpf())) {
+            throw new DuplicateResourceException("Já existe uma pessoa cadastrada com este CPF.");
+        }
+
         Pessoa pessoaSalvo = repository.save(pessoa);
         return new PessoaResponseDTO(pessoaSalvo);
     }

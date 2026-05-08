@@ -9,6 +9,7 @@ package com.gem.backend.service;
  * @author leonardo
  */
 import com.gem.backend.dto.ComumResponseDTO;
+import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Comum;
 import com.gem.backend.repository.ComumRepository;
@@ -26,6 +27,10 @@ public class ComumService {
     }
 
     public ComumResponseDTO createComum(Comum comum) {
+        if (repository.existsById(comum.getId())) {
+            throw new DuplicateResourceException("Já existe uma comum cadastrada com este ID.");
+        }
+
         Comum comumSalvo = repository.save(comum);
         return new ComumResponseDTO(comumSalvo);
     }

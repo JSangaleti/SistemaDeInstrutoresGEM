@@ -8,6 +8,8 @@ package com.gem.backend.service;
  *
  * @author leonardo
  */
+import com.gem.backend.dto.RegistroAulaResponseDTO;
+import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.RegistroAula;
 import com.gem.backend.repository.RegistroAulaRepository;
@@ -22,11 +24,17 @@ public class RegistroAulaService {
     @Autowired
     private RegistroAulaRepository repository;
 
-    public RegistroAula createRegistroAula(RegistroAula aula) {
+    public RegistroAulaResponseDTO createRegistroAula(RegistroAula aula) {
+        if (repository.existsById(aula.getId())) {
+            throw new DuplicateResourceException("Já existe uma aula cadastrada com este ID.");
+        }
+
         if (aula.getData() == null) {
             aula.setData(LocalDate.now());
         }
-        return repository.save(aula);
+
+        RegistroAula aulaSalvo = repository.save(aula);
+        return new RegistroAulaResponseDTO(aulaSalvo);
     }
 
     public List<RegistroAula> getListRegistroAula() {

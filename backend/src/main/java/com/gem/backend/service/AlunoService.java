@@ -9,6 +9,7 @@ package com.gem.backend.service;
  * @author leonardo
  */
 import com.gem.backend.dto.AlunoResponseDTO;
+import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Aluno;
 import com.gem.backend.repository.AlunoRepository;
@@ -26,6 +27,10 @@ public class AlunoService {
     }
 
     public AlunoResponseDTO createAluno(Aluno aluno) {
+        if (repository.existsById(aluno.getId())) {
+            throw new DuplicateResourceException("Já existe um aluno cadastrado com este ID.");
+        }
+
         Aluno alunoSalvo = repository.save(aluno);
         return new AlunoResponseDTO(alunoSalvo);
     }
