@@ -1,40 +1,40 @@
 import 'package:flutter/material.dart';
-import '../../models/aluno.dart';
-import '../../services/aluno_service.dart';
-import '../aluno_form/aluno_form_page.dart';
+import '../../models/pessoa.dart';
+import '../../services/pessoa_service.dart';
+import '../pessoa_form/pessoa_form_page.dart';
 
-class AlunoListPage extends StatefulWidget {
-  const AlunoListPage({super.key});
+class PessoaListPage extends StatefulWidget {
+  const PessoaListPage({super.key});
 
   @override
-  State<AlunoListPage> createState() => _AlunoListPageState();
+  State<PessoaListPage> createState() => _PessoaListPageState();
 }
 
-class _AlunoListPageState extends State<AlunoListPage> {
-  final AlunoService service = AlunoService();
+class _PessoaListPageState extends State<PessoaListPage> {
+  final PessoaService service = PessoaService();
 
-  List<Aluno> alunos = [];
-  List<Aluno> alunosFiltrados = [];
+  List<Pessoa> pessoas = [];
+  List<Pessoa> pessoasFiltradas = [];
   bool loading = true;
   String? erro;
 
   @override
   void initState() {
     super.initState();
-    carregarAlunos();
+    carregarPessoas();
   }
 
-  Future<void> carregarAlunos() async {
+  Future<void> carregarPessoas() async {
     setState(() {
       loading = true;
       erro = null;
     });
 
     try {
-      final lista = await service.getAlunos();
+      final lista = await service.getPessoas();
       setState(() {
-        alunos = lista;
-        alunosFiltrados = lista;
+        pessoas = lista;
+        pessoasFiltradas = lista;
         loading = false;
       });
     } catch (e) {
@@ -45,36 +45,61 @@ class _AlunoListPageState extends State<AlunoListPage> {
     }
   }
 
-  void filtrarAlunos(String texto) {
-    final resultado = alunos.where((aluno) {
-      return aluno.nome.toLowerCase().contains(texto.toLowerCase());
+  void filtrarPessoas(String texto) {
+    final resultado = pessoas.where((pessoa) {
+      return pessoa.nome.toLowerCase().contains(texto.toLowerCase()) ||
+          pessoa.cpf.contains(texto);
     }).toList();
 
     setState(() {
-      alunosFiltrados = resultado;
+      pessoasFiltradas = resultado;
     });
   }
 
-  Future<void> adicionarAluno() async {
+  Future<void> adicionarPessoa() async {
     final resultado = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const AlunoFormPage(),
+        builder: (context) => const PessoaFormPage(),
       ),
     );
 
     if (resultado == true) {
-      carregarAlunos();
+      carregarPessoas();
     }
   }
 
-  Future<void> confirmarExclusao(Aluno aluno) async {
+  Future<void> editarPessoa(Pessoa pessoa) async {
+    try {
+      final pessoaCompleta = await service.getPessoaByCpf(pessoa.cpf);
+
+      if (!context.mounted) return;
+
+      final resultado = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PessoaFormPage(pessoa: pessoaCompleta),
+        ),
+      );
+
+      if (resultado == true) {
+        carregarPessoas();
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao carregar pessoa: $e')),
+      );
+    }
+  }
+
+  Future<void> confirmarExclusao(Pessoa pessoa) async {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Excluir aluno'),
-          content: Text('Deseja excluir o aluno ${aluno.nome}?'),
+          title: const Text('Excluir pessoa'),
+          content: Text('Deseja excluir a pessoa ${pessoa.nome}?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -91,17 +116,21 @@ class _AlunoListPageState extends State<AlunoListPage> {
 
     if (confirmar == true) {
       try {
-        await service.deletarAluno(aluno.id);
-        await carregarAlunos();
+        await service.deletarPessoa(pessoa.cpf);
+        await carregarPessoas();
 
-        if (!mounted) return;
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Aluno excluído com sucesso.')),
+          const SnackBar(content: Text('Pessoa excluída com sucesso.')),
         );
       } catch (e) {
-        if (!mounted) return;
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir: $e')),
+          const SnackBar(
+            content: Text(
+              'Não foi possível excluir a pessoa. Ela pode estar vinculada a um aluno.',
+            ),
+          ),
         );
       }
     }
@@ -111,17 +140,17 @@ class _AlunoListPageState extends State<AlunoListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Alunos'),
+        title: const Text('Pessoas'),
         actions: [
           IconButton(
-            onPressed: carregarAlunos,
+            onPressed: carregarPessoas,
             icon: const Icon(Icons.refresh),
             tooltip: 'Atualizar',
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: adicionarAluno,
+        onPressed: adicionarPessoa,
         child: const Icon(Icons.add),
       ),
       body: loading
@@ -131,7 +160,7 @@ class _AlunoListPageState extends State<AlunoListPage> {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      'Erro ao carregar alunos:\n$erro',
+                      'Erro ao carregar pessoas:\n$erro',
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -142,71 +171,52 @@ class _AlunoListPageState extends State<AlunoListPage> {
                       padding: const EdgeInsets.all(12),
                       child: TextField(
                         decoration: const InputDecoration(
-                          hintText: 'Buscar aluno...',
+                          hintText: 'Buscar pessoa...',
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.search),
                         ),
-                        onChanged: filtrarAlunos,
+                        onChanged: filtrarPessoas,
                       ),
                     ),
                     Expanded(
-                      child: alunos.isEmpty
+                      child: pessoas.isEmpty
                           ? const Center(
                               child: Text(
-                                'Nenhum aluno cadastrado.',
+                                'Nenhuma pessoa cadastrada.',
                                 style: TextStyle(fontSize: 16),
                               ),
                             )
-                          : alunosFiltrados.isEmpty
+                          : pessoasFiltradas.isEmpty
                               ? const Center(
                                   child: Text(
-                                    'Nenhum aluno encontrado na busca.',
+                                    'Nenhuma pessoa encontrada na busca.',
                                     style: TextStyle(fontSize: 16),
                                   ),
                                 )
                               : ListView.separated(
-                                  itemCount: alunosFiltrados.length,
+                                  itemCount: pessoasFiltradas.length,
                                   separatorBuilder: (_, __) =>
                                       const Divider(height: 1),
                                   itemBuilder: (context, index) {
-                                    final aluno = alunosFiltrados[index];
+                                    final pessoa = pessoasFiltradas[index];
 
                                     return ListTile(
                                       leading: CircleAvatar(
                                         child: Text(
-                                          aluno.nome.isNotEmpty
-                                              ? aluno.nome[0].toUpperCase()
+                                          pessoa.nome.isNotEmpty
+                                              ? pessoa.nome[0].toUpperCase()
                                               : '?',
                                         ),
                                       ),
-                                      title: Text(aluno.nome),
-                                      subtitle: Text(aluno.comum ?? 'Sem comum'),
-                                      onTap: () async {
-                                        try {
-                                          final alunoCompleto = await service.getAlunoById(aluno.id);
-
-                                          if (!context.mounted) return;
-
-                                          final resultado = await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => AlunoFormPage(aluno: alunoCompleto),
-                                            ),
-                                          );
-
-                                          if (resultado == true) {
-                                            carregarAlunos();
-                                          }
-                                        } catch (e) {
-                                          if (!context.mounted) return;
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('Erro ao carregar dados do aluno: $e')),
-                                          );
-                                        }
-                                      },
+                                      title: Text(pessoa.nome),
+                                      subtitle: Text(
+                                        '${pessoa.cpf}\n${pessoa.comum ?? 'Sem comum'}',
+                                      ),
+                                      isThreeLine: true,
+                                      onTap: () => editarPessoa(pessoa),
                                       trailing: IconButton(
                                         icon: const Icon(Icons.delete),
-                                        onPressed: () => confirmarExclusao(aluno),
+                                        onPressed: () => confirmarExclusao(pessoa),
                                       ),
                                     );
                                   },

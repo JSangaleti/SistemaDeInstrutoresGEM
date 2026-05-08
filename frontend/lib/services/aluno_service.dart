@@ -85,25 +85,66 @@ class AlunoService {
     required String senha,
     required int comumId,
   }) async {
-    final body = {
-      "id": id,
+    final pessoaBody = {
+      "cpf": cpf,
+      "nome": nome,
+      "comum": {
+        "id": comumId,
+      }
+    };
+
+    final pessoaResponse = await http.put(
+      Uri.parse('$baseUrl/pessoas/$cpf'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(pessoaBody),
+    );
+
+    if (pessoaResponse.statusCode != 200) {
+      throw Exception(
+        'Erro ao editar pessoa: ${pessoaResponse.statusCode} - ${pessoaResponse.body}',
+      );
+    }
+
+    final alunoBody = {
       "senha": senha,
       "pessoa": {
         "cpf": cpf,
-        "nome": nome,
-        "comum": {"id": comumId}
       },
-      "comum": {"id": comumId}
+      "comum": {
+        "id": comumId,
+      }
     };
 
-    final response = await http.put(
+    final alunoResponse = await http.put(
       Uri.parse('$baseUrl/alunos/$id'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
+      body: jsonEncode(alunoBody),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao editar aluno: ${response.statusCode} - ${response.body}');
+    if (alunoResponse.statusCode != 200) {
+      throw Exception(
+        'Erro ao editar aluno: ${alunoResponse.statusCode} - ${alunoResponse.body}',
+      );
     }
+  }
+
+  Future<void> deletarAluno(int id) async {
+    final response = await http.delete(Uri.parse('$baseUrl/alunos/$id'));
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception(
+        'Erro ao excluir aluno: ${response.statusCode} - ${response.body}',
+      );
+    }
+  }
+  Future<Aluno> getAlunoById(int id) async {
+    final response = await http.get(Uri.parse('$baseUrl/alunos/$id'));
+
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao buscar aluno: ${response.statusCode}');
+    }
+
+    final data = jsonDecode(response.body);
+    return Aluno.fromJson(data);
   }
 }

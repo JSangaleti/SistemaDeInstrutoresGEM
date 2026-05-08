@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
-import '../../models/aluno.dart';
 import '../../models/comum.dart';
+import '../../models/pessoa.dart';
 import '../../services/aluno_service.dart';
+import '../../services/pessoa_service.dart';
 
-class AlunoFormPage extends StatefulWidget {
-  final Aluno? aluno;
+class PessoaFormPage extends StatefulWidget {
+  final Pessoa? pessoa;
 
-  const AlunoFormPage({super.key, this.aluno});
+  const PessoaFormPage({super.key, this.pessoa});
 
   @override
-  State<AlunoFormPage> createState() => _AlunoFormPageState();
+  State<PessoaFormPage> createState() => _PessoaFormPageState();
 }
 
-class _AlunoFormPageState extends State<AlunoFormPage> {
+class _PessoaFormPageState extends State<PessoaFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final AlunoService service = AlunoService();
+  final PessoaService pessoaService = PessoaService();
+  final AlunoService alunoService = AlunoService();
 
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController cpfController = TextEditingController();
-  final TextEditingController senhaController = TextEditingController();
 
   List<Comum> comuns = [];
   int? comumSelecionadaId;
@@ -30,21 +31,30 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
   @override
   void initState() {
     super.initState();
-    carregarComuns();
 
-    if (widget.aluno != null) {
-      nomeController.text = widget.aluno!.nome;
-      cpfController.text = widget.aluno!.cpf ?? '';
-      senhaController.text = '';
-      comumSelecionadaId = widget.aluno!.comumId;
+    if (widget.pessoa != null) {
+      nomeController.text = widget.pessoa!.nome;
+      cpfController.text = widget.pessoa!.cpf;
     }
+
+    carregarComuns();
   }
 
   Future<void> carregarComuns() async {
     try {
-      final lista = await service.getComuns();
+      final lista = await alunoService.getComuns();
+
+      int? comumIdEncontrada;
+      if (widget.pessoa?.comum != null) {
+        final match = lista.where((c) => c.nome == widget.pessoa!.comum).toList();
+        if (match.isNotEmpty) {
+          comumIdEncontrada = match.first.id;
+        }
+      }
+
       setState(() {
         comuns = lista;
+        comumSelecionadaId = comumIdEncontrada;
         loading = false;
       });
     } catch (e) {
@@ -70,19 +80,16 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
     });
 
     try {
-      if (widget.aluno == null) {
-        await service.criarAluno(
-          nome: nomeController.text.trim(),
+      if (widget.pessoa == null) {
+        await pessoaService.criarPessoa(
           cpf: cpfController.text.trim(),
-          senha: senhaController.text.trim(),
+          nome: nomeController.text.trim(),
           comumId: comumSelecionadaId!,
         );
       } else {
-        await service.editarAluno(
-          id: widget.aluno!.id,
-          nome: nomeController.text.trim(),
+        await pessoaService.editarPessoa(
           cpf: cpfController.text.trim(),
-          senha: senhaController.text.trim(),
+          nome: nomeController.text.trim(),
           comumId: comumSelecionadaId!,
         );
       }
@@ -105,11 +112,11 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isEdicao = widget.aluno != null;
+    final isEdicao = widget.pessoa != null;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdicao ? 'Editar Aluno' : 'Cadastrar Aluno'),
+        title: Text(isEdicao ? 'Editar Pessoa' : 'Cadastrar Pessoa'),
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
@@ -141,30 +148,13 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
                             labelText: 'CPF',
                             border: OutlineInputBorder(),
                           ),
+                          readOnly: isEdicao,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'Informe o CPF';
                             }
                             if (value.trim().length != 11) {
                               return 'CPF deve ter 11 dígitos';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: senhaController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Senha',
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Informe a senha';
-                            }
-                            if (value.trim().length > 16) {
-                              return 'Senha deve ter no máximo 16 caracteres';
                             }
                             return null;
                           },

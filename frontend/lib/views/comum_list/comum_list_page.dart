@@ -1,40 +1,40 @@
 import 'package:flutter/material.dart';
-import '../../models/aluno.dart';
-import '../../services/aluno_service.dart';
-import '../aluno_form/aluno_form_page.dart';
+import '../../models/comum.dart';
+import '../../services/comum_service.dart';
+import '../comum_form/comum_form_page.dart';
 
-class AlunoListPage extends StatefulWidget {
-  const AlunoListPage({super.key});
+class ComumListPage extends StatefulWidget {
+  const ComumListPage({super.key});
 
   @override
-  State<AlunoListPage> createState() => _AlunoListPageState();
+  State<ComumListPage> createState() => _ComumListPageState();
 }
 
-class _AlunoListPageState extends State<AlunoListPage> {
-  final AlunoService service = AlunoService();
+class _ComumListPageState extends State<ComumListPage> {
+  final ComumService service = ComumService();
 
-  List<Aluno> alunos = [];
-  List<Aluno> alunosFiltrados = [];
+  List<Comum> comuns = [];
+  List<Comum> comunsFiltradas = [];
   bool loading = true;
   String? erro;
 
   @override
   void initState() {
     super.initState();
-    carregarAlunos();
+    carregarComuns();
   }
 
-  Future<void> carregarAlunos() async {
+  Future<void> carregarComuns() async {
     setState(() {
       loading = true;
       erro = null;
     });
 
     try {
-      final lista = await service.getAlunos();
+      final lista = await service.getComuns();
       setState(() {
-        alunos = lista;
-        alunosFiltrados = lista;
+        comuns = lista;
+        comunsFiltradas = lista;
         loading = false;
       });
     } catch (e) {
@@ -45,36 +45,64 @@ class _AlunoListPageState extends State<AlunoListPage> {
     }
   }
 
-  void filtrarAlunos(String texto) {
-    final resultado = alunos.where((aluno) {
-      return aluno.nome.toLowerCase().contains(texto.toLowerCase());
+  void filtrarComuns(String texto) {
+    final resultado = comuns.where((comum) {
+      final termo = texto.toLowerCase();
+      return comum.nome.toLowerCase().contains(termo) ||
+          (comum.cidade?.toLowerCase().contains(termo) ?? false) ||
+          (comum.estado?.toLowerCase().contains(termo) ?? false) ||
+          (comum.bairro?.toLowerCase().contains(termo) ?? false);
     }).toList();
 
     setState(() {
-      alunosFiltrados = resultado;
+      comunsFiltradas = resultado;
     });
   }
 
-  Future<void> adicionarAluno() async {
+  Future<void> adicionarComum() async {
     final resultado = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const AlunoFormPage(),
+        builder: (context) => const ComumFormPage(),
       ),
     );
 
     if (resultado == true) {
-      carregarAlunos();
+      carregarComuns();
     }
   }
 
-  Future<void> confirmarExclusao(Aluno aluno) async {
+  Future<void> editarComum(Comum comum) async {
+    try {
+      final comumCompleta = await service.getComumById(comum.id);
+
+      if (!context.mounted) return;
+
+      final resultado = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ComumFormPage(comum: comumCompleta),
+        ),
+      );
+
+      if (resultado == true) {
+        carregarComuns();
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao carregar comum: $e')),
+      );
+    }
+  }
+
+  Future<void> confirmarExclusao(Comum comum) async {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Excluir aluno'),
-          content: Text('Deseja excluir o aluno ${aluno.nome}?'),
+          title: const Text('Excluir comum'),
+          content: Text('Deseja excluir a comum ${comum.nome}?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -91,37 +119,52 @@ class _AlunoListPageState extends State<AlunoListPage> {
 
     if (confirmar == true) {
       try {
-        await service.deletarAluno(aluno.id);
-        await carregarAlunos();
+        await service.deletarComum(comum.id);
+        await carregarComuns();
 
-        if (!mounted) return;
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Aluno excluído com sucesso.')),
+          const SnackBar(content: Text('Comum excluída com sucesso.')),
         );
       } catch (e) {
-        if (!mounted) return;
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir: $e')),
+          const SnackBar(
+            content: Text(
+              'Não foi possível excluir a comum. Ela pode estar vinculada a pessoas ou alunos.',
+            ),
+          ),
         );
       }
     }
+  }
+
+  String montarDescricao(Comum comum) {
+    final partes = <String>[
+      if (comum.cidade != null && comum.cidade!.isNotEmpty) comum.cidade!,
+      if (comum.estado != null && comum.estado!.isNotEmpty) comum.estado!,
+      if (comum.bairro != null && comum.bairro!.isNotEmpty) comum.bairro!,
+    ];
+
+    if (partes.isEmpty) return 'Sem localização';
+    return partes.join(' - ');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Alunos'),
+        title: const Text('Comuns'),
         actions: [
           IconButton(
-            onPressed: carregarAlunos,
+            onPressed: carregarComuns,
             icon: const Icon(Icons.refresh),
             tooltip: 'Atualizar',
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: adicionarAluno,
+        onPressed: adicionarComum,
         child: const Icon(Icons.add),
       ),
       body: loading
@@ -131,7 +174,7 @@ class _AlunoListPageState extends State<AlunoListPage> {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      'Erro ao carregar alunos:\n$erro',
+                      'Erro ao carregar comuns:\n$erro',
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -142,71 +185,49 @@ class _AlunoListPageState extends State<AlunoListPage> {
                       padding: const EdgeInsets.all(12),
                       child: TextField(
                         decoration: const InputDecoration(
-                          hintText: 'Buscar aluno...',
+                          hintText: 'Buscar comum...',
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.search),
                         ),
-                        onChanged: filtrarAlunos,
+                        onChanged: filtrarComuns,
                       ),
                     ),
                     Expanded(
-                      child: alunos.isEmpty
+                      child: comuns.isEmpty
                           ? const Center(
                               child: Text(
-                                'Nenhum aluno cadastrado.',
+                                'Nenhuma comum cadastrada.',
                                 style: TextStyle(fontSize: 16),
                               ),
                             )
-                          : alunosFiltrados.isEmpty
+                          : comunsFiltradas.isEmpty
                               ? const Center(
                                   child: Text(
-                                    'Nenhum aluno encontrado na busca.',
+                                    'Nenhuma comum encontrada na busca.',
                                     style: TextStyle(fontSize: 16),
                                   ),
                                 )
                               : ListView.separated(
-                                  itemCount: alunosFiltrados.length,
+                                  itemCount: comunsFiltradas.length,
                                   separatorBuilder: (_, __) =>
                                       const Divider(height: 1),
                                   itemBuilder: (context, index) {
-                                    final aluno = alunosFiltrados[index];
+                                    final comum = comunsFiltradas[index];
 
                                     return ListTile(
                                       leading: CircleAvatar(
                                         child: Text(
-                                          aluno.nome.isNotEmpty
-                                              ? aluno.nome[0].toUpperCase()
+                                          comum.nome.isNotEmpty
+                                              ? comum.nome[0].toUpperCase()
                                               : '?',
                                         ),
                                       ),
-                                      title: Text(aluno.nome),
-                                      subtitle: Text(aluno.comum ?? 'Sem comum'),
-                                      onTap: () async {
-                                        try {
-                                          final alunoCompleto = await service.getAlunoById(aluno.id);
-
-                                          if (!context.mounted) return;
-
-                                          final resultado = await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => AlunoFormPage(aluno: alunoCompleto),
-                                            ),
-                                          );
-
-                                          if (resultado == true) {
-                                            carregarAlunos();
-                                          }
-                                        } catch (e) {
-                                          if (!context.mounted) return;
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('Erro ao carregar dados do aluno: $e')),
-                                          );
-                                        }
-                                      },
+                                      title: Text(comum.nome),
+                                      subtitle: Text(montarDescricao(comum)),
+                                      onTap: () => editarComum(comum),
                                       trailing: IconButton(
                                         icon: const Icon(Icons.delete),
-                                        onPressed: () => confirmarExclusao(aluno),
+                                        onPressed: () => confirmarExclusao(comum),
                                       ),
                                     );
                                   },
