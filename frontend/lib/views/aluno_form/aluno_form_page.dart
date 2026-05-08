@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../models/aluno.dart';
 import '../../models/comum.dart';
 import '../../services/aluno_service.dart';
@@ -28,33 +27,22 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
   bool salvando = false;
   String? erro;
 
-  bool get isEdicao => widget.aluno != null;
-
   @override
   void initState() {
     super.initState();
+    carregarComuns();
 
     if (widget.aluno != null) {
       nomeController.text = widget.aluno!.nome;
       cpfController.text = widget.aluno!.cpf ?? '';
+      senhaController.text = '';
       comumSelecionadaId = widget.aluno!.comumId;
     }
-
-    carregarComuns();
-  }
-
-  @override
-  void dispose() {
-    nomeController.dispose();
-    cpfController.dispose();
-    senhaController.dispose();
-    super.dispose();
   }
 
   Future<void> carregarComuns() async {
     try {
       final lista = await service.getComuns();
-
       setState(() {
         comuns = lista;
         loading = false;
@@ -82,15 +70,16 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
     });
 
     try {
-      if (isEdicao) {
-        await service.editarAluno(
-          id: widget.aluno!.id,
+      if (widget.aluno == null) {
+        await service.criarAluno(
           nome: nomeController.text.trim(),
           cpf: cpfController.text.trim(),
+          senha: senhaController.text.trim(),
           comumId: comumSelecionadaId!,
         );
       } else {
-        await service.criarAluno(
+        await service.editarAluno(
+          id: widget.aluno!.id,
           nome: nomeController.text.trim(),
           cpf: cpfController.text.trim(),
           senha: senhaController.text.trim(),
@@ -102,7 +91,6 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao salvar: $e')),
       );
@@ -115,52 +103,10 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
     }
   }
 
-  String? validarCpf(String? value) {
-    final cpf = value?.trim() ?? '';
-
-    if (cpf.isEmpty) {
-      return 'Informe o CPF';
-    }
-
-    if (cpf.length != 11) {
-      return 'CPF deve ter 11 dígitos';
-    }
-
-    if (!RegExp(r'^[0-9]+$').hasMatch(cpf)) {
-      return 'CPF deve conter apenas números';
-    }
-
-    return null;
-  }
-
-  String? validarSenha(String? value) {
-    if (isEdicao) return null;
-
-    final senha = value?.trim() ?? '';
-
-    if (senha.isEmpty) {
-      return 'Informe a senha';
-    }
-
-    if (senha.length > 16) {
-      return 'Senha deve ter no máximo 16 caracteres';
-    }
-
-    return null;
-  }
-
-  String textoComum(Comum comum) {
-    final partes = <String>[
-      comum.nome,
-      comum.cidade ?? '',
-      comum.estado ?? '',
-    ].where((item) => item.trim().isNotEmpty).toList();
-
-    return partes.join(' - ');
-  }
-
   @override
   Widget build(BuildContext context) {
+    final isEdicao = widget.aluno != null;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isEdicao ? 'Editar Aluno' : 'Cadastrar Aluno'),
@@ -168,15 +114,7 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Erro ao carregar comuns:\n$erro',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
+              ? Center(child: Text('Erro ao carregar comuns: $erro'))
               : Padding(
                   padding: const EdgeInsets.all(16),
                   child: Form(
@@ -189,46 +127,51 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
                             labelText: 'Nome',
                             border: OutlineInputBorder(),
                           ),
-                          textCapitalization: TextCapitalization.words,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'Informe o nome';
                             }
-
-                            if (value.trim().length > 64) {
-                              return 'Nome deve ter no máximo 64 caracteres';
-                            }
-
                             return null;
                           },
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: cpfController,
-                          enabled: !isEdicao,
                           decoration: const InputDecoration(
                             labelText: 'CPF',
                             border: OutlineInputBorder(),
-                            helperText: 'Digite apenas números',
                           ),
-                          keyboardType: TextInputType.number,
-                          validator: validarCpf,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Informe o CPF';
+                            }
+                            if (value.trim().length != 11) {
+                              return 'CPF deve ter 11 dígitos';
+                            }
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 16),
-                        if (!isEdicao) ...[
-                          TextFormField(
-                            controller: senhaController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Senha',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: validarSenha,
+                        TextFormField(
+                          controller: senhaController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Senha',
+                            border: OutlineInputBorder(),
                           ),
-                          const SizedBox(height: 16),
-                        ],
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Informe a senha';
+                            }
+                            if (value.trim().length > 16) {
+                              return 'Senha deve ter no máximo 16 caracteres';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
                         DropdownButtonFormField<int>(
-                          initialValue: comumSelecionadaId,
+                          value: comumSelecionadaId,
                           decoration: const InputDecoration(
                             labelText: 'Comum',
                             border: OutlineInputBorder(),
@@ -236,7 +179,7 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
                           items: comuns.map((comum) {
                             return DropdownMenuItem<int>(
                               value: comum.id,
-                              child: Text(textoComum(comum)),
+                              child: Text(comum.nome),
                             );
                           }).toList(),
                           onChanged: (value) {
@@ -257,9 +200,7 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
                           child: Text(
                             salvando
                                 ? 'Salvando...'
-                                : isEdicao
-                                    ? 'Salvar alterações'
-                                    : 'Cadastrar',
+                                : (isEdicao ? 'Salvar alterações' : 'Cadastrar'),
                           ),
                         ),
                       ],

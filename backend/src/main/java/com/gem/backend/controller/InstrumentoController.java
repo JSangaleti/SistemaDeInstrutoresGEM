@@ -9,7 +9,6 @@ package com.gem.backend.controller;
  * @author leonardo
  */
 
-import com.gem.backend.dto.InstrumentoResponseDTO;
 import com.gem.backend.model.Instrumento;
 import com.gem.backend.service.InstrumentoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,23 +23,23 @@ public class InstrumentoController {
     private InstrumentoService service;
 
     @PostMapping
-    public InstrumentoResponseDTO create(@RequestBody Instrumento instrumento) {
-        return new InstrumentoResponseDTO(service.createInstrumento(instrumento));
+    public Instrumento create(@RequestBody Instrumento instrumento) {
+        return service.createInstrumento(instrumento);
     }
 
     @GetMapping
-    public List<InstrumentoResponseDTO> getList() {
-        return service.getListInstrumento().stream().map(InstrumentoResponseDTO::new).toList();
+    public List<Instrumento> getList() {
+        return service.getListInstrumento();
     }
 
     @GetMapping("/{id}")
-    public InstrumentoResponseDTO getById(@PathVariable Integer id) {
-        return new InstrumentoResponseDTO(service.getInstrumento(id));
+    public Instrumento getById(@PathVariable Integer id) {
+        return service.getInstrumento(id);
     }
 
     @PutMapping("/{id}")
-    public InstrumentoResponseDTO update(@PathVariable Integer id, @RequestBody Instrumento instrumento) {
-        return new InstrumentoResponseDTO(service.updateInstrumento(id, instrumento));
+    public Instrumento update(@PathVariable Integer id, @RequestBody Instrumento instrumento) {
+        return service.updateInstrumento(id, instrumento);
     }
 
     @DeleteMapping("/{id}")

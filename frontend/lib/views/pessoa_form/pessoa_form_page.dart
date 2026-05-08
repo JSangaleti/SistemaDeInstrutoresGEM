@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../models/comum.dart';
 import '../../models/pessoa.dart';
 import '../../services/aluno_service.dart';
@@ -29,8 +28,6 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
   bool salvando = false;
   String? erro;
 
-  bool get isEdicao => widget.pessoa != null;
-
   @override
   void initState() {
     super.initState();
@@ -38,32 +35,18 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
     if (widget.pessoa != null) {
       nomeController.text = widget.pessoa!.nome;
       cpfController.text = widget.pessoa!.cpf;
-      comumSelecionadaId = widget.pessoa!.comumId;
     }
 
     carregarComuns();
-  }
-
-  @override
-  void dispose() {
-    nomeController.dispose();
-    cpfController.dispose();
-    super.dispose();
   }
 
   Future<void> carregarComuns() async {
     try {
       final lista = await alunoService.getComuns();
 
-      int? comumIdEncontrada = comumSelecionadaId;
-
-      if (comumIdEncontrada == null && widget.pessoa?.comumNome != null) {
-        final comumNomePessoa = widget.pessoa!.comumNome!.trim().toLowerCase();
-
-        final match = lista.where((comum) {
-          return comum.nome.trim().toLowerCase() == comumNomePessoa;
-        }).toList();
-
+      int? comumIdEncontrada;
+      if (widget.pessoa?.comum != null) {
+        final match = lista.where((c) => c.nome == widget.pessoa!.comum).toList();
         if (match.isNotEmpty) {
           comumIdEncontrada = match.first.id;
         }
@@ -97,14 +80,14 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
     });
 
     try {
-      if (isEdicao) {
-        await pessoaService.editarPessoa(
+      if (widget.pessoa == null) {
+        await pessoaService.criarPessoa(
           cpf: cpfController.text.trim(),
           nome: nomeController.text.trim(),
           comumId: comumSelecionadaId!,
         );
       } else {
-        await pessoaService.criarPessoa(
+        await pessoaService.editarPessoa(
           cpf: cpfController.text.trim(),
           nome: nomeController.text.trim(),
           comumId: comumSelecionadaId!,
@@ -115,7 +98,6 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao salvar: $e')),
       );
@@ -128,26 +110,10 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
     }
   }
 
-  String? validarCpf(String? value) {
-    final cpf = value?.trim() ?? '';
-
-    if (cpf.isEmpty) {
-      return 'Informe o CPF';
-    }
-
-    if (cpf.length != 11) {
-      return 'CPF deve ter 11 dígitos';
-    }
-
-    if (!RegExp(r'^[0-9]+$').hasMatch(cpf)) {
-      return 'CPF deve conter apenas números';
-    }
-
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
+    final isEdicao = widget.pessoa != null;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isEdicao ? 'Editar Pessoa' : 'Cadastrar Pessoa'),
@@ -155,15 +121,7 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Erro ao carregar comuns:\n$erro',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
+              ? Center(child: Text('Erro ao carregar comuns: $erro'))
               : Padding(
                   padding: const EdgeInsets.all(16),
                   child: Form(
@@ -176,16 +134,10 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
                             labelText: 'Nome',
                             border: OutlineInputBorder(),
                           ),
-                          textCapitalization: TextCapitalization.words,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'Informe o nome';
                             }
-
-                            if (value.trim().length > 64) {
-                              return 'Nome deve ter no máximo 64 caracteres';
-                            }
-
                             return null;
                           },
                         ),
@@ -195,15 +147,21 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
                           decoration: const InputDecoration(
                             labelText: 'CPF',
                             border: OutlineInputBorder(),
-                            helperText: 'Digite apenas números',
                           ),
-                          keyboardType: TextInputType.number,
                           readOnly: isEdicao,
-                          validator: validarCpf,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Informe o CPF';
+                            }
+                            if (value.trim().length != 11) {
+                              return 'CPF deve ter 11 dígitos';
+                            }
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 16),
                         DropdownButtonFormField<int>(
-                          initialValue: comumSelecionadaId,
+                          value: comumSelecionadaId,
                           decoration: const InputDecoration(
                             labelText: 'Comum',
                             border: OutlineInputBorder(),
@@ -211,7 +169,7 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
                           items: comuns.map((comum) {
                             return DropdownMenuItem<int>(
                               value: comum.id,
-                              child: Text(comum.nomeCompleto),
+                              child: Text(comum.nome),
                             );
                           }).toList(),
                           onChanged: (value) {
@@ -223,7 +181,6 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
                             if (value == null) {
                               return 'Selecione uma comum';
                             }
-
                             return null;
                           },
                         ),
@@ -233,9 +190,7 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
                           child: Text(
                             salvando
                                 ? 'Salvando...'
-                                : isEdicao
-                                    ? 'Salvar alterações'
-                                    : 'Cadastrar',
+                                : (isEdicao ? 'Salvar alterações' : 'Cadastrar'),
                           ),
                         ),
                       ],

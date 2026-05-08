@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../../models/aluno.dart';
 import '../../services/aluno_service.dart';
-import '../aluno_detail/aluno_detail_page.dart';
 import '../aluno_form/aluno_form_page.dart';
 
 class AlunoListPage extends StatefulWidget {
@@ -182,16 +180,29 @@ class _AlunoListPageState extends State<AlunoListPage> {
                                         ),
                                       ),
                                       title: Text(aluno.nome),
-                                      subtitle: Text(aluno.comumCompleta),
+                                      subtitle: Text(aluno.comum ?? 'Sem comum'),
                                       onTap: () async {
-                                        await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => AlunoDetailPage(alunoId: aluno.id),
-                                          ),
-                                        );
+                                        try {
+                                          final alunoCompleto = await service.getAlunoById(aluno.id);
 
-                                        carregarAlunos();
+                                          if (!context.mounted) return;
+
+                                          final resultado = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => AlunoFormPage(aluno: alunoCompleto),
+                                            ),
+                                          );
+
+                                          if (resultado == true) {
+                                            carregarAlunos();
+                                          }
+                                        } catch (e) {
+                                          if (!context.mounted) return;
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Erro ao carregar dados do aluno: $e')),
+                                          );
+                                        }
                                       },
                                       trailing: IconButton(
                                         icon: const Icon(Icons.delete),

@@ -9,7 +9,6 @@ package com.gem.backend.controller;
  * @author leonardo
  */
 
-import com.gem.backend.dto.MetodoResponseDTO;
 import com.gem.backend.model.Metodo;
 import com.gem.backend.service.MetodoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,23 +23,23 @@ public class MetodoController {
     private MetodoService service;
 
     @PostMapping
-    public MetodoResponseDTO create(@RequestBody Metodo metodo) {
-        return new MetodoResponseDTO(service.createMetodo(metodo));
+    public Metodo create(@RequestBody Metodo metodo) {
+        return service.createMetodo(metodo);
     }
 
     @GetMapping
-    public List<MetodoResponseDTO> getList() {
-        return service.getListMetodo().stream().map(MetodoResponseDTO::new).toList();
+    public List<Metodo> getList() {
+        return service.getListMetodo();
     }
 
     @GetMapping("/{id}")
-    public MetodoResponseDTO getById(@PathVariable Integer id) {
-        return new MetodoResponseDTO(service.getMetodo(id));
+    public Metodo getById(@PathVariable Integer id) {
+        return service.getMetodo(id);
     }
 
     @PutMapping("/{id}")
-    public MetodoResponseDTO update(@PathVariable Integer id, @RequestBody Metodo metodo) {
-        return new MetodoResponseDTO(service.updateMetodo(id, metodo));
+    public Metodo update(@PathVariable Integer id, @RequestBody Metodo metodo) {
+        return service.updateMetodo(id, metodo);
     }
 
     @DeleteMapping("/{id}")
