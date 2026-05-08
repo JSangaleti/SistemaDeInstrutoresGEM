@@ -8,6 +8,15 @@ package com.gem.backend.dto;
  *
  * @author leonardo
  */
-public class InstrutorResponseDTO {
-    
+
+import com.gem.backend.model.Instrutor;
+
+public record InstrutorResponseDTO(Integer id, String nome, String cpf) {
+    public InstrutorResponseDTO(Instrutor instrutor) {
+        this(
+            instrutor.getId(),
+            instrutor.getPessoa() != null ? instrutor.getPessoa().getNome() : null,
+            instrutor.getPessoa() != null ? instrutor.getPessoa().getCpf() : null
+        );
+    }
 }
