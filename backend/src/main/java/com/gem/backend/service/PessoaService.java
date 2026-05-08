@@ -1,15 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.gem.backend.service;
 
-/**
- *
- * @author leonardo
- */
 import com.gem.backend.dto.PessoaResponseDTO;
+import com.gem.backend.model.Comum;
 import com.gem.backend.model.Pessoa;
+import com.gem.backend.repository.ComumRepository;
 import com.gem.backend.repository.PessoaRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,14 +13,23 @@ import java.util.List;
 public class PessoaService {
 
     private final PessoaRepository repository;
+    private final ComumRepository comumRepository;
 
-    public PessoaService(PessoaRepository repository) {
+    public PessoaService(PessoaRepository repository, ComumRepository comumRepository) {
         this.repository = repository;
+        this.comumRepository = comumRepository;
     }
 
     public PessoaResponseDTO createPessoa(Pessoa pessoa) {
-        Pessoa pessoaSalvo = repository.save(pessoa);
-        return new PessoaResponseDTO(pessoaSalvo);
+        if (pessoa.getComum() != null && pessoa.getComum().getId() != null) {
+            Comum comum = comumRepository.findById(pessoa.getComum().getId())
+                    .orElseThrow(() -> new RuntimeException("Comum não encontrada!"));
+
+            pessoa.setComum(comum);
+        }
+
+        Pessoa pessoaSalva = repository.save(pessoa);
+        return new PessoaResponseDTO(pessoaSalva);
     }
 
     public List<PessoaResponseDTO> getListPessoa() {
@@ -37,18 +40,26 @@ public class PessoaService {
 
     public PessoaResponseDTO getPessoa(String cpf) {
         Pessoa pessoa = repository.findById(cpf)
-                .orElseThrow(() -> new RuntimeException("Pessoa não encontrado!"));
+                .orElseThrow(() -> new RuntimeException("Pessoa não encontrada!"));
+
         return new PessoaResponseDTO(pessoa);
     }
 
     public PessoaResponseDTO updatePessoa(String cpf, Pessoa dadosAtualizados) {
         Pessoa pessoaExistente = repository.findById(cpf)
-                .orElseThrow(() -> new RuntimeException("Pessoa não encontrado!"));
+                .orElseThrow(() -> new RuntimeException("Pessoa não encontrada!"));
 
         pessoaExistente.setNome(dadosAtualizados.getNome());
-        pessoaExistente.setComum(dadosAtualizados.getComum());
 
-        return new PessoaResponseDTO(repository.save(pessoaExistente));
+        if (dadosAtualizados.getComum() != null && dadosAtualizados.getComum().getId() != null) {
+            Comum comum = comumRepository.findById(dadosAtualizados.getComum().getId())
+                    .orElseThrow(() -> new RuntimeException("Comum não encontrada!"));
+
+            pessoaExistente.setComum(comum);
+        }
+
+        Pessoa pessoaSalva = repository.save(pessoaExistente);
+        return new PessoaResponseDTO(pessoaSalva);
     }
 
     public void deletePessoa(String cpf) {
