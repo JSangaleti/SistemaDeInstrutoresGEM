@@ -9,6 +9,7 @@ package com.gem.backend.service;
  * @author leonardo
  */
 import com.gem.backend.dto.ComumResponseDTO;
+import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Comum;
 import com.gem.backend.repository.ComumRepository;
 import org.springframework.stereotype.Service;
@@ -37,13 +38,13 @@ public class ComumService {
 
     public ComumResponseDTO getComum(Integer id) {
         Comum comum = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Comum não encontrado!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Comum não encontrado!"));
         return new ComumResponseDTO(comum);
     }
 
     public ComumResponseDTO updateComum(Integer id, Comum dadosAtualizados) {
         Comum comumExistente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Comum não encontrado!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Comum não encontrado!"));
 
         comumExistente.setNome(dadosAtualizados.getNome());
         comumExistente.setCidade(dadosAtualizados.getCidade());
@@ -56,6 +57,10 @@ public class ComumService {
     }
 
     public void deleteComum(Integer id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Comum não encontrada.");
+        }
+
         repository.deleteById(id);
     }
 }

@@ -9,6 +9,7 @@ package com.gem.backend.service;
  * @author leonardo
  */
 import com.gem.backend.dto.AlunoResponseDTO;
+import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Aluno;
 import com.gem.backend.repository.AlunoRepository;
 import org.springframework.stereotype.Service;
@@ -37,13 +38,13 @@ public class AlunoService {
 
     public AlunoResponseDTO getAluno(Long id) {
         Aluno aluno = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado."));
         return new AlunoResponseDTO(aluno);
     }
 
     public AlunoResponseDTO updateAluno(Long id, Aluno dadosAtualizados) {
         Aluno alunoExistente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado."));
 
         alunoExistente.setSenha(dadosAtualizados.getSenha());
         alunoExistente.setPessoa(dadosAtualizados.getPessoa());
@@ -53,6 +54,10 @@ public class AlunoService {
     }
 
     public void deleteAluno(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Aluno não encontrado.");
+        }
+
         repository.deleteById(id);
     }
 }

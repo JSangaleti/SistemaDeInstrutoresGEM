@@ -9,6 +9,7 @@ package com.gem.backend.service;
  * @author leonardo
  */
 import com.gem.backend.dto.PessoaResponseDTO;
+import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Pessoa;
 import com.gem.backend.repository.PessoaRepository;
 import org.springframework.stereotype.Service;
@@ -37,13 +38,13 @@ public class PessoaService {
 
     public PessoaResponseDTO getPessoa(String cpf) {
         Pessoa pessoa = repository.findById(cpf)
-                .orElseThrow(() -> new RuntimeException("Pessoa não encontrado!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrado!"));
         return new PessoaResponseDTO(pessoa);
     }
 
     public PessoaResponseDTO updatePessoa(String cpf, Pessoa dadosAtualizados) {
         Pessoa pessoaExistente = repository.findById(cpf)
-                .orElseThrow(() -> new RuntimeException("Pessoa não encontrado!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrado!"));
 
         pessoaExistente.setNome(dadosAtualizados.getNome());
         pessoaExistente.setComum(dadosAtualizados.getComum());
@@ -52,6 +53,10 @@ public class PessoaService {
     }
 
     public void deletePessoa(String cpf) {
+        if (!repository.existsById(cpf)) {
+            throw new ResourceNotFoundException("Pessoa não encontrada.");
+        }
+
         repository.deleteById(cpf);
     }
 }

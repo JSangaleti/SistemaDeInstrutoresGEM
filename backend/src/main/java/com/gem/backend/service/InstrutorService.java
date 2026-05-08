@@ -8,7 +8,7 @@ package com.gem.backend.service;
  *
  * @author leonardo
  */
-
+import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Instrutor;
 import com.gem.backend.repository.InstrutorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +31,12 @@ public class InstrutorService {
 
     public Instrutor getInstrutor(Integer id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Instrutor não encontrado!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Instrutor não encontrado!"));
     }
 
     public Instrutor updateInstrutor(Integer id, Instrutor dadosAtualizados) {
         Instrutor existente = getInstrutor(id);
-        
+
         if (dadosAtualizados.getSenha() != null && !dadosAtualizados.getSenha().trim().isEmpty()) {
             existente.setSenha(dadosAtualizados.getSenha());
         }
@@ -44,11 +44,15 @@ public class InstrutorService {
         if (dadosAtualizados.getPessoa() != null && dadosAtualizados.getPessoa().getCpf() != null) {
             existente.setPessoa(dadosAtualizados.getPessoa());
         }
-        
+
         return repository.save(existente);
     }
 
     public void deleteInstrutor(Integer id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Instrutor não encontrado.");
+        }
+
         repository.deleteById(id);
     }
 }
