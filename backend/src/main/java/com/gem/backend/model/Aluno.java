@@ -8,6 +8,7 @@ package com.gem.backend.model;
  *
  * @author leonardo
  */
+
 import jakarta.persistence.*;
 
 @Entity
@@ -29,8 +30,7 @@ public class Aluno {
     @JoinColumn(name = "comum_id", referencedColumnName = "id")
     private Comum comum;
 
-    public Aluno() {
-    }
+    public Aluno() {}
 
     public Long getId() {
         return id;
@@ -63,4 +63,6 @@ public class Aluno {
     public void setComum(Comum comum) {
         this.comum = comum;
     }
+
+    
 }
