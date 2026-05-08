@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../../services/aluno_service.dart';
 import '../../services/comum_service.dart';
-import '../../services/instrutor_service.dart';
+import '../../services/instrumento_service.dart';
+import '../../services/metodo_service.dart';
 import '../../services/pessoa_service.dart';
 import '../aluno_form/aluno_form_page.dart';
 import '../aluno_list/aluno_list_page.dart';
 import '../comum_form/comum_form_page.dart';
 import '../comum_list/comum_list_page.dart';
-import '../instrutor_form/instrutor_form_page.dart';
-import '../instrutor_list/instrutor_list_page.dart';
+import '../instrumento_form/instrumento_form_page.dart';
+import '../instrumento_list/instrumento_list_page.dart';
+import '../metodo_form/metodo_form_page.dart';
+import '../metodo_list/metodo_list_page.dart';
 import '../pessoa_form/pessoa_form_page.dart';
 import '../pessoa_list/pessoa_list_page.dart';
+
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,7 +29,8 @@ class _HomePageState extends State<HomePage> {
   final AlunoService alunoService = AlunoService();
   final PessoaService pessoaService = PessoaService();
   final ComumService comumService = ComumService();
-  final InstrutorService instrutorService = InstrutorService();
+  final InstrumentoService instrumentoService = InstrumentoService();
+  final MetodoService metodoService = MetodoService();
 
   bool loading = true;
   String? erro;
@@ -32,7 +38,8 @@ class _HomePageState extends State<HomePage> {
   int totalAlunos = 0;
   int totalPessoas = 0;
   int totalComuns = 0;
-  int totalInstrutores = 0;
+  int totalInstrumentos = 0;
+  int totalMetodos = 0;
 
   @override
   void initState() {
@@ -50,13 +57,15 @@ class _HomePageState extends State<HomePage> {
       final alunos = await alunoService.getAlunos();
       final pessoas = await pessoaService.getPessoas();
       final comuns = await comumService.getComuns();
-      final instrutores = await instrutorService.getInstrutores();
+      final instrumentos = await instrumentoService.getInstrumentos();
+      final metodos = await metodoService.getMetodos();
 
       setState(() {
         totalAlunos = alunos.length;
         totalPessoas = pessoas.length;
         totalComuns = comuns.length;
-        totalInstrutores = instrutores.length;
+        totalInstrumentos = instrumentos.length;
+        totalMetodos = metodos.length;
         loading = false;
       });
     } catch (e) {
@@ -115,11 +124,10 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Gerencie alunos, instrutores, pessoas e comuns cadastradas no sistema.',
+                        'Gerencie alunos, pessoas, comuns, instrumentos e métodos cadastrados no sistema.',
                         style: TextStyle(fontSize: 16),
                       ),
                       const SizedBox(height: 24),
-
                       Wrap(
                         spacing: 16,
                         runSpacing: 16,
@@ -129,12 +137,6 @@ class _HomePageState extends State<HomePage> {
                             total: totalAlunos,
                             icone: Icons.school,
                             onTap: () => abrirTela(const AlunoListPage()),
-                          ),
-                          _ResumoCard(
-                            titulo: 'Instrutores',
-                            total: totalInstrutores,
-                            icone: Icons.record_voice_over,
-                            onTap: () => abrirTela(const InstrutorListPage()),
                           ),
                           _ResumoCard(
                             titulo: 'Pessoas',
@@ -148,9 +150,21 @@ class _HomePageState extends State<HomePage> {
                             icone: Icons.location_city,
                             onTap: () => abrirTela(const ComumListPage()),
                           ),
+                          _ResumoCard(
+                            titulo: 'Instrumentos',
+                            total: totalInstrumentos,
+                            icone: Icons.music_note,
+                            onTap: () =>
+                                abrirTela(const InstrumentoListPage()),
+                          ),
+                          _ResumoCard(
+                            titulo: 'Métodos',
+                            total: totalMetodos,
+                            icone: Icons.menu_book,
+                            onTap: () => abrirTela(const MetodoListPage()),
+                          ),
                         ],
                       ),
-
                       const SizedBox(height: 32),
                       const Text(
                         'Ações rápidas',
@@ -160,16 +174,10 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-
                       _AcaoRapidaButton(
                         texto: 'Cadastrar novo aluno',
                         icone: Icons.person_add,
                         onPressed: () => abrirTela(const AlunoFormPage()),
-                      ),
-                      _AcaoRapidaButton(
-                        texto: 'Cadastrar novo instrutor',
-                        icone: Icons.person_add_alt_1,
-                        onPressed: () => abrirTela(const InstrutorFormPage()),
                       ),
                       _AcaoRapidaButton(
                         texto: 'Cadastrar nova pessoa',
@@ -180,6 +188,17 @@ class _HomePageState extends State<HomePage> {
                         texto: 'Cadastrar nova comum',
                         icone: Icons.add_business,
                         onPressed: () => abrirTela(const ComumFormPage()),
+                      ),
+                      _AcaoRapidaButton(
+                        texto: 'Cadastrar novo instrumento',
+                        icone: Icons.music_note,
+                        onPressed: () =>
+                            abrirTela(const InstrumentoFormPage()),
+                      ),
+                      _AcaoRapidaButton(
+                        texto: 'Cadastrar novo método',
+                        icone: Icons.menu_book,
+                        onPressed: () => abrirTela(const MetodoFormPage()),
                       ),
                     ],
                   ),
@@ -255,18 +274,13 @@ class _AcaoRapidaButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton.icon(
-          onPressed: onPressed,
-          icon: Icon(icone),
-          label: Text(texto),
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-          ),
-        ),
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icone),
+        label: Text(texto),
       ),
     );
   }

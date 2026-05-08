@@ -82,7 +82,6 @@ class AlunoService {
     required int id,
     required String nome,
     required String cpf,
-    required String senha,
     required int comumId,
   }) async {
     final pessoaBody = {
@@ -106,7 +105,6 @@ class AlunoService {
     }
 
     final alunoBody = {
-      "senha": senha,
       "pessoa": {
         "cpf": cpf,
       },
@@ -127,7 +125,7 @@ class AlunoService {
       );
     }
   }
-
+  
   Future<void> deletarAluno(int id) async {
     final response = await http.delete(Uri.parse('$baseUrl/alunos/$id'));
 

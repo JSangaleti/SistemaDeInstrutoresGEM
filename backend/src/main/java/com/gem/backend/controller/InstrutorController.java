@@ -9,6 +9,7 @@ package com.gem.backend.controller;
  * @author leonardo
  */
 
+import com.gem.backend.dto.InstrutorResponseDTO;
 import com.gem.backend.model.Instrutor;
 import com.gem.backend.service.InstrutorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,23 +24,23 @@ public class InstrutorController {
     private InstrutorService service;
 
     @PostMapping
-    public Instrutor create(@RequestBody Instrutor instrutor) {
-        return service.createInstrutor(instrutor);
+    public InstrutorResponseDTO create(@RequestBody Instrutor instrutor) {
+        return new InstrutorResponseDTO(service.createInstrutor(instrutor));
     }
 
     @GetMapping
-    public List<Instrutor> getList() {
-        return service.getListInstrutor();
+    public List<InstrutorResponseDTO> getList() {
+        return service.getListInstrutor().stream().map(InstrutorResponseDTO::new).toList();
     }
 
     @GetMapping("/{id}")
-    public Instrutor getById(@PathVariable Integer id) {
-        return service.getInstrutor(id);
+    public InstrutorResponseDTO getById(@PathVariable Integer id) {
+        return new InstrutorResponseDTO(service.getInstrutor(id));
     }
 
     @PutMapping("/{id}")
-    public Instrutor update(@PathVariable Integer id, @RequestBody Instrutor instrutor) {
-        return service.updateInstrutor(id, instrutor);
+    public InstrutorResponseDTO update(@PathVariable Integer id, @RequestBody Instrutor instrutor) {
+        return new InstrutorResponseDTO(service.updateInstrutor(id, instrutor));
     }
 
     @DeleteMapping("/{id}")
