@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../services/aluno_service.dart';
 import '../../services/comum_service.dart';
+import '../../services/instrutor_service.dart';
 import '../../services/pessoa_service.dart';
 import '../aluno_form/aluno_form_page.dart';
 import '../aluno_list/aluno_list_page.dart';
 import '../comum_form/comum_form_page.dart';
 import '../comum_list/comum_list_page.dart';
+import '../instrutor_form/instrutor_form_page.dart';
+import '../instrutor_list/instrutor_list_page.dart';
 import '../pessoa_form/pessoa_form_page.dart';
 import '../pessoa_list/pessoa_list_page.dart';
 
@@ -21,6 +24,7 @@ class _HomePageState extends State<HomePage> {
   final AlunoService alunoService = AlunoService();
   final PessoaService pessoaService = PessoaService();
   final ComumService comumService = ComumService();
+  final InstrutorService instrutorService = InstrutorService();
 
   bool loading = true;
   String? erro;
@@ -28,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   int totalAlunos = 0;
   int totalPessoas = 0;
   int totalComuns = 0;
+  int totalInstrutores = 0;
 
   @override
   void initState() {
@@ -45,11 +50,13 @@ class _HomePageState extends State<HomePage> {
       final alunos = await alunoService.getAlunos();
       final pessoas = await pessoaService.getPessoas();
       final comuns = await comumService.getComuns();
+      final instrutores = await instrutorService.getInstrutores();
 
       setState(() {
         totalAlunos = alunos.length;
         totalPessoas = pessoas.length;
         totalComuns = comuns.length;
+        totalInstrutores = instrutores.length;
         loading = false;
       });
     } catch (e) {
@@ -108,7 +115,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Gerencie alunos, pessoas e comuns cadastradas no sistema.',
+                        'Gerencie alunos, instrutores, pessoas e comuns cadastradas no sistema.',
                         style: TextStyle(fontSize: 16),
                       ),
                       const SizedBox(height: 24),
@@ -122,6 +129,12 @@ class _HomePageState extends State<HomePage> {
                             total: totalAlunos,
                             icone: Icons.school,
                             onTap: () => abrirTela(const AlunoListPage()),
+                          ),
+                          _ResumoCard(
+                            titulo: 'Instrutores',
+                            total: totalInstrutores,
+                            icone: Icons.record_voice_over,
+                            onTap: () => abrirTela(const InstrutorListPage()),
                           ),
                           _ResumoCard(
                             titulo: 'Pessoas',
@@ -152,6 +165,11 @@ class _HomePageState extends State<HomePage> {
                         texto: 'Cadastrar novo aluno',
                         icone: Icons.person_add,
                         onPressed: () => abrirTela(const AlunoFormPage()),
+                      ),
+                      _AcaoRapidaButton(
+                        texto: 'Cadastrar novo instrutor',
+                        icone: Icons.person_add_alt_1,
+                        onPressed: () => abrirTela(const InstrutorFormPage()),
                       ),
                       _AcaoRapidaButton(
                         texto: 'Cadastrar nova pessoa',
