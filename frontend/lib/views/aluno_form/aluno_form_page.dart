@@ -35,7 +35,7 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
     if (widget.aluno != null) {
       nomeController.text = widget.aluno!.nome;
       cpfController.text = widget.aluno!.cpf ?? '';
-      senhaController.text = '';
+      senhaController.text = widget.aluno!.senha ?? '';
       comumSelecionadaId = widget.aluno!.comumId;
     }
   }
@@ -57,7 +57,6 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
 
   Future<void> salvar() async {
     if (!_formKey.currentState!.validate()) return;
-
     if (comumSelecionadaId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Selecione uma comum')),

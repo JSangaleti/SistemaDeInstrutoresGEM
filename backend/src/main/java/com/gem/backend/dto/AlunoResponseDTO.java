@@ -10,16 +10,13 @@ package com.gem.backend.dto;
  */
 import com.gem.backend.model.Aluno;
 
-public record AlunoResponseDTO(Long id, String cpf, String nome, Integer comumId, String comumNome, String comumUF) {
+public record AlunoResponseDTO(Long id, String nome, String comum) {
 
     public AlunoResponseDTO(Aluno aluno) {
         this(
                 aluno.getId(),
-                aluno.getPessoa() != null ? aluno.getPessoa().getCpf() : "",
                 aluno.getPessoa() != null ? aluno.getPessoa().getNome() : "",
-                aluno.getComum() != null ? aluno.getComum().getId() : null,
-                aluno.getComum() != null ? aluno.getComum().getNome() : "",
-                aluno.getComum() != null ? aluno.getComum().getEstado() : ""
+                aluno.getComum() != null ? aluno.getComum().getNome() : ""
         );
     }
 }
