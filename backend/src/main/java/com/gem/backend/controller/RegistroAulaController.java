@@ -8,10 +8,10 @@ package com.gem.backend.controller;
  *
  * @author leonardo
  */
-
 import com.gem.backend.dto.RegistroAulaResponseDTO;
 import com.gem.backend.model.RegistroAula;
 import com.gem.backend.service.RegistroAulaService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -24,7 +24,7 @@ public class RegistroAulaController {
     private RegistroAulaService service;
 
     @PostMapping
-    public RegistroAulaResponseDTO create(@RequestBody RegistroAula aula) {
+    public RegistroAulaResponseDTO create(@Valid @RequestBody RegistroAula aula) {
         return new RegistroAulaResponseDTO(service.createRegistroAula(aula));
     }
 
@@ -39,7 +39,7 @@ public class RegistroAulaController {
     }
 
     @PutMapping("/{id}")
-    public RegistroAulaResponseDTO update(@PathVariable Integer id, @RequestBody RegistroAula aula) {
+    public RegistroAulaResponseDTO update(@PathVariable Integer id, @Valid @RequestBody RegistroAula aula) {
         return new RegistroAulaResponseDTO(service.updateRegistroAula(id, aula));
     }
 

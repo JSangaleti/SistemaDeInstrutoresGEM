@@ -8,7 +8,6 @@ package com.gem.backend.service;
  *
  * @author leonardo
  */
-import com.gem.backend.dto.InstrutorResponseDTO;
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Instrutor;
@@ -23,13 +22,12 @@ public class InstrutorService {
     @Autowired
     private InstrutorRepository repository;
 
-    public InstrutorResponseDTO createInstrutor(Instrutor instrutor) {
+    public Instrutor createInstrutor(Instrutor instrutor) {
         if (repository.existsById(instrutor.getId())) {
             throw new DuplicateResourceException("Já existe um instrutor cadastrado com este ID.");
         }
 
-        Instrutor instrutorSalvo = repository.save(instrutor);
-        return new InstrutorResponseDTO(instrutorSalvo);
+        return repository.save(instrutor);
     }
 
     public List<Instrutor> getListInstrutor() {

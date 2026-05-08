@@ -8,10 +8,10 @@ package com.gem.backend.controller;
  *
  * @author leonardo
  */
-
 import com.gem.backend.dto.InstrutorResponseDTO;
 import com.gem.backend.model.Instrutor;
 import com.gem.backend.service.InstrutorService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -24,7 +24,7 @@ public class InstrutorController {
     private InstrutorService service;
 
     @PostMapping
-    public InstrutorResponseDTO create(@RequestBody Instrutor instrutor) {
+    public InstrutorResponseDTO create(@Valid @RequestBody Instrutor instrutor) {
         return new InstrutorResponseDTO(service.createInstrutor(instrutor));
     }
 
@@ -39,7 +39,7 @@ public class InstrutorController {
     }
 
     @PutMapping("/{id}")
-    public InstrutorResponseDTO update(@PathVariable Integer id, @RequestBody Instrutor instrutor) {
+    public InstrutorResponseDTO update(@PathVariable Integer id, @Valid @RequestBody Instrutor instrutor) {
         return new InstrutorResponseDTO(service.updateInstrutor(id, instrutor));
     }
 

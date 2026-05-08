@@ -8,7 +8,6 @@ package com.gem.backend.service;
  *
  * @author leonardo
  */
-import com.gem.backend.dto.MetodoResponseDTO;
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Metodo;
@@ -23,13 +22,12 @@ public class MetodoService {
     @Autowired
     private MetodoRepository repository;
 
-    public MetodoResponseDTO createMetodo(Metodo metodo) {
+    public Metodo createMetodo(Metodo metodo) {
         if (repository.existsById(metodo.getId())) {
             throw new DuplicateResourceException("Já existe um metodo cadastrado com este ID.");
         }
 
-        Metodo metodoSalvo = repository.save(metodo);
-        return new MetodoResponseDTO(metodoSalvo);
+        return repository.save(metodo);
     }
 
     public List<Metodo> getListMetodo() {

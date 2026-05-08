@@ -8,7 +8,6 @@ package com.gem.backend.service;
  *
  * @author leonardo
  */
-import com.gem.backend.dto.PessoaResponseDTO;
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Pessoa;
@@ -26,35 +25,32 @@ public class PessoaService {
         this.repository = repository;
     }
 
-    public PessoaResponseDTO createPessoa(Pessoa pessoa) {
+    public Pessoa createPessoa(Pessoa pessoa) {
         if (repository.existsById(pessoa.getCpf())) {
             throw new DuplicateResourceException("Já existe uma pessoa cadastrada com este CPF.");
         }
 
-        Pessoa pessoaSalvo = repository.save(pessoa);
-        return new PessoaResponseDTO(pessoaSalvo);
+        return repository.save(pessoa);
     }
 
-    public List<PessoaResponseDTO> getListPessoa() {
-        return repository.findAll().stream()
-                .map(PessoaResponseDTO::new)
-                .toList();
+    public List<Pessoa> getListPessoa() {
+        return repository.findAll();
     }
 
-    public PessoaResponseDTO getPessoa(String cpf) {
+    public Pessoa getPessoa(String cpf) {
         Pessoa pessoa = repository.findById(cpf)
                 .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrado!"));
-        return new PessoaResponseDTO(pessoa);
+        return pessoa;
     }
 
-    public PessoaResponseDTO updatePessoa(String cpf, Pessoa dadosAtualizados) {
+    public Pessoa updatePessoa(String cpf, Pessoa dadosAtualizados) {
         Pessoa pessoaExistente = repository.findById(cpf)
                 .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrado!"));
 
         pessoaExistente.setNome(dadosAtualizados.getNome());
         pessoaExistente.setComum(dadosAtualizados.getComum());
 
-        return new PessoaResponseDTO(repository.save(pessoaExistente));
+        return repository.save(pessoaExistente);
     }
 
     public void deletePessoa(String cpf) {

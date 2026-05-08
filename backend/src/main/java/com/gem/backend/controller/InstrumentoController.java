@@ -25,7 +25,7 @@ public class InstrumentoController {
 
     @PostMapping
     public InstrumentoResponseDTO create(@Valid @RequestBody Instrumento instrumento) {
-        return service.createInstrumento(instrumento);
+        return new InstrumentoResponseDTO(service.createInstrumento(instrumento));
     }
 
     @GetMapping
