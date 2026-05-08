@@ -8,10 +8,10 @@ package com.gem.backend.dto;
  *
  * @author leonardo
  */
-
 import com.gem.backend.model.Instrumento;
 
 public record InstrumentoResponseDTO(Integer id, String nome) {
+
     public InstrumentoResponseDTO(Instrumento instrumento) {
         this(instrumento.getId(), instrumento.getNome());
     }

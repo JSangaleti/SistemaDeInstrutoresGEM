@@ -8,13 +8,13 @@ package com.gem.backend.controller;
  *
  * @author leonardo
  */
-
 import com.gem.backend.dto.InstrumentoResponseDTO;
 import com.gem.backend.model.Instrumento;
 import com.gem.backend.service.InstrumentoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/instrumentos")
@@ -24,8 +24,8 @@ public class InstrumentoController {
     private InstrumentoService service;
 
     @PostMapping
-    public InstrumentoResponseDTO create(@RequestBody Instrumento instrumento) {
-        return new InstrumentoResponseDTO(service.createInstrumento(instrumento));
+    public InstrumentoResponseDTO create(@Valid @RequestBody Instrumento instrumento) {
+        return service.createInstrumento(instrumento);
     }
 
     @GetMapping
@@ -39,7 +39,7 @@ public class InstrumentoController {
     }
 
     @PutMapping("/{id}")
-    public InstrumentoResponseDTO update(@PathVariable Integer id, @RequestBody Instrumento instrumento) {
+    public InstrumentoResponseDTO update(@PathVariable Integer id, @Valid @RequestBody Instrumento instrumento) {
         return new InstrumentoResponseDTO(service.updateInstrumento(id, instrumento));
     }
 
