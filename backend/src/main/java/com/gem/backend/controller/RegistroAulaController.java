@@ -9,6 +9,7 @@ package com.gem.backend.controller;
  * @author leonardo
  */
 
+import com.gem.backend.dto.RegistroAulaResponseDTO;
 import com.gem.backend.model.RegistroAula;
 import com.gem.backend.service.RegistroAulaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,23 +24,23 @@ public class RegistroAulaController {
     private RegistroAulaService service;
 
     @PostMapping
-    public RegistroAula create(@RequestBody RegistroAula aula) {
-        return service.createRegistroAula(aula);
+    public RegistroAulaResponseDTO create(@RequestBody RegistroAula aula) {
+        return new RegistroAulaResponseDTO(service.createRegistroAula(aula));
     }
 
     @GetMapping
-    public List<RegistroAula> getList() {
-        return service.getListRegistroAula();
+    public List<RegistroAulaResponseDTO> getList() {
+        return service.getListRegistroAula().stream().map(RegistroAulaResponseDTO::new).toList();
     }
 
     @GetMapping("/{id}")
-    public RegistroAula getById(@PathVariable Integer id) {
-        return service.getRegistroAula(id);
+    public RegistroAulaResponseDTO getById(@PathVariable Integer id) {
+        return new RegistroAulaResponseDTO(service.getRegistroAula(id));
     }
 
     @PutMapping("/{id}")
-    public RegistroAula update(@PathVariable Integer id, @RequestBody RegistroAula aula) {
-        return service.updateRegistroAula(id, aula);
+    public RegistroAulaResponseDTO update(@PathVariable Integer id, @RequestBody RegistroAula aula) {
+        return new RegistroAulaResponseDTO(service.updateRegistroAula(id, aula));
     }
 
     @DeleteMapping("/{id}")
