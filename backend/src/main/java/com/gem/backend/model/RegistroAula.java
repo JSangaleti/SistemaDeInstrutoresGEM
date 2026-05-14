@@ -36,9 +36,6 @@ public class RegistroAula {
     @Column(columnDefinition = "TEXT")
     private String descricao;
 
-    @Column(name = "para_proxima_aula", columnDefinition = "TEXT")
-    private String paraProximaAula;
-
     public RegistroAula() {}
 
     public Integer getId() { return id; }
@@ -59,6 +56,4 @@ public class RegistroAula {
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
 
-    public String getParaProximaAula() { return paraProximaAula; }
-    public void setParaProximaAula(String paraProximaAula) { this.paraProximaAula = paraProximaAula; }
 }

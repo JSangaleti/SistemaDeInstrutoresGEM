@@ -49,7 +49,6 @@ public class RegistroAulaService {
         }
         
         if (dadosAtualizados.getDescricao() != null) existente.setDescricao(dadosAtualizados.getDescricao());
-        if (dadosAtualizados.getParaProximaAula() != null) existente.setParaProximaAula(dadosAtualizados.getParaProximaAula());
         if (dadosAtualizados.getPresente() != null) existente.setPresente(dadosAtualizados.getPresente());
         if (dadosAtualizados.getData() != null) existente.setData(dadosAtualizados.getData());
         
