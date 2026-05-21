@@ -3,7 +3,9 @@
 CAUTION: Do not modify this file unless you know what you are doing.
  Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="1.1.0-beta1" use-changelog="false" last-position="0,0" last-zoom="0.7" max-obj-count="10"
+<dbmodel pgmodeler-ver="1.2.3" use-changelog="false" max-obj-count="10"
+	 gen-disabled-objs-code="false" show-sys-schemas-rects="false"
+	 last-position="0,0" last-zoom="0.9"
 	 default-schema="public" default-owner="postgres"
 	 layers="Default layer"
 	 active-layers="0"
@@ -112,6 +114,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{gt}_pk" uq-pattern="{gt}_uq"
 	 src-fk-pattern="{st}_fk" dst-fk-pattern="{dt}_fk"
 	 pk-col-pattern="id"
+	 fk-idx-pattern="{gt}_idx"
 	 custom-color="#82f38e"
 	 src-table="public.instrutor"
 	 dst-table="public.instrumento"
@@ -126,6 +129,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-col-pattern="{sc}_{st}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
+	 fk-idx-pattern="{st}_idx"
 	 custom-color="#5232f5"
 	 src-table="public.comum"
 	 dst-table="public.pessoa"
@@ -136,6 +140,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{gt}_pk" uq-pattern="{gt}_uq"
 	 src-fk-pattern="{st}_fk" dst-fk-pattern="{dt}_fk"
 	 pk-col-pattern="id"
+	 fk-idx-pattern="{gt}_idx"
 	 custom-color="#8505ec"
 	 src-table="public.aluno"
 	 dst-table="public.instrumento"
@@ -146,7 +151,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 </relationship>
 
-<table name="registro_aula" layers="0" collapse-mode="2" max-obj-count="8" z-value="0">
+<table name="registro_aula" layers="0" collapse-mode="2" max-obj-count="7" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<position x="600" y="260"/>
@@ -160,9 +165,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="smallint" length="0"/>
 	</column>
 	<column name="descricao">
-		<type name="text" length="0"/>
-	</column>
-	<column name="para_proxima_aula">
 		<type name="text" length="0"/>
 	</column>
 	<constraint name="registro_aula_pk" type="pk-constr" table="public.registro_aula">
@@ -182,6 +184,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-col-pattern="{sc}_{st}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
+	 fk-idx-pattern="{st}_idx"
 	 custom-color="#e5e0ea"
 	 src-table="public.aluno"
 	 dst-table="public.registro_aula"
@@ -191,6 +194,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-col-pattern="{sc}_{st}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
+	 fk-idx-pattern="{st}_idx"
 	 custom-color="#5aa134"
 	 src-table="public.instrutor"
 	 dst-table="public.registro_aula"
@@ -215,6 +219,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-col-pattern="{sc}_{st}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
+	 fk-idx-pattern="{st}_idx"
 	 custom-color="#85b757"
 	 src-table="public.aluno"
 	 dst-table="public.metodo"
@@ -225,6 +230,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{gt}_pk" uq-pattern="{gt}_uq"
 	 src-fk-pattern="{st}_fk" dst-fk-pattern="{dt}_fk"
 	 pk-col-pattern="id"
+	 fk-idx-pattern="{gt}_idx"
 	 custom-color="#e792f6"
 	 src-table="public.instrumento"
 	 dst-table="public.metodo"
@@ -235,6 +241,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-col-pattern="{sc}_{st}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
+	 fk-idx-pattern="{st}_idx"
 	 custom-color="#3e783f"
 	 src-table="public.pessoa"
 	 dst-table="public.instrutor"
@@ -244,6 +251,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-col-pattern="{sc}_{st}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
+	 fk-idx-pattern="{st}_idx"
 	 custom-color="#c93c45"
 	 src-table="public.pessoa"
 	 dst-table="public.aluno"

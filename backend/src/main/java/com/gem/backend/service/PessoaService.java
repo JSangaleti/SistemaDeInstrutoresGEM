@@ -1,16 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.gem.backend.service;
 
-/**
- *
- * @author leonardo
- */
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
+import com.gem.backend.model.Comum;
 import com.gem.backend.model.Pessoa;
+import com.gem.backend.repository.ComumRepository;
 import com.gem.backend.repository.PessoaRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,14 +14,23 @@ import java.util.List;
 public class PessoaService {
 
     private final PessoaRepository repository;
+    private final ComumRepository comumRepository;
 
-    public PessoaService(PessoaRepository repository) {
+    public PessoaService(PessoaRepository repository, ComumRepository comumRepository) {
         this.repository = repository;
+        this.comumRepository = comumRepository;
     }
 
     public Pessoa createPessoa(Pessoa pessoa) {
         if (pessoa.getCpf() != null && repository.existsById(pessoa.getCpf())) {
             throw new DuplicateResourceException("Já existe uma pessoa cadastrada com este CPF.");
+        }
+
+        if (pessoa.getComum() != null && pessoa.getComum().getId() != null) {
+            Comum comum = comumRepository.findById(pessoa.getComum().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Comum não encontrada."));
+
+            pessoa.setComum(comum);
         }
 
         return repository.save(pessoa);
@@ -38,17 +41,24 @@ public class PessoaService {
     }
 
     public Pessoa getPessoa(String cpf) {
-        Pessoa pessoa = repository.findById(cpf)
-                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrado!"));
-        return pessoa;
+        return repository.findById(cpf)
+                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
     }
 
     public Pessoa updatePessoa(String cpf, Pessoa dadosAtualizados) {
         Pessoa pessoaExistente = repository.findById(cpf)
-                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrado!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
 
-        pessoaExistente.setNome(dadosAtualizados.getNome());
-        pessoaExistente.setComum(dadosAtualizados.getComum());
+        if (dadosAtualizados.getNome() != null && !dadosAtualizados.getNome().trim().isEmpty()) {
+            pessoaExistente.setNome(dadosAtualizados.getNome());
+        }
+
+        if (dadosAtualizados.getComum() != null && dadosAtualizados.getComum().getId() != null) {
+            Comum comum = comumRepository.findById(dadosAtualizados.getComum().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Comum não encontrada."));
+
+            pessoaExistente.setComum(comum);
+        }
 
         return repository.save(pessoaExistente);
     }

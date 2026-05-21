@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../models/pessoa.dart';
 import '../../services/pessoa_service.dart';
 import '../pessoa_form/pessoa_form_page.dart';
@@ -15,6 +16,7 @@ class _PessoaListPageState extends State<PessoaListPage> {
 
   List<Pessoa> pessoas = [];
   List<Pessoa> pessoasFiltradas = [];
+
   bool loading = true;
   String? erro;
 
@@ -32,6 +34,7 @@ class _PessoaListPageState extends State<PessoaListPage> {
 
     try {
       final lista = await service.getPessoas();
+
       setState(() {
         pessoas = lista;
         pessoasFiltradas = lista;
@@ -46,9 +49,12 @@ class _PessoaListPageState extends State<PessoaListPage> {
   }
 
   void filtrarPessoas(String texto) {
+    final busca = texto.toLowerCase();
+
     final resultado = pessoas.where((pessoa) {
-      return pessoa.nome.toLowerCase().contains(texto.toLowerCase()) ||
-          pessoa.cpf.contains(texto);
+      return pessoa.nome.toLowerCase().contains(busca) ||
+          pessoa.cpf.contains(busca) ||
+          pessoa.comumCompleta.toLowerCase().contains(busca);
     }).toList();
 
     setState(() {
@@ -73,7 +79,7 @@ class _PessoaListPageState extends State<PessoaListPage> {
     try {
       final pessoaCompleta = await service.getPessoaByCpf(pessoa.cpf);
 
-      if (!context.mounted) return;
+      if (!mounted) return;
 
       final resultado = await Navigator.push(
         context,
@@ -86,7 +92,8 @@ class _PessoaListPageState extends State<PessoaListPage> {
         carregarPessoas();
       }
     } catch (e) {
-      if (!context.mounted) return;
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao carregar pessoa: $e')),
       );
@@ -96,17 +103,17 @@ class _PessoaListPageState extends State<PessoaListPage> {
   Future<void> confirmarExclusao(Pessoa pessoa) async {
     final confirmar = await showDialog<bool>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Excluir pessoa'),
           content: Text('Deseja excluir a pessoa ${pessoa.nome}?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Excluir'),
             ),
           ],
@@ -119,16 +126,18 @@ class _PessoaListPageState extends State<PessoaListPage> {
         await service.deletarPessoa(pessoa.cpf);
         await carregarPessoas();
 
-        if (!context.mounted) return;
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Pessoa excluída com sucesso.')),
         );
       } catch (e) {
-        if (!context.mounted) return;
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Não foi possível excluir a pessoa. Ela pode estar vinculada a um aluno.',
+              'Não foi possível excluir a pessoa. Ela pode estar vinculada a outro registro.',
             ),
           ),
         );
@@ -195,7 +204,7 @@ class _PessoaListPageState extends State<PessoaListPage> {
                                 )
                               : ListView.separated(
                                   itemCount: pessoasFiltradas.length,
-                                  separatorBuilder: (_, __) =>
+                                  separatorBuilder: (context, index) =>
                                       const Divider(height: 1),
                                   itemBuilder: (context, index) {
                                     final pessoa = pessoasFiltradas[index];
@@ -210,13 +219,14 @@ class _PessoaListPageState extends State<PessoaListPage> {
                                       ),
                                       title: Text(pessoa.nome),
                                       subtitle: Text(
-                                        '${pessoa.cpf}\n${pessoa.comum ?? 'Sem comum'}',
+                                        '${pessoa.cpf}\n${pessoa.comumCompleta}',
                                       ),
                                       isThreeLine: true,
                                       onTap: () => editarPessoa(pessoa),
                                       trailing: IconButton(
                                         icon: const Icon(Icons.delete),
-                                        onPressed: () => confirmarExclusao(pessoa),
+                                        onPressed: () =>
+                                            confirmarExclusao(pessoa),
                                       ),
                                     );
                                   },

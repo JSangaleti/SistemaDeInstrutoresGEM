@@ -53,6 +53,7 @@ public class RegistroAulaService {
         if (dadosAtualizados.getInstrutor() != null && dadosAtualizados.getInstrutor().getId() != null) {
             existente.setInstrutor(dadosAtualizados.getInstrutor());
         }
+<<<<<<< HEAD
 
         if (dadosAtualizados.getDescricao() != null) {
             existente.setDescricao(dadosAtualizados.getDescricao());
@@ -67,6 +68,13 @@ public class RegistroAulaService {
             existente.setData(dadosAtualizados.getData());
         }
 
+=======
+        
+        if (dadosAtualizados.getDescricao() != null) existente.setDescricao(dadosAtualizados.getDescricao());
+        if (dadosAtualizados.getPresente() != null) existente.setPresente(dadosAtualizados.getPresente());
+        if (dadosAtualizados.getData() != null) existente.setData(dadosAtualizados.getData());
+        
+>>>>>>> origin/develop
         return repository.save(existente);
     }
 
