@@ -27,7 +27,7 @@ public class AlunoService {
     }
 
     public AlunoResponseDTO createAluno(Aluno aluno) {
-        if (repository.existsById(aluno.getId())) {
+        if (aluno.getId() != null && repository.existsById(aluno.getId())) {
             throw new DuplicateResourceException("Já existe um aluno cadastrado com este ID.");
         }
 

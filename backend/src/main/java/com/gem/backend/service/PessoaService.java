@@ -26,7 +26,7 @@ public class PessoaService {
     }
 
     public Pessoa createPessoa(Pessoa pessoa) {
-        if (repository.existsById(pessoa.getCpf())) {
+        if (pessoa.getCpf() != null && repository.existsById(pessoa.getCpf())) {
             throw new DuplicateResourceException("Já existe uma pessoa cadastrada com este CPF.");
         }
 

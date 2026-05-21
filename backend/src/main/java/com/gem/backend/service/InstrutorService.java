@@ -23,7 +23,7 @@ public class InstrutorService {
     private InstrutorRepository repository;
 
     public Instrutor createInstrutor(Instrutor instrutor) {
-        if (repository.existsById(instrutor.getId())) {
+        if (instrutor.getId() != null && repository.existsById(instrutor.getId())) {
             throw new DuplicateResourceException("Já existe um instrutor cadastrado com este ID.");
         }
 

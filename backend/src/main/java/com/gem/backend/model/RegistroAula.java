@@ -8,8 +8,9 @@ package com.gem.backend.model;
  *
  * @author leonardo
  */
-
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
 
 @Entity
@@ -31,34 +32,72 @@ public class RegistroAula {
     @Column(nullable = false)
     private LocalDate data;
 
+    @Min(value = 0, message = "Presença deve ser 0 ou 1.")
+    @Max(value = 1, message = "Presença deve ser 0 ou 1.")
     private Short presente;
-    
+
     @Column(columnDefinition = "TEXT")
     private String descricao;
 
     @Column(name = "para_proxima_aula", columnDefinition = "TEXT")
     private String paraProximaAula;
 
-    public RegistroAula() {}
+    public RegistroAula() {
+    }
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Integer getId() {
+        return id;
+    }
 
-    public Aluno getAluno() { return aluno; }
-    public void setAluno(Aluno aluno) { this.aluno = aluno; }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    public Instrutor getInstrutor() { return instrutor; }
-    public void setInstrutor(Instrutor instrutor) { this.instrutor = instrutor; }
+    public Aluno getAluno() {
+        return aluno;
+    }
 
-    public LocalDate getData() { return data; }
-    public void setData(LocalDate data) { this.data = data; }
+    public void setAluno(Aluno aluno) {
+        this.aluno = aluno;
+    }
 
-    public Short getPresente() { return presente; }
-    public void setPresente(Short presente) { this.presente = presente; }
+    public Instrutor getInstrutor() {
+        return instrutor;
+    }
 
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
+    public void setInstrutor(Instrutor instrutor) {
+        this.instrutor = instrutor;
+    }
 
-    public String getParaProximaAula() { return paraProximaAula; }
-    public void setParaProximaAula(String paraProximaAula) { this.paraProximaAula = paraProximaAula; }
+    public LocalDate getData() {
+        return data;
+    }
+
+    public void setData(LocalDate data) {
+        this.data = data;
+    }
+
+    public Short getPresente() {
+        return presente;
+    }
+
+    public void setPresente(Short presente) {
+        this.presente = presente;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public String getParaProximaAula() {
+        return paraProximaAula;
+    }
+
+    public void setParaProximaAula(String paraProximaAula) {
+        this.paraProximaAula = paraProximaAula;
+    }
 }

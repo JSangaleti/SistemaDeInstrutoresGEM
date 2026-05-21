@@ -27,7 +27,7 @@ public class ComumService {
     }
 
     public ComumResponseDTO createComum(Comum comum) {
-        if (repository.existsById(comum.getId())) {
+        if (comum.getId() != null && repository.existsById(comum.getId())) {
             throw new DuplicateResourceException("Já existe uma comum cadastrada com este ID.");
         }
 

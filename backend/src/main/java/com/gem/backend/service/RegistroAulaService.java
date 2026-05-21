@@ -24,7 +24,7 @@ public class RegistroAulaService {
     private RegistroAulaRepository repository;
 
     public RegistroAula createRegistroAula(RegistroAula aula) {
-        if (repository.existsById(aula.getId())) {
+        if (aula.getId() != null && repository.existsById(aula.getId())) {
             throw new DuplicateResourceException("Já existe uma aula cadastrada com este ID.");
         }
 

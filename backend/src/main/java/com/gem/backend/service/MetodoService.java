@@ -23,8 +23,8 @@ public class MetodoService {
     private MetodoRepository repository;
 
     public Metodo createMetodo(Metodo metodo) {
-        if (repository.existsById(metodo.getId())) {
-            throw new DuplicateResourceException("Já existe um metodo cadastrado com este ID.");
+        if (metodo.getId() != null && repository.existsById(metodo.getId())) {
+            throw new DuplicateResourceException("Já existe um método cadastrado com este ID.");
         }
 
         return repository.save(metodo);
