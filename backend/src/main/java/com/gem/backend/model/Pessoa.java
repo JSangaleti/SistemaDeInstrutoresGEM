@@ -9,15 +9,22 @@ package com.gem.backend.model;
  * @author leonardo
  */
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "pessoa")
 public class Pessoa {
 
     @Id
+    @NotBlank(message = "CPF é obrigatório.")
+    @Pattern(regexp = "\\d{11}", message = "CPF deve conter exatamente 11 dígitos numéricos.")
     @Column(length = 11, nullable = false)
     private String cpf;
 
+    @NotBlank(message = "Nome é obrigatório.")
+    @Size(max = 64, message = "Nome deve ter no máximo 64 caracteres.")
     @Column(length = 64, nullable = false)
     private String nome;
 

@@ -11,6 +11,7 @@ package com.gem.backend.controller;
 import com.gem.backend.dto.ComumResponseDTO;
 import com.gem.backend.model.Comum;
 import com.gem.backend.service.ComumService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class ComumController {
     }
 
     @PostMapping
-    public ResponseEntity<ComumResponseDTO> create(@RequestBody Comum comum) {
+    public ResponseEntity<ComumResponseDTO> create(@Valid @RequestBody Comum comum) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createComum(comum));
     }
 
@@ -43,7 +44,7 @@ public class ComumController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ComumResponseDTO> update(@PathVariable Integer id, @RequestBody Comum comum) {
+    public ResponseEntity<ComumResponseDTO> update(@PathVariable Integer id, @Valid @RequestBody Comum comum) {
         return ResponseEntity.ok(service.updateComum(id, comum));
     }
 

@@ -8,7 +8,8 @@ package com.gem.backend.service;
  *
  * @author leonardo
  */
-
+import com.gem.backend.exception.DuplicateResourceException;
+import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Metodo;
 import com.gem.backend.repository.MetodoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,10 @@ public class MetodoService {
     private MetodoRepository repository;
 
     public Metodo createMetodo(Metodo metodo) {
+        if (metodo.getId() != null && repository.existsById(metodo.getId())) {
+            throw new DuplicateResourceException("Já existe um método cadastrado com este ID.");
+        }
+
         return repository.save(metodo);
     }
 
@@ -31,27 +36,31 @@ public class MetodoService {
 
     public Metodo getMetodo(Integer id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Método não encontrado!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Método não encontrado!"));
     }
 
     public Metodo updateMetodo(Integer id, Metodo dadosAtualizados) {
         Metodo existente = getMetodo(id);
-        
+
         if (dadosAtualizados.getNome() != null && !dadosAtualizados.getNome().isBlank()) {
             existente.setNome(dadosAtualizados.getNome());
         }
-        
+
         if (dadosAtualizados.getInstrumento() != null && dadosAtualizados.getInstrumento().getId() != null) {
             existente.setInstrumento(dadosAtualizados.getInstrumento());
         }
         if (dadosAtualizados.getAluno() != null && dadosAtualizados.getAluno().getId() != null) {
             existente.setAluno(dadosAtualizados.getAluno());
         }
-        
+
         return repository.save(existente);
     }
 
     public void deleteMetodo(Integer id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Método não encontrado.");
+        }
+
         repository.deleteById(id);
     }
 }

@@ -8,8 +8,9 @@ package com.gem.backend.model;
  *
  * @author leonardo
  */
-
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 @Entity
@@ -20,6 +21,8 @@ public class Instrutor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank(message = "Senha é obrigatória.")
+    @Size(max = 16, message = "Senha deve ter no máximo 16 caracteres.")
     @Column(length = 16, nullable = false)
     private String senha;
 
@@ -30,17 +33,38 @@ public class Instrutor {
     @OneToMany(mappedBy = "instrutor")
     private List<RegistroAula> aulas;
 
-    public Instrutor() {}
+    public Instrutor() {
+    }
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Integer getId() {
+        return id;
+    }
 
-    public String getSenha() { return senha; }
-    public void setSenha(String senha) { this.senha = senha; }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    public Pessoa getPessoa() { return pessoa; }
-    public void setPessoa(Pessoa pessoa) { this.pessoa = pessoa; }
+    public String getSenha() {
+        return senha;
+    }
 
-    public List<RegistroAula> getAulas() { return aulas; }
-    public void setAulas(List<RegistroAula> aulas) { this.aulas = aulas; }
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    public Pessoa getPessoa() {
+        return pessoa;
+    }
+
+    public void setPessoa(Pessoa pessoa) {
+        this.pessoa = pessoa;
+    }
+
+    public List<RegistroAula> getAulas() {
+        return aulas;
+    }
+
+    public void setAulas(List<RegistroAula> aulas) {
+        this.aulas = aulas;
+    }
 }

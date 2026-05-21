@@ -11,6 +11,7 @@ package com.gem.backend.controller;
 import com.gem.backend.dto.AlunoResponseDTO;
 import com.gem.backend.model.Aluno;
 import com.gem.backend.service.AlunoService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class AlunoController {
     }
 
     @PostMapping
-    public ResponseEntity<AlunoResponseDTO> create(@RequestBody Aluno aluno) {
+    public ResponseEntity<AlunoResponseDTO> create(@Valid @RequestBody Aluno aluno) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createAluno(aluno));
     }
 
@@ -43,7 +44,7 @@ public class AlunoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AlunoResponseDTO> update(@PathVariable Long id, @RequestBody Aluno aluno) {
+    public ResponseEntity<AlunoResponseDTO> update(@PathVariable Long id, @Valid @RequestBody Aluno aluno) {
         return ResponseEntity.ok(service.updateAluno(id, aluno));
     }
 

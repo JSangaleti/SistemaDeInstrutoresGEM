@@ -1,15 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.gem.backend.model;
 
-/**
- *
- * @author leonardo
- */
-
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
 import java.time.LocalDate;
 
 @Entity
@@ -31,29 +25,72 @@ public class RegistroAula {
     @Column(nullable = false)
     private LocalDate data;
 
+    @Min(value = 0, message = "Presença deve ser 0 ou 1.")
+    @Max(value = 1, message = "Presença deve ser 0 ou 1.")
     private Short presente;
-    
+
     @Column(columnDefinition = "TEXT")
     private String descricao;
 
-    public RegistroAula() {}
+    @Column(name = "para_proxima_aula", columnDefinition = "TEXT")
+    private String paraProximaAula;
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public RegistroAula() {
+    }
 
-    public Aluno getAluno() { return aluno; }
-    public void setAluno(Aluno aluno) { this.aluno = aluno; }
+    public Integer getId() {
+        return id;
+    }
 
-    public Instrutor getInstrutor() { return instrutor; }
-    public void setInstrutor(Instrutor instrutor) { this.instrutor = instrutor; }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    public LocalDate getData() { return data; }
-    public void setData(LocalDate data) { this.data = data; }
+    public Aluno getAluno() {
+        return aluno;
+    }
 
-    public Short getPresente() { return presente; }
-    public void setPresente(Short presente) { this.presente = presente; }
+    public void setAluno(Aluno aluno) {
+        this.aluno = aluno;
+    }
 
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
+    public Instrutor getInstrutor() {
+        return instrutor;
+    }
 
+    public void setInstrutor(Instrutor instrutor) {
+        this.instrutor = instrutor;
+    }
+
+    public LocalDate getData() {
+        return data;
+    }
+
+    public void setData(LocalDate data) {
+        this.data = data;
+    }
+
+    public Short getPresente() {
+        return presente;
+    }
+
+    public void setPresente(Short presente) {
+        this.presente = presente;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public String getParaProximaAula() {
+        return paraProximaAula;
+    }
+
+    public void setParaProximaAula(String paraProximaAula) {
+        this.paraProximaAula = paraProximaAula;
+    }
 }

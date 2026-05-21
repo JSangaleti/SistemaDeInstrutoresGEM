@@ -8,8 +8,9 @@ package com.gem.backend.model;
  *
  * @author leonardo
  */
-
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "metodos")
@@ -19,7 +20,9 @@ public class Metodo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, length = 64) 
+    @NotBlank(message = "Nome do método é obrigatório.")
+    @Size(max = 64, message = "Nome do método deve ter no máximo 64 caracteres.")
+    @Column(nullable = false, length = 64)
     private String nome;
 
     @ManyToOne
@@ -30,17 +33,38 @@ public class Metodo {
     @JoinColumn(name = "aluno_id")
     private Aluno aluno;
 
-    public Metodo() {}
+    public Metodo() {
+    }
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Integer getId() {
+        return id;
+    }
 
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    public Instrumento getInstrumento() { return instrumento; }
-    public void setInstrumento(Instrumento instrumento) { this.instrumento = instrumento; }
+    public String getNome() {
+        return nome;
+    }
 
-    public Aluno getAluno() { return aluno; }
-    public void setAluno(Aluno aluno) { this.aluno = aluno; }
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public Instrumento getInstrumento() {
+        return instrumento;
+    }
+
+    public void setInstrumento(Instrumento instrumento) {
+        this.instrumento = instrumento;
+    }
+
+    public Aluno getAluno() {
+        return aluno;
+    }
+
+    public void setAluno(Aluno aluno) {
+        this.aluno = aluno;
+    }
 }
