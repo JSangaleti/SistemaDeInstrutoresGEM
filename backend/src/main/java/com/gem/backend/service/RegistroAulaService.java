@@ -1,19 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.gem.backend.service;
 
-/**
- *
- * @author leonardo
- */
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.RegistroAula;
 import com.gem.backend.repository.RegistroAulaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -41,7 +34,7 @@ public class RegistroAulaService {
 
     public RegistroAula getRegistroAula(Integer id) {
         return repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Registro de aula não encontrado!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Registro de aula não encontrado."));
     }
 
     public RegistroAula updateRegistroAula(Integer id, RegistroAula dadosAtualizados) {
@@ -50,37 +43,33 @@ public class RegistroAulaService {
         if (dadosAtualizados.getAluno() != null && dadosAtualizados.getAluno().getId() != null) {
             existente.setAluno(dadosAtualizados.getAluno());
         }
+
         if (dadosAtualizados.getInstrutor() != null && dadosAtualizados.getInstrutor().getId() != null) {
             existente.setInstrutor(dadosAtualizados.getInstrutor());
         }
-<<<<<<< HEAD
 
         if (dadosAtualizados.getDescricao() != null) {
             existente.setDescricao(dadosAtualizados.getDescricao());
         }
+
         if (dadosAtualizados.getParaProximaAula() != null) {
             existente.setParaProximaAula(dadosAtualizados.getParaProximaAula());
         }
+
         if (dadosAtualizados.getPresente() != null) {
             existente.setPresente(dadosAtualizados.getPresente());
         }
+
         if (dadosAtualizados.getData() != null) {
             existente.setData(dadosAtualizados.getData());
         }
 
-=======
-        
-        if (dadosAtualizados.getDescricao() != null) existente.setDescricao(dadosAtualizados.getDescricao());
-        if (dadosAtualizados.getPresente() != null) existente.setPresente(dadosAtualizados.getPresente());
-        if (dadosAtualizados.getData() != null) existente.setData(dadosAtualizados.getData());
-        
->>>>>>> origin/develop
         return repository.save(existente);
     }
 
     public void deleteRegistroAula(Integer id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Registro de aula não encontrada.");
+            throw new ResourceNotFoundException("Registro de aula não encontrado.");
         }
 
         repository.deleteById(id);

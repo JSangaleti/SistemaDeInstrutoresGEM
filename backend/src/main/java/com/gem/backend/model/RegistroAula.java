@@ -1,77 +1,96 @@
-package com.gem.backend.service;
+package com.gem.backend.model;
 
-import com.gem.backend.exception.DuplicateResourceException;
-import com.gem.backend.exception.ResourceNotFoundException;
-import com.gem.backend.model.RegistroAula;
-import com.gem.backend.repository.RegistroAulaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.time.LocalDate;
-import java.util.List;
 
-@Service
-public class RegistroAulaService {
+@Entity
+@Table(name = "registro_aulas")
+public class RegistroAula {
 
-    @Autowired
-    private RegistroAulaRepository repository;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    public RegistroAula createRegistroAula(RegistroAula aula) {
-        if (aula.getId() != null && repository.existsById(aula.getId())) {
-            throw new DuplicateResourceException("Já existe uma aula cadastrada com este ID.");
-        }
+    @ManyToOne
+    @JoinColumn(name = "aluno_id")
+    private Aluno aluno;
 
-        if (aula.getData() == null) {
-            aula.setData(LocalDate.now());
-        }
+    @ManyToOne
+    @JoinColumn(name = "instrutor_id")
+    private Instrutor instrutor;
 
-        return repository.save(aula);
+    @Column(nullable = false)
+    private LocalDate data;
+
+    @Min(value = 0, message = "Presença deve ser 0 ou 1.")
+    @Max(value = 1, message = "Presença deve ser 0 ou 1.")
+    private Short presente;
+
+    @Column(columnDefinition = "TEXT")
+    private String descricao;
+
+    @Column(name = "para_proxima_aula", columnDefinition = "TEXT")
+    private String paraProximaAula;
+
+    public RegistroAula() {
     }
 
-    public List<RegistroAula> getListRegistroAula() {
-        return repository.findAll();
+    public Integer getId() {
+        return id;
     }
 
-    public RegistroAula getRegistroAula(Integer id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Registro de aula não encontrado."));
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public RegistroAula updateRegistroAula(Integer id, RegistroAula dadosAtualizados) {
-        RegistroAula existente = getRegistroAula(id);
-
-        if (dadosAtualizados.getAluno() != null && dadosAtualizados.getAluno().getId() != null) {
-            existente.setAluno(dadosAtualizados.getAluno());
-        }
-
-        if (dadosAtualizados.getInstrutor() != null && dadosAtualizados.getInstrutor().getId() != null) {
-            existente.setInstrutor(dadosAtualizados.getInstrutor());
-        }
-
-        if (dadosAtualizados.getDescricao() != null) {
-            existente.setDescricao(dadosAtualizados.getDescricao());
-        }
-
-        if (dadosAtualizados.getParaProximaAula() != null) {
-            existente.setParaProximaAula(dadosAtualizados.getParaProximaAula());
-        }
-
-        if (dadosAtualizados.getPresente() != null) {
-            existente.setPresente(dadosAtualizados.getPresente());
-        }
-
-        if (dadosAtualizados.getData() != null) {
-            existente.setData(dadosAtualizados.getData());
-        }
-
-        return repository.save(existente);
+    public Aluno getAluno() {
+        return aluno;
     }
 
-    public void deleteRegistroAula(Integer id) {
-        if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Registro de aula não encontrado.");
-        }
+    public void setAluno(Aluno aluno) {
+        this.aluno = aluno;
+    }
 
-        repository.deleteById(id);
+    public Instrutor getInstrutor() {
+        return instrutor;
+    }
+
+    public void setInstrutor(Instrutor instrutor) {
+        this.instrutor = instrutor;
+    }
+
+    public LocalDate getData() {
+        return data;
+    }
+
+    public void setData(LocalDate data) {
+        this.data = data;
+    }
+
+    public Short getPresente() {
+        return presente;
+    }
+
+    public void setPresente(Short presente) {
+        this.presente = presente;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public String getParaProximaAula() {
+        return paraProximaAula;
+    }
+
+    public void setParaProximaAula(String paraProximaAula) {
+        this.paraProximaAula = paraProximaAula;
     }
 }
