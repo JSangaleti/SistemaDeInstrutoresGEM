@@ -1,0 +1,50 @@
+package com.gem.backend.model;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+@Entity
+@Table(name = "admins")
+public class Admin {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @NotBlank(message = "Senha é obrigatória.")
+    @Size(max = 16, message = "Senha deve ter no máximo 16 caracteres.")
+    @Column(length = 16, nullable = false)
+    private String senha;
+
+    @OneToOne
+    @JoinColumn(name = "pessoa_cpf", referencedColumnName = "cpf")
+    private Pessoa pessoa;
+
+    public Admin() {
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    public Pessoa getPessoa() {
+        return pessoa;
+    }
+
+    public void setPessoa(Pessoa pessoa) {
+        this.pessoa = pessoa;
+    }
+}

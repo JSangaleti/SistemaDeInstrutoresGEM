@@ -1,8 +1,10 @@
 package com.gem.backend.config;
 
+import com.gem.backend.model.Admin;
 import com.gem.backend.model.Aluno;
 import com.gem.backend.model.Comum;
 import com.gem.backend.model.Pessoa;
+import com.gem.backend.repository.AdminRepository;
 import com.gem.backend.repository.AlunoRepository;
 import com.gem.backend.repository.ComumRepository;
 import com.gem.backend.repository.PessoaRepository;
@@ -25,10 +27,11 @@ public class DataSeeder {
     CommandLineRunner seedDatabase(
             ComumRepository comumRepository,
             PessoaRepository pessoaRepository,
-            AlunoRepository alunoRepository
+            AlunoRepository alunoRepository,
+            AdminRepository adminRepository
     ) {
         return args -> {
-            if (comumRepository.count() > 0 || pessoaRepository.count() > 0 || alunoRepository.count() > 0) {
+            if (comumRepository.count() > 0 || pessoaRepository.count() > 0 || alunoRepository.count() > 0 || adminRepository.count() > 0) {
                 logger.info("Seed ignorada: banco já possui dados.");
                 return;
             }
@@ -56,12 +59,17 @@ public class DataSeeder {
             Pessoa pessoa1 = criarPessoa("11111111111", "João da Silva", comumCentral);
             Pessoa pessoa2 = criarPessoa("22222222222", "Maria Oliveira", comumCentral);
             Pessoa pessoa3 = criarPessoa("33333333333", "Pedro Santos", comumJardim);
+            Pessoa pessoaAdmin = criarPessoa("00000000001", "Administrador GEM", comumCentral);
 
-            pessoaRepository.saveAll(List.of(pessoa1, pessoa2, pessoa3));
+            pessoaRepository.saveAll(List.of(pessoa1, pessoa2, pessoa3, pessoaAdmin));
 
             Aluno aluno1 = criarAluno("senha123", pessoa1, comumCentral);
             Aluno aluno2 = criarAluno("senha123", pessoa2, comumCentral);
             Aluno aluno3 = criarAluno("senha123", pessoa3, comumJardim);
+
+            Admin admin = criarAdmin("admin123", pessoaAdmin);
+
+            adminRepository.save(admin);
 
             alunoRepository.saveAll(List.of(aluno1, aluno2, aluno3));
 
@@ -101,5 +109,12 @@ public class DataSeeder {
         aluno.setPessoa(pessoa);
         aluno.setComum(comum);
         return aluno;
+    }
+
+    private Admin criarAdmin(String senha, Pessoa pessoa) {
+        Admin admin = new Admin();
+        admin.setSenha(senha);
+        admin.setPessoa(pessoa);
+        return admin;
     }
 }
