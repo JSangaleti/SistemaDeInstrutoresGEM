@@ -9,7 +9,8 @@ public record PessoaResponseDTO(
         String comumNome,
         String comumCidade,
         String comumUF
-) {
+        ) {
+
     public PessoaResponseDTO(Pessoa pessoa) {
         this(
                 pessoa.getCpf(),
