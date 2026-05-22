@@ -1,10 +1,14 @@
 package com.gem.backend.service;
 
+import com.gem.backend.exception.BadRequestException;
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
+import com.gem.backend.model.Aluno;
+import com.gem.backend.model.Instrutor;
 import com.gem.backend.model.RegistroAula;
+import com.gem.backend.repository.AlunoRepository;
+import com.gem.backend.repository.InstrutorRepository;
 import com.gem.backend.repository.RegistroAulaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,19 +17,40 @@ import java.util.List;
 @Service
 public class RegistroAulaService {
 
-    @Autowired
-    private RegistroAulaRepository repository;
+    private final RegistroAulaRepository repository;
+    private final AlunoRepository alunoRepository;
+    private final InstrutorRepository instrutorRepository;
+
+    public RegistroAulaService(
+            RegistroAulaRepository repository,
+            AlunoRepository alunoRepository,
+            InstrutorRepository instrutorRepository
+    ) {
+        this.repository = repository;
+        this.alunoRepository = alunoRepository;
+        this.instrutorRepository = instrutorRepository;
+    }
 
     public RegistroAula createRegistroAula(RegistroAula aula) {
         if (aula.getId() != null && repository.existsById(aula.getId())) {
             throw new DuplicateResourceException("Já existe uma aula cadastrada com este ID.");
         }
 
+        Aluno aluno = buscarAlunoObrigatorio(aula);
+        Instrutor instrutor = buscarInstrutorObrigatorio(aula);
+
+        aula.setAluno(aluno);
+        aula.setInstrutor(instrutor);
+
         if (aula.getData() == null) {
             aula.setData(LocalDate.now());
         }
 
-        return repository.save(aula);
+        RegistroAula aulaSalva = repository.save(aula);
+        aulaSalva.setAluno(aluno);
+        aulaSalva.setInstrutor(instrutor);
+
+        return aulaSalva;
     }
 
     public List<RegistroAula> getListRegistroAula() {
@@ -40,12 +65,14 @@ public class RegistroAulaService {
     public RegistroAula updateRegistroAula(Integer id, RegistroAula dadosAtualizados) {
         RegistroAula existente = getRegistroAula(id);
 
-        if (dadosAtualizados.getAluno() != null && dadosAtualizados.getAluno().getId() != null) {
-            existente.setAluno(dadosAtualizados.getAluno());
+        if (dadosAtualizados.getAluno() != null) {
+            Aluno aluno = buscarAlunoObrigatorio(dadosAtualizados);
+            existente.setAluno(aluno);
         }
 
-        if (dadosAtualizados.getInstrutor() != null && dadosAtualizados.getInstrutor().getId() != null) {
-            existente.setInstrutor(dadosAtualizados.getInstrutor());
+        if (dadosAtualizados.getInstrutor() != null) {
+            Instrutor instrutor = buscarInstrutorObrigatorio(dadosAtualizados);
+            existente.setInstrutor(instrutor);
         }
 
         if (dadosAtualizados.getDescricao() != null) {
@@ -73,5 +100,23 @@ public class RegistroAulaService {
         }
 
         repository.deleteById(id);
+    }
+
+    private Aluno buscarAlunoObrigatorio(RegistroAula aula) {
+        if (aula.getAluno() == null || aula.getAluno().getId() == null) {
+            throw new BadRequestException("Informe o ID do aluno vinculado ao registro de aula.");
+        }
+
+        return alunoRepository.findById(aula.getAluno().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado."));
+    }
+
+    private Instrutor buscarInstrutorObrigatorio(RegistroAula aula) {
+        if (aula.getInstrutor() == null || aula.getInstrutor().getId() == null) {
+            throw new BadRequestException("Informe o ID do instrutor vinculado ao registro de aula.");
+        }
+
+        return instrutorRepository.findById(aula.getInstrutor().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Instrutor não encontrado."));
     }
 }

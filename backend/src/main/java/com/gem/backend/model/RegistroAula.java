@@ -3,6 +3,7 @@ package com.gem.backend.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
@@ -14,12 +15,14 @@ public class RegistroAula {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotNull(message = "Aluno é obrigatório.")
     @ManyToOne
-    @JoinColumn(name = "aluno_id")
+    @JoinColumn(name = "aluno_id", nullable = false)
     private Aluno aluno;
 
+    @NotNull(message = "Instrutor é obrigatório.")
     @ManyToOne
-    @JoinColumn(name = "instrutor_id")
+    @JoinColumn(name = "instrutor_id", nullable = false)
     private Instrutor instrutor;
 
     @Column(nullable = false)
