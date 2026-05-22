@@ -1,15 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.gem.backend.model;
 
-/**
- *
- * @author leonardo
- */
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -25,8 +18,9 @@ public class Metodo {
     @Column(nullable = false, length = 64)
     private String nome;
 
+    @NotNull(message = "Instrumento é obrigatório.")
     @ManyToOne
-    @JoinColumn(name = "instrumento_id")
+    @JoinColumn(name = "instrumento_id", nullable = false)
     private Instrumento instrumento;
 
     @ManyToOne
