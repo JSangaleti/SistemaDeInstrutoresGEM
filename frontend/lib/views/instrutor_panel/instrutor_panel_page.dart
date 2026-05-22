@@ -16,21 +16,53 @@ class InstrutorPanelPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Área do Instrutor')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            'Painel do Instrutor',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Acesse os alunos e registre as aulas acompanhadas.',
-            style: TextStyle(fontSize: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.co_present,
+                  size: 36,
+                  color: colorScheme.onPrimaryContainer,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Painel do Instrutor',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Acompanhe alunos, registre aulas e consulte históricos para dar continuidade ao trabalho.',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: colorScheme.onPrimaryContainer,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
+          const Text(
+            'Ações principais',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
           _InstrutorPanelCard(
             titulo: 'Alunos',
             descricao: 'Consultar, cadastrar e editar alunos.',
@@ -76,12 +108,37 @@ class _InstrutorPanelCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(
-        leading: CircleAvatar(child: Icon(icone)),
-        title: Text(titulo),
-        subtitle: Text(descricao),
-        trailing: const Icon(Icons.chevron_right),
+      elevation: 1,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
         onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              CircleAvatar(radius: 24, child: Icon(icone)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      titulo,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(descricao),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
+        ),
       ),
     );
   }

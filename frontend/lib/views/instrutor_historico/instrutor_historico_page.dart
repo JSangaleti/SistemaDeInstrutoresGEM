@@ -119,6 +119,7 @@ class _InstrutorHistoricoPageState extends State<InstrutorHistoricoPage> {
   Widget build(BuildContext context) {
     final aluno = alunoSelecionado;
     final historico = aluno == null ? <RegistroAula>[] : historicoAluno(aluno);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -153,6 +154,30 @@ class _InstrutorHistoricoPageState extends State<InstrutorHistoricoPage> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Histórico por aluno',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        'Selecione um aluno para consultar aulas anteriores e retomar o acompanhamento.',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 TextField(
                   decoration: const InputDecoration(
                     hintText: 'Buscar aluno por nome ou CPF...',
@@ -163,9 +188,9 @@ class _InstrutorHistoricoPageState extends State<InstrutorHistoricoPage> {
                 ),
                 const SizedBox(height: 12),
                 if (alunosFiltrados.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Center(child: Text('Nenhum aluno encontrado.')),
+                  const _EstadoVazio(
+                    icone: Icons.person_search,
+                    mensagem: 'Nenhum aluno encontrado.',
                   )
                 else
                   ...alunosFiltrados.map((aluno) {
@@ -173,6 +198,10 @@ class _InstrutorHistoricoPageState extends State<InstrutorHistoricoPage> {
 
                     return Card(
                       child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         leading: CircleAvatar(
                           child: Text(
                             aluno.nome.isNotEmpty
@@ -196,46 +225,77 @@ class _InstrutorHistoricoPageState extends State<InstrutorHistoricoPage> {
                   }),
                 const SizedBox(height: 16),
                 if (aluno == null)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Text('Selecione um aluno para ver o histórico.'),
-                    ),
+                  const _EstadoVazio(
+                    icone: Icons.history,
+                    mensagem: 'Selecione um aluno para ver o histórico.',
                   )
                 else ...[
-                  Text(
-                    'Histórico de ${aluno.nome}',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            child: Text(
+                              aluno.nome.isNotEmpty
+                                  ? aluno.nome[0].toUpperCase()
+                                  : '?',
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Histórico de ${aluno.nome}',
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(textoAluno(aluno)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(textoAluno(aluno)),
                   const SizedBox(height: 12),
                   if (historico.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Center(
-                        child: Text('Nenhum registro de aula para este aluno.'),
-                      ),
+                    const _EstadoVazio(
+                      icone: Icons.event_busy,
+                      mensagem: 'Nenhum registro de aula para este aluno.',
                     )
                   else
                     ...historico.map((registro) {
                       return Card(
+                        margin: const EdgeInsets.only(bottom: 10),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                registro.dataTexto,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      registro.dataTexto,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  Chip(
+                                    label: Text(registro.presencaTexto),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 12),
                               _HistoricoLinha(
                                 rotulo: 'Aluno',
                                 valor: aluno.nome,
@@ -248,10 +308,7 @@ class _InstrutorHistoricoPageState extends State<InstrutorHistoricoPage> {
                                 rotulo: 'Comum',
                                 valor: aluno.comumCompleta,
                               ),
-                              _HistoricoLinha(
-                                rotulo: 'Presença',
-                                valor: registro.presencaTexto,
-                              ),
+                              const Divider(height: 20),
                               _HistoricoLinha(
                                 rotulo: 'Descrição',
                                 valor: valorOuPadrao(registro.descricao),
@@ -268,6 +325,34 @@ class _InstrutorHistoricoPageState extends State<InstrutorHistoricoPage> {
                 ],
               ],
             ),
+    );
+  }
+}
+
+class _EstadoVazio extends StatelessWidget {
+  final IconData icone;
+  final String mensagem;
+
+  const _EstadoVazio({required this.icone, required this.mensagem});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icone, size: 48),
+            const SizedBox(height: 12),
+            Text(
+              mensagem,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

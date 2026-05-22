@@ -394,150 +394,206 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
                 key: _formKey,
                 child: ListView(
                   children: [
-                    TextFormField(
-                      controller: alunoController,
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Aluno',
-                        border: OutlineInputBorder(),
-                        suffixIcon: Icon(Icons.search),
-                      ),
-                      onTap: selecionarAluno,
-                      validator: (value) {
-                        if (alunoSelecionadoId == null) {
-                          return 'Selecione um aluno';
-                        }
-
-                        return null;
-                      },
+                    const _SecaoFormulario(
+                      titulo: 'Participantes',
+                      subtitulo: 'Informe o aluno e o instrutor responsável.',
                     ),
-                    const SizedBox(height: 16),
-                    if (possuiInstrutorFixo) ...[
-                      InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Instrutor',
-                          border: OutlineInputBorder(),
-                        ),
-                        child: Text(textoInstrutorFixo()),
-                      ),
-                      const SizedBox(height: 16),
-                    ] else ...[
-                      DropdownButtonFormField<int>(
-                        initialValue: instrutorSelecionadoId,
-                        decoration: const InputDecoration(
-                          labelText: 'Instrutor',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: instrutores.map((instrutor) {
-                          return DropdownMenuItem<int>(
-                            value: instrutor.id,
-                            child: Text(
-                              instrutor.nome,
-                              overflow: TextOverflow.ellipsis,
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              controller: alunoController,
+                              readOnly: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Aluno',
+                                border: OutlineInputBorder(),
+                                suffixIcon: Icon(Icons.search),
+                              ),
+                              onTap: selecionarAluno,
+                              validator: (value) {
+                                if (alunoSelecionadoId == null) {
+                                  return 'Selecione um aluno';
+                                }
+
+                                return null;
+                              },
                             ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            instrutorSelecionadoId = value;
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null) {
-                            return 'Selecione um instrutor';
-                          }
+                            const SizedBox(height: 16),
+                            if (possuiInstrutorFixo)
+                              InputDecorator(
+                                decoration: const InputDecoration(
+                                  labelText: 'Instrutor',
+                                  border: OutlineInputBorder(),
+                                ),
+                                child: Text(textoInstrutorFixo()),
+                              )
+                            else
+                              DropdownButtonFormField<int>(
+                                initialValue: instrutorSelecionadoId,
+                                decoration: const InputDecoration(
+                                  labelText: 'Instrutor',
+                                  border: OutlineInputBorder(),
+                                ),
+                                items: instrutores.map((instrutor) {
+                                  return DropdownMenuItem<int>(
+                                    value: instrutor.id,
+                                    child: Text(
+                                      instrutor.nome,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    instrutorSelecionadoId = value;
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null) {
+                                    return 'Selecione um instrutor';
+                                  }
 
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                    TextFormField(
-                      controller: dataController,
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Data',
-                        border: OutlineInputBorder(),
-                        suffixIcon: Icon(Icons.calendar_today),
-                      ),
-                      onTap: selecionarData,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Selecione uma data';
-                        }
-
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<int>(
-                      initialValue: presenteSelecionado,
-                      decoration: const InputDecoration(
-                        labelText: 'Presença',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: const [
-                        DropdownMenuItem<int>(
-                          value: 1,
-                          child: Text('Presente'),
+                                  return null;
+                                },
+                              ),
+                          ],
                         ),
-                        DropdownMenuItem<int>(value: 0, child: Text('Ausente')),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          presenteSelecionado = value;
-                        });
-                        _formKey.currentState?.validate();
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Informe a presença';
-                        }
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const _SecaoFormulario(
+                      titulo: 'Aula',
+                      subtitulo: 'Registre a data, presença e observações.',
+                    ),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              controller: dataController,
+                              readOnly: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Data',
+                                border: OutlineInputBorder(),
+                                suffixIcon: Icon(Icons.calendar_today),
+                              ),
+                              onTap: selecionarData,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Selecione uma data';
+                                }
 
-                        return null;
-                      },
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            DropdownButtonFormField<int>(
+                              initialValue: presenteSelecionado,
+                              decoration: const InputDecoration(
+                                labelText: 'Presença',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: const [
+                                DropdownMenuItem<int>(
+                                  value: 1,
+                                  child: Text('Presente'),
+                                ),
+                                DropdownMenuItem<int>(
+                                  value: 0,
+                                  child: Text('Ausente'),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  presenteSelecionado = value;
+                                });
+                                _formKey.currentState?.validate();
+                              },
+                              validator: (value) {
+                                if (value == null) {
+                                  return 'Informe a presença';
+                                }
+
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: descricaoController,
+                              decoration: const InputDecoration(
+                                labelText: 'Descrição',
+                                border: OutlineInputBorder(),
+                              ),
+                              maxLines: 4,
+                              validator: (value) {
+                                if (presenteSelecionado == 1 &&
+                                    (value == null || value.trim().isEmpty)) {
+                                  return 'Informe a descrição';
+                                }
+
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: paraProximaAulaController,
+                              decoration: const InputDecoration(
+                                labelText: 'Para próxima aula',
+                                border: OutlineInputBorder(),
+                              ),
+                              maxLines: 4,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: descricaoController,
-                      decoration: const InputDecoration(
-                        labelText: 'Descrição',
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 4,
-                      validator: (value) {
-                        if (presenteSelecionado == 1 &&
-                            (value == null || value.trim().isEmpty)) {
-                          return 'Informe a descrição';
-                        }
-
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: paraProximaAulaController,
-                      decoration: const InputDecoration(
-                        labelText: 'Para próxima aula',
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 4,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: salvando ? null : salvar,
-                      child: Text(
-                        salvando
-                            ? 'Salvando...'
-                            : isEdicao
-                            ? 'Salvar alterações'
-                            : 'Cadastrar',
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: salvando ? null : salvar,
+                        icon: const Icon(Icons.save),
+                        label: Text(
+                          salvando
+                              ? 'Salvando...'
+                              : isEdicao
+                              ? 'Salvar alterações'
+                              : 'Cadastrar',
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
+    );
+  }
+}
+
+class _SecaoFormulario extends StatelessWidget {
+  final String titulo;
+  final String subtitulo;
+
+  const _SecaoFormulario({required this.titulo, required this.subtitulo});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            titulo,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 2),
+          Text(subtitulo),
+        ],
+      ),
     );
   }
 }
