@@ -8,11 +8,12 @@ package com.gem.backend.repository;
  *
  * @author leonardo
  */
-
 import com.gem.backend.model.Instrutor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface InstrutorRepository extends JpaRepository<Instrutor, Integer> {
+
+    boolean existsByPessoa_Cpf(String cpf);
 }

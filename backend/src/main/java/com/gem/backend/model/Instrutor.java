@@ -10,6 +10,7 @@ package com.gem.backend.model;
  */
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
@@ -26,8 +27,14 @@ public class Instrutor {
     @Column(length = 16, nullable = false)
     private String senha;
 
+    @NotNull(message = "Pessoa é obrigatória.")
     @OneToOne
-    @JoinColumn(name = "pessoa_cpf", referencedColumnName = "cpf")
+    @JoinColumn(
+            name = "pessoa_cpf",
+            referencedColumnName = "cpf",
+            nullable = false,
+            unique = true
+    )
     private Pessoa pessoa;
 
     @OneToMany(mappedBy = "instrutor")

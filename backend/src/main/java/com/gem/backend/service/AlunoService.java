@@ -31,18 +31,6 @@ public class AlunoService {
         this.comumRepository = comumRepository;
     }
 
-    private Pessoa buscarPessoaObrigatoria(Aluno aluno) {
-        if (aluno == null
-                || aluno.getPessoa() == null
-                || aluno.getPessoa().getCpf() == null
-                || aluno.getPessoa().getCpf().trim().isEmpty()) {
-            throw new BadRequestException("Informe o CPF da pessoa vinculada ao aluno.");
-        }
-
-        return pessoaRepository.findById(aluno.getPessoa().getCpf())
-                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
-    }
-
     public AlunoResponseDTO createAluno(Aluno aluno) {
         if (aluno.getId() != null && repository.existsById(aluno.getId())) {
             throw new DuplicateResourceException("Já existe um aluno cadastrado com este ID.");
@@ -117,5 +105,17 @@ public class AlunoService {
         }
 
         repository.deleteById(id);
+    }
+
+    private Pessoa buscarPessoaObrigatoria(Aluno aluno) {
+        if (aluno == null
+                || aluno.getPessoa() == null
+                || aluno.getPessoa().getCpf() == null
+                || aluno.getPessoa().getCpf().trim().isEmpty()) {
+            throw new BadRequestException("Informe o CPF da pessoa vinculada ao aluno.");
+        }
+
+        return pessoaRepository.findById(aluno.getPessoa().getCpf())
+                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
     }
 }
