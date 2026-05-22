@@ -7,6 +7,7 @@ import '../../services/instrutor_service.dart';
 import '../../services/metodo_service.dart';
 import '../../services/pessoa_service.dart';
 import '../../services/registro_aula_service.dart';
+import '../aluno_area/aluno_home_page.dart';
 import '../aluno_form/aluno_form_page.dart';
 import '../aluno_list/aluno_list_page.dart';
 import '../comum_form/comum_form_page.dart';
@@ -142,6 +143,12 @@ class _HomePageState extends State<HomePage> {
                     texto: 'Acessar área do instrutor',
                     icone: Icons.dashboard,
                     onPressed: () => abrirTela(const InstrutorPanelPage()),
+                  ),
+                  const SizedBox(height: 12),
+                  _AcaoRapidaButton(
+                    texto: 'Acessar área do aluno',
+                    icone: Icons.school,
+                    onPressed: () => abrirTela(const AlunoHomePage()),
                   ),
                   const SizedBox(height: 24),
                   Wrap(
