@@ -1,6 +1,7 @@
 package com.gem.backend.service;
 
 import com.gem.backend.dto.AlunoResponseDTO;
+import com.gem.backend.exception.BadRequestException;
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Aluno;
@@ -35,12 +36,13 @@ public class AlunoService {
             throw new DuplicateResourceException("Já existe um aluno cadastrado com este ID.");
         }
 
-        if (aluno.getPessoa() != null && aluno.getPessoa().getCpf() != null) {
-            Pessoa pessoa = pessoaRepository.findById(aluno.getPessoa().getCpf())
-                    .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
+        Pessoa pessoa = buscarPessoaObrigatoria(aluno);
 
-            aluno.setPessoa(pessoa);
+        if (repository.existsByPessoa_Cpf(pessoa.getCpf())) {
+            throw new DuplicateResourceException("Já existe um aluno cadastrado para este CPF.");
         }
+
+        aluno.setPessoa(pessoa);
 
         if (aluno.getComum() != null && aluno.getComum().getId() != null) {
             Comum comum = comumRepository.findById(aluno.getComum().getId())
@@ -75,8 +77,14 @@ public class AlunoService {
         }
 
         if (dadosAtualizados.getPessoa() != null && dadosAtualizados.getPessoa().getCpf() != null) {
-            Pessoa pessoa = pessoaRepository.findById(dadosAtualizados.getPessoa().getCpf())
-                    .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
+            Pessoa pessoa = buscarPessoaObrigatoria(dadosAtualizados);
+
+            boolean cpfMudou = alunoExistente.getPessoa() == null
+                    || !pessoa.getCpf().equals(alunoExistente.getPessoa().getCpf());
+
+            if (cpfMudou && repository.existsByPessoa_Cpf(pessoa.getCpf())) {
+                throw new DuplicateResourceException("Já existe um aluno cadastrado para este CPF.");
+            }
 
             alunoExistente.setPessoa(pessoa);
         }
@@ -97,5 +105,17 @@ public class AlunoService {
         }
 
         repository.deleteById(id);
+    }
+
+    private Pessoa buscarPessoaObrigatoria(Aluno aluno) {
+        if (aluno == null
+                || aluno.getPessoa() == null
+                || aluno.getPessoa().getCpf() == null
+                || aluno.getPessoa().getCpf().trim().isEmpty()) {
+            throw new BadRequestException("Informe o CPF da pessoa vinculada ao aluno.");
+        }
+
+        return pessoaRepository.findById(aluno.getPessoa().getCpf())
+                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
     }
 }

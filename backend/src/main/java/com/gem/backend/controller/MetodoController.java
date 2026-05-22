@@ -1,19 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.gem.backend.controller;
 
-/**
- *
- * @author leonardo
- */
 import com.gem.backend.dto.MetodoResponseDTO;
 import com.gem.backend.model.Metodo;
 import com.gem.backend.service.MetodoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -39,7 +32,7 @@ public class MetodoController {
     }
 
     @PutMapping("/{id}")
-    public MetodoResponseDTO update(@PathVariable Integer id, @Valid @RequestBody Metodo metodo) {
+    public MetodoResponseDTO update(@PathVariable Integer id, @RequestBody Metodo metodo) {
         return new MetodoResponseDTO(service.updateMetodo(id, metodo));
     }
 

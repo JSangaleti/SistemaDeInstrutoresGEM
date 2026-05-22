@@ -1,5 +1,6 @@
 package com.gem.backend.service;
 
+import com.gem.backend.exception.BadRequestException;
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Comum;
@@ -26,12 +27,8 @@ public class PessoaService {
             throw new DuplicateResourceException("Já existe uma pessoa cadastrada com este CPF.");
         }
 
-        if (pessoa.getComum() != null && pessoa.getComum().getId() != null) {
-            Comum comum = comumRepository.findById(pessoa.getComum().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Comum não encontrada."));
-
-            pessoa.setComum(comum);
-        }
+        Comum comum = buscarComumObrigatoria(pessoa);
+        pessoa.setComum(comum);
 
         return repository.save(pessoa);
     }
@@ -69,5 +66,14 @@ public class PessoaService {
         }
 
         repository.deleteById(cpf);
+    }
+
+    private Comum buscarComumObrigatoria(Pessoa pessoa) {
+        if (pessoa.getComum() == null || pessoa.getComum().getId() == null) {
+            throw new BadRequestException("Informe o ID da comum vinculada à pessoa.");
+        }
+
+        return comumRepository.findById(pessoa.getComum().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Comum não encontrada."));
     }
 }

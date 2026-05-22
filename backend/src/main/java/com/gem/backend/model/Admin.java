@@ -1,22 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.gem.backend.model;
 
-/**
- *
- * @author leonardo
- */
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.util.List;
 
 @Entity
-@Table(name = "instrutores")
-public class Instrutor {
+@Table(name = "admins")
+public class Admin {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,10 +28,7 @@ public class Instrutor {
     )
     private Pessoa pessoa;
 
-    @OneToMany(mappedBy = "instrutor")
-    private List<RegistroAula> aulas;
-
-    public Instrutor() {
+    public Admin() {
     }
 
     public Integer getId() {
@@ -65,13 +53,5 @@ public class Instrutor {
 
     public void setPessoa(Pessoa pessoa) {
         this.pessoa = pessoa;
-    }
-
-    public List<RegistroAula> getAulas() {
-        return aulas;
-    }
-
-    public void setAulas(List<RegistroAula> aulas) {
-        this.aulas = aulas;
     }
 }

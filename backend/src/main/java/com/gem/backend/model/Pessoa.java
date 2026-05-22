@@ -10,6 +10,7 @@ package com.gem.backend.model;
  */
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
 
@@ -28,8 +29,9 @@ public class Pessoa {
     @Column(length = 64, nullable = false)
     private String nome;
 
+    @NotNull(message = "Comum é obrigatória.")
     @ManyToOne
-    @JoinColumn(name = "id_comum", referencedColumnName = "id")
+    @JoinColumn(name = "id_comum", referencedColumnName = "id", nullable = false)
     private Comum comum;
 
     public Pessoa() {
