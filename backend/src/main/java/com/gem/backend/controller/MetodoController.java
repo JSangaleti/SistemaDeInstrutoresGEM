@@ -39,7 +39,7 @@ public class MetodoController {
     }
 
     @PutMapping("/{id}")
-    public MetodoResponseDTO update(@PathVariable Integer id, @Valid @RequestBody Metodo metodo) {
+    public MetodoResponseDTO update(@PathVariable Integer id, @RequestBody Metodo metodo) {
         return new MetodoResponseDTO(service.updateMetodo(id, metodo));
     }
 

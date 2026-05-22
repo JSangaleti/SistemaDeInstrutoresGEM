@@ -44,7 +44,7 @@ public class ComumController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ComumResponseDTO> update(@PathVariable Integer id, @Valid @RequestBody Comum comum) {
+    public ResponseEntity<ComumResponseDTO> update(@PathVariable Integer id, @RequestBody Comum comum) {
         return ResponseEntity.ok(service.updateComum(id, comum));
     }
 

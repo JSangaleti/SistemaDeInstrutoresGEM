@@ -39,7 +39,7 @@ public class RegistroAulaController {
     }
 
     @PutMapping("/{id}")
-    public RegistroAulaResponseDTO update(@PathVariable Integer id, @Valid @RequestBody RegistroAula aula) {
+    public RegistroAulaResponseDTO update(@PathVariable Integer id, @RequestBody RegistroAula aula) {
         return new RegistroAulaResponseDTO(service.updateRegistroAula(id, aula));
     }
 

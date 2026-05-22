@@ -39,7 +39,7 @@ public class InstrutorController {
     }
 
     @PutMapping("/{id}")
-    public InstrutorResponseDTO update(@PathVariable Integer id, @Valid @RequestBody Instrutor instrutor) {
+    public InstrutorResponseDTO update(@PathVariable Integer id, @RequestBody Instrutor instrutor) {
         return new InstrutorResponseDTO(service.updateInstrutor(id, instrutor));
     }
 

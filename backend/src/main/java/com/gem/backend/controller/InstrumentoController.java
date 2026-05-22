@@ -39,7 +39,7 @@ public class InstrumentoController {
     }
 
     @PutMapping("/{id}")
-    public InstrumentoResponseDTO update(@PathVariable Integer id, @Valid @RequestBody Instrumento instrumento) {
+    public InstrumentoResponseDTO update(@PathVariable Integer id, @RequestBody Instrumento instrumento) {
         return new InstrumentoResponseDTO(service.updateInstrumento(id, instrumento));
     }
 

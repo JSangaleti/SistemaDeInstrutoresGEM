@@ -49,7 +49,7 @@ public class PessoaController {
     @PutMapping("/{cpf}")
     public ResponseEntity<PessoaResponseDTO> update(
             @PathVariable String cpf,
-            @Valid @RequestBody Pessoa pessoa
+            @RequestBody Pessoa pessoa
     ) {
         Pessoa pessoaAtualizada = service.updatePessoa(cpf, pessoa);
         PessoaResponseDTO response = new PessoaResponseDTO(pessoaAtualizada);
