@@ -1,6 +1,7 @@
 package com.gem.backend.service;
 
 import com.gem.backend.dto.AdminResponseDTO;
+import com.gem.backend.exception.BadRequestException;
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Admin;
@@ -27,12 +28,13 @@ public class AdminService {
             throw new DuplicateResourceException("Já existe um admin cadastrado com este ID.");
         }
 
-        if (admin.getPessoa() != null && admin.getPessoa().getCpf() != null) {
-            Pessoa pessoa = pessoaRepository.findById(admin.getPessoa().getCpf())
-                    .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
+        Pessoa pessoa = buscarPessoaObrigatoria(admin);
 
-            admin.setPessoa(pessoa);
+        if (repository.existsByPessoa_Cpf(pessoa.getCpf())) {
+            throw new DuplicateResourceException("Já existe um admin cadastrado para este CPF.");
         }
+
+        admin.setPessoa(pessoa);
 
         Admin adminSalvo = repository.save(admin);
         return new AdminResponseDTO(adminSalvo);
@@ -61,8 +63,13 @@ public class AdminService {
         }
 
         if (dadosAtualizados.getPessoa() != null && dadosAtualizados.getPessoa().getCpf() != null) {
-            Pessoa pessoa = pessoaRepository.findById(dadosAtualizados.getPessoa().getCpf())
-                    .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
+            Pessoa pessoa = buscarPessoaObrigatoria(dadosAtualizados);
+
+            boolean cpfMudou = !pessoa.getCpf().equals(adminExistente.getPessoa().getCpf());
+
+            if (cpfMudou && repository.existsByPessoa_Cpf(pessoa.getCpf())) {
+                throw new DuplicateResourceException("Já existe um admin cadastrado para este CPF.");
+            }
 
             adminExistente.setPessoa(pessoa);
         }
@@ -76,5 +83,16 @@ public class AdminService {
         }
 
         repository.deleteById(id);
+    }
+
+    private Pessoa buscarPessoaObrigatoria(Admin admin) {
+        if (admin.getPessoa() == null
+                || admin.getPessoa().getCpf() == null
+                || admin.getPessoa().getCpf().trim().isEmpty()) {
+            throw new BadRequestException("Informe o CPF da pessoa vinculada ao admin.");
+        }
+
+        return pessoaRepository.findById(admin.getPessoa().getCpf())
+                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
     }
 }

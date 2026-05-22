@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AdminRepository extends JpaRepository<Admin, Integer> {
+
+    boolean existsByPessoa_Cpf(String cpf);
 }
