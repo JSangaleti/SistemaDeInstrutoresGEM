@@ -5,7 +5,16 @@ import '../../services/registro_aula_service.dart';
 import '../registro_aula_form/registro_aula_form_page.dart';
 
 class RegistroAulaListPage extends StatefulWidget {
-  const RegistroAulaListPage({super.key});
+  final bool exibirExcluir;
+  final int? instrutorFixoId;
+  final String? instrutorFixoNome;
+
+  const RegistroAulaListPage({
+    super.key,
+    this.exibirExcluir = true,
+    this.instrutorFixoId,
+    this.instrutorFixoNome,
+  });
 
   @override
   State<RegistroAulaListPage> createState() => _RegistroAulaListPageState();
@@ -63,7 +72,12 @@ class _RegistroAulaListPageState extends State<RegistroAulaListPage> {
   Future<void> adicionarRegistro() async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const RegistroAulaFormPage()),
+      MaterialPageRoute(
+        builder: (context) => RegistroAulaFormPage(
+          instrutorFixoId: widget.instrutorFixoId,
+          instrutorFixoNome: widget.instrutorFixoNome,
+        ),
+      ),
     );
 
     if (resultado == true) {
@@ -75,7 +89,11 @@ class _RegistroAulaListPageState extends State<RegistroAulaListPage> {
     final resultado = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RegistroAulaFormPage(registro: registro),
+        builder: (context) => RegistroAulaFormPage(
+          registro: registro,
+          instrutorFixoId: widget.instrutorFixoId,
+          instrutorFixoNome: widget.instrutorFixoNome,
+        ),
       ),
     );
 
@@ -161,44 +179,84 @@ class _RegistroAulaListPageState extends State<RegistroAulaListPage> {
           : Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Buscar registro de aula...',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                    onChanged: filtrarRegistros,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Registros de aula',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        decoration: const InputDecoration(
+                          hintText:
+                              'Buscar por aluno, instrutor, data ou descrição...',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.search),
+                        ),
+                        onChanged: filtrarRegistros,
+                      ),
+                    ],
                   ),
                 ),
                 Expanded(
                   child: registrosFiltrados.isEmpty
-                      ? const Center(
-                          child: Text('Nenhum registro de aula encontrado.'),
-                        )
-                      : ListView.separated(
+                      ? const _RegistroVazio()
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
                           itemCount: registrosFiltrados.length,
-                          separatorBuilder: (context, index) =>
-                              const Divider(height: 1),
                           itemBuilder: (context, index) {
                             final registro = registrosFiltrados[index];
 
-                            return ListTile(
-                              leading: CircleAvatar(
-                                child: Text(
-                                  registro.alunoTexto.isNotEmpty
-                                      ? registro.alunoTexto[0].toUpperCase()
-                                      : '?',
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
                                 ),
-                              ),
-                              title: Text(registro.alunoTexto),
-                              subtitle: Text(
-                                '${registro.dataTexto} - ${registro.instrutorTexto} - ${registro.presencaTexto}',
-                              ),
-                              onTap: () => editarRegistro(registro),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => confirmarExclusao(registro),
+                                leading: CircleAvatar(
+                                  child: Text(
+                                    registro.alunoTexto.isNotEmpty
+                                        ? registro.alunoTexto[0].toUpperCase()
+                                        : '?',
+                                  ),
+                                ),
+                                title: Text(
+                                  registro.alunoTexto,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(registro.dataTexto),
+                                      const SizedBox(height: 2),
+                                      Text(registro.instrutorTexto),
+                                      const SizedBox(height: 6),
+                                      Chip(
+                                        label: Text(registro.presencaTexto),
+                                        visualDensity: VisualDensity.compact,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                onTap: () => editarRegistro(registro),
+                                trailing: widget.exibirExcluir
+                                    ? IconButton(
+                                        icon: const Icon(Icons.delete),
+                                        onPressed: () =>
+                                            confirmarExclusao(registro),
+                                      )
+                                    : null,
                               ),
                             );
                           },
@@ -206,6 +264,31 @@ class _RegistroAulaListPageState extends State<RegistroAulaListPage> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+class _RegistroVazio extends StatelessWidget {
+  const _RegistroVazio();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.event_busy, size: 48),
+            SizedBox(height: 12),
+            Text(
+              'Nenhum registro de aula encontrado.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
