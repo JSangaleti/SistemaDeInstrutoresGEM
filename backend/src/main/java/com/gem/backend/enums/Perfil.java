@@ -8,6 +8,9 @@ package com.gem.backend.enums;
  *
  * @author leonardo
  */
-public class Perfil {
-    
+
+public enum Perfil {
+    ADMIN,
+    INSTRUTOR,
+    ALUNO
 }

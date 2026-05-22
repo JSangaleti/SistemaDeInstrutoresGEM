@@ -8,6 +8,10 @@ package com.gem.backend.dto;
  *
  * @author leonardo
  */
-public class LoginRequestDTO {
-    
-}
+import com.gem.backend.enums.Perfil;
+
+public record LoginRequestDTO(
+    String cpf,
+    String senha,
+    Perfil perfil
+) {}
