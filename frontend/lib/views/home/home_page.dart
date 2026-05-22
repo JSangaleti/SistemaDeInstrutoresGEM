@@ -15,6 +15,7 @@ import '../instrumento_form/instrumento_form_page.dart';
 import '../instrumento_list/instrumento_list_page.dart';
 import '../instrutor_form/instrutor_form_page.dart';
 import '../instrutor_list/instrutor_list_page.dart';
+import '../instrutor_panel/instrutor_panel_page.dart';
 import '../metodo_form/metodo_form_page.dart';
 import '../metodo_list/metodo_list_page.dart';
 import '../pessoa_form/pessoa_form_page.dart';
@@ -135,6 +136,12 @@ class _HomePageState extends State<HomePage> {
                   const Text(
                     'Gerencie alunos, instrutores, pessoas, comuns, instrumentos, métodos e registros de aula cadastrados no sistema.',
                     style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 24),
+                  _AcaoRapidaButton(
+                    texto: 'Acessar área do instrutor',
+                    icone: Icons.dashboard,
+                    onPressed: () => abrirTela(const InstrutorPanelPage()),
                   ),
                   const SizedBox(height: 24),
                   Wrap(

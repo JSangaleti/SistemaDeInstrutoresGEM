@@ -5,7 +5,16 @@ import '../../services/registro_aula_service.dart';
 import '../registro_aula_form/registro_aula_form_page.dart';
 
 class RegistroAulaListPage extends StatefulWidget {
-  const RegistroAulaListPage({super.key});
+  final bool exibirExcluir;
+  final int? instrutorFixoId;
+  final String? instrutorFixoNome;
+
+  const RegistroAulaListPage({
+    super.key,
+    this.exibirExcluir = true,
+    this.instrutorFixoId,
+    this.instrutorFixoNome,
+  });
 
   @override
   State<RegistroAulaListPage> createState() => _RegistroAulaListPageState();
@@ -63,7 +72,12 @@ class _RegistroAulaListPageState extends State<RegistroAulaListPage> {
   Future<void> adicionarRegistro() async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const RegistroAulaFormPage()),
+      MaterialPageRoute(
+        builder: (context) => RegistroAulaFormPage(
+          instrutorFixoId: widget.instrutorFixoId,
+          instrutorFixoNome: widget.instrutorFixoNome,
+        ),
+      ),
     );
 
     if (resultado == true) {
@@ -75,7 +89,11 @@ class _RegistroAulaListPageState extends State<RegistroAulaListPage> {
     final resultado = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RegistroAulaFormPage(registro: registro),
+        builder: (context) => RegistroAulaFormPage(
+          registro: registro,
+          instrutorFixoId: widget.instrutorFixoId,
+          instrutorFixoNome: widget.instrutorFixoNome,
+        ),
       ),
     );
 
@@ -196,10 +214,13 @@ class _RegistroAulaListPageState extends State<RegistroAulaListPage> {
                                 '${registro.dataTexto} - ${registro.instrutorTexto} - ${registro.presencaTexto}',
                               ),
                               onTap: () => editarRegistro(registro),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => confirmarExclusao(registro),
-                              ),
+                              trailing: widget.exibirExcluir
+                                  ? IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () =>
+                                          confirmarExclusao(registro),
+                                    )
+                                  : null,
                             );
                           },
                         ),

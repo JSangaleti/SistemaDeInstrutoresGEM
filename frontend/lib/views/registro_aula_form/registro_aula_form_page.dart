@@ -7,8 +7,17 @@ import '../../services/registro_aula_service.dart';
 
 class RegistroAulaFormPage extends StatefulWidget {
   final RegistroAula? registro;
+  final int? alunoInicialId;
+  final int? instrutorFixoId;
+  final String? instrutorFixoNome;
 
-  const RegistroAulaFormPage({super.key, this.registro});
+  const RegistroAulaFormPage({
+    super.key,
+    this.registro,
+    this.alunoInicialId,
+    this.instrutorFixoId,
+    this.instrutorFixoNome,
+  });
 
   @override
   State<RegistroAulaFormPage> createState() => _RegistroAulaFormPageState();
@@ -22,6 +31,7 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
   final TextEditingController paraProximaAulaController =
       TextEditingController();
   final TextEditingController dataController = TextEditingController();
+  final TextEditingController alunoController = TextEditingController();
 
   List<Aluno> alunos = [];
   List<Instrutor> instrutores = [];
@@ -35,6 +45,7 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
   String? erro;
 
   bool get isEdicao => widget.registro != null;
+  bool get possuiInstrutorFixo => widget.instrutorFixoId != null;
 
   @override
   void initState() {
@@ -54,6 +65,9 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
       presenteSelecionado = 1;
     }
 
+    alunoSelecionadoId ??= widget.alunoInicialId;
+    instrutorSelecionadoId ??= widget.instrutorFixoId;
+
     carregarDados();
   }
 
@@ -62,18 +76,22 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
     descricaoController.dispose();
     paraProximaAulaController.dispose();
     dataController.dispose();
+    alunoController.dispose();
     super.dispose();
   }
 
   Future<void> carregarDados() async {
     try {
       final alunosLista = await service.getAlunos();
-      final instrutoresLista = await service.getInstrutores();
+      final instrutoresLista = possuiInstrutorFixo
+          ? <Instrutor>[]
+          : await service.getInstrutores();
 
       setState(() {
         alunos = alunosLista;
         instrutores = instrutoresLista;
         _preencherRelacionamentosPorNome();
+        _atualizarAlunoController();
         loading = false;
       });
     } catch (e) {
@@ -135,6 +153,84 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
     });
   }
 
+  Future<void> selecionarAluno() async {
+    final aluno = await showDialog<Aluno>(
+      context: context,
+      builder: (dialogContext) {
+        String busca = '';
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final alunosFiltrados = filtrarAlunos(busca);
+
+            return AlertDialog(
+              title: const Text('Selecionar aluno'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        hintText: 'Buscar por nome, CPF ou comum...',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                      onChanged: (value) {
+                        setDialogState(() {
+                          busca = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Flexible(
+                      child: alunosFiltrados.isEmpty
+                          ? const Center(
+                              child: Text('Nenhum aluno encontrado.'),
+                            )
+                          : ListView.separated(
+                              shrinkWrap: true,
+                              itemCount: alunosFiltrados.length,
+                              separatorBuilder: (context, index) =>
+                                  const Divider(height: 1),
+                              itemBuilder: (context, index) {
+                                final aluno = alunosFiltrados[index];
+
+                                return ListTile(
+                                  title: Text(aluno.nome),
+                                  subtitle: Text(textoAlunoDetalhes(aluno)),
+                                  onTap: () =>
+                                      Navigator.pop(dialogContext, aluno),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancelar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (aluno == null) return;
+
+    setState(() {
+      alunoSelecionadoId = aluno.id;
+      _atualizarAlunoController();
+    });
+
+    _formKey.currentState?.validate();
+  }
+
   Future<void> salvar() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -171,6 +267,12 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
     });
 
     try {
+      final descricaoInformada = descricaoController.text.trim();
+      final descricaoFinal =
+          presenteSelecionado == 0 && descricaoInformada.isEmpty
+          ? 'Aluno ausente.'
+          : descricaoInformada;
+
       if (isEdicao) {
         final paraProximaAula = paraProximaAulaController.text.trim();
         final deveEnviarParaProximaAula =
@@ -183,7 +285,7 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
           instrutorId: instrutorSelecionadoId!,
           data: dataSelecionada!,
           presente: presenteSelecionado!,
-          descricao: descricaoController.text.trim(),
+          descricao: descricaoFinal,
           paraProximaAula: deveEnviarParaProximaAula ? paraProximaAula : null,
         );
       } else {
@@ -192,7 +294,7 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
           instrutorId: instrutorSelecionadoId!,
           data: dataSelecionada!,
           presente: presenteSelecionado!,
-          descricao: descricaoController.text.trim(),
+          descricao: descricaoFinal,
           paraProximaAula: paraProximaAulaController.text.trim(),
         );
       }
@@ -224,6 +326,48 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
     return '$dia/$mes/$ano';
   }
 
+  String textoAluno(Aluno aluno) {
+    return '${aluno.nome} - ${textoAlunoDetalhes(aluno)}';
+  }
+
+  String textoAlunoDetalhes(Aluno aluno) {
+    final cpfLimpo = aluno.cpf?.trim() ?? '';
+    final cpf = cpfLimpo.isEmpty ? 'CPF não informado' : cpfLimpo;
+
+    return '$cpf - ${aluno.comumCompleta}';
+  }
+
+  List<Aluno> filtrarAlunos(String texto) {
+    final busca = texto.trim().toLowerCase();
+    if (busca.isEmpty) return alunos;
+
+    return alunos.where((aluno) {
+      return aluno.nome.toLowerCase().contains(busca) ||
+          (aluno.cpf ?? '').toLowerCase().contains(busca) ||
+          aluno.comumCompleta.toLowerCase().contains(busca);
+    }).toList();
+  }
+
+  Aluno? alunoSelecionado() {
+    for (final aluno in alunos) {
+      if (aluno.id == alunoSelecionadoId) return aluno;
+    }
+
+    return null;
+  }
+
+  void _atualizarAlunoController() {
+    final aluno = alunoSelecionado();
+    alunoController.text = aluno == null ? '' : textoAluno(aluno);
+  }
+
+  String textoInstrutorFixo() {
+    final nome = widget.instrutorFixoNome?.trim();
+    if (nome != null && nome.isNotEmpty) return nome;
+
+    return 'Instrutor atual';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -250,25 +394,17 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
                 key: _formKey,
                 child: ListView(
                   children: [
-                    DropdownButtonFormField<int>(
-                      initialValue: alunoSelecionadoId,
+                    TextFormField(
+                      controller: alunoController,
+                      readOnly: true,
                       decoration: const InputDecoration(
                         labelText: 'Aluno',
                         border: OutlineInputBorder(),
+                        suffixIcon: Icon(Icons.search),
                       ),
-                      items: alunos.map((aluno) {
-                        return DropdownMenuItem<int>(
-                          value: aluno.id,
-                          child: Text(aluno.nome),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          alunoSelecionadoId = value;
-                        });
-                      },
+                      onTap: selecionarAluno,
                       validator: (value) {
-                        if (value == null) {
+                        if (alunoSelecionadoId == null) {
                           return 'Selecione um aluno';
                         }
 
@@ -276,32 +412,46 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<int>(
-                      initialValue: instrutorSelecionadoId,
-                      decoration: const InputDecoration(
-                        labelText: 'Instrutor',
-                        border: OutlineInputBorder(),
+                    if (possuiInstrutorFixo) ...[
+                      InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Instrutor',
+                          border: OutlineInputBorder(),
+                        ),
+                        child: Text(textoInstrutorFixo()),
                       ),
-                      items: instrutores.map((instrutor) {
-                        return DropdownMenuItem<int>(
-                          value: instrutor.id,
-                          child: Text(instrutor.nome),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          instrutorSelecionadoId = value;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Selecione um instrutor';
-                        }
+                      const SizedBox(height: 16),
+                    ] else ...[
+                      DropdownButtonFormField<int>(
+                        initialValue: instrutorSelecionadoId,
+                        decoration: const InputDecoration(
+                          labelText: 'Instrutor',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: instrutores.map((instrutor) {
+                          return DropdownMenuItem<int>(
+                            value: instrutor.id,
+                            child: Text(
+                              instrutor.nome,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            instrutorSelecionadoId = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Selecione um instrutor';
+                          }
 
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     TextFormField(
                       controller: dataController,
                       readOnly: true,
@@ -337,6 +487,7 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
                         setState(() {
                           presenteSelecionado = value;
                         });
+                        _formKey.currentState?.validate();
                       },
                       validator: (value) {
                         if (value == null) {
@@ -355,7 +506,8 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
                       ),
                       maxLines: 4,
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
+                        if (presenteSelecionado == 1 &&
+                            (value == null || value.trim().isEmpty)) {
                           return 'Informe a descrição';
                         }
 
