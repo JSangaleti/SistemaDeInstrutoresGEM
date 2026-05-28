@@ -22,8 +22,8 @@ public class Aluno {
     private Long id;
 
     @NotBlank(message = "Senha é obrigatória.")
-    @Size(max = 16, message = "Senha deve ter no máximo 16 caracteres.")
-    @Column(nullable = false, length = 16)
+    @Size(max = 255, message = "Senha deve ter no máximo 255 caracteres.")
+    @Column(nullable = false, length = 255)
     private String senha;
 
     @NotNull(message = "Pessoa é obrigatória.")
