@@ -94,18 +94,18 @@ public class DataSeeder {
                     pessoaAdmin
             ));
 
-            Aluno aluno1 = criarAluno("senha123", pessoaAluno1, comumCentral);
-            Aluno aluno2 = criarAluno("senha123", pessoaAluno2, comumCentral);
-            Aluno aluno3 = criarAluno("senha123", pessoaAluno3, comumJardim);
+            Aluno aluno1 = criarAluno("$2a$12$M0cwptYjFvAN5icWicqIo.Ls4GjCpuPONrfJPEiwdPePjueM1X69q", pessoaAluno1, comumCentral);
+            Aluno aluno2 = criarAluno("$2a$12$M0cwptYjFvAN5icWicqIo.Ls4GjCpuPONrfJPEiwdPePjueM1X69q", pessoaAluno2, comumCentral);
+            Aluno aluno3 = criarAluno("$2a$12$M0cwptYjFvAN5icWicqIo.Ls4GjCpuPONrfJPEiwdPePjueM1X69q", pessoaAluno3, comumJardim);
 
             alunoRepository.saveAll(List.of(aluno1, aluno2, aluno3));
 
-            Instrutor instrutor1 = criarInstrutor("senha123", pessoaInstrutor1);
-            Instrutor instrutor2 = criarInstrutor("senha123", pessoaInstrutor2);
+            Instrutor instrutor1 = criarInstrutor("$2a$12$M0cwptYjFvAN5icWicqIo.Ls4GjCpuPONrfJPEiwdPePjueM1X69q", pessoaInstrutor1);
+            Instrutor instrutor2 = criarInstrutor("$2a$12$M0cwptYjFvAN5icWicqIo.Ls4GjCpuPONrfJPEiwdPePjueM1X69q", pessoaInstrutor2);
 
             instrutorRepository.saveAll(List.of(instrutor1, instrutor2));
 
-            Admin admin = criarAdmin("admin123", pessoaAdmin);
+            Admin admin = criarAdmin("$2a$12$klTvMCuhc40EUESyz0MM6uIgSfzIMyk/K3Ff592DEsj52cfGZbgPi", pessoaAdmin);
 
             adminRepository.save(admin);
 
