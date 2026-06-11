@@ -7,6 +7,7 @@ import com.gem.backend.model.Instrutor;
 import com.gem.backend.model.Pessoa;
 import com.gem.backend.repository.InstrutorRepository;
 import com.gem.backend.repository.PessoaRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,10 +17,12 @@ public class InstrutorService {
 
     private final InstrutorRepository repository;
     private final PessoaRepository pessoaRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public InstrutorService(InstrutorRepository repository, PessoaRepository pessoaRepository) {
+    public InstrutorService(InstrutorRepository repository, PessoaRepository pessoaRepository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.pessoaRepository = pessoaRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Instrutor createInstrutor(Instrutor instrutor) {
@@ -34,6 +37,7 @@ public class InstrutorService {
         }
 
         instrutor.setPessoa(pessoa);
+        instrutor.setSenha(passwordEncoder.encode(instrutor.getSenha()));
 
         return repository.save(instrutor);
     }
@@ -51,7 +55,7 @@ public class InstrutorService {
         Instrutor existente = getInstrutor(id);
 
         if (dadosAtualizados.getSenha() != null && !dadosAtualizados.getSenha().trim().isEmpty()) {
-            existente.setSenha(dadosAtualizados.getSenha());
+            existente.setSenha(passwordEncoder.encode(dadosAtualizados.getSenha()));
         }
 
         if (dadosAtualizados.getPessoa() != null && dadosAtualizados.getPessoa().getCpf() != null) {

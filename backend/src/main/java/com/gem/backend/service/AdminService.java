@@ -8,6 +8,7 @@ import com.gem.backend.model.Admin;
 import com.gem.backend.model.Pessoa;
 import com.gem.backend.repository.AdminRepository;
 import com.gem.backend.repository.PessoaRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,10 +18,12 @@ public class AdminService {
 
     private final AdminRepository repository;
     private final PessoaRepository pessoaRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AdminService(AdminRepository repository, PessoaRepository pessoaRepository) {
+    public AdminService(AdminRepository repository, PessoaRepository pessoaRepository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.pessoaRepository = pessoaRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public AdminResponseDTO createAdmin(Admin admin) {
@@ -35,6 +38,7 @@ public class AdminService {
         }
 
         admin.setPessoa(pessoa);
+        admin.setSenha(passwordEncoder.encode(admin.getSenha()));
 
         Admin adminSalvo = repository.save(admin);
         return new AdminResponseDTO(adminSalvo);
@@ -59,7 +63,7 @@ public class AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Admin não encontrado."));
 
         if (dadosAtualizados.getSenha() != null && !dadosAtualizados.getSenha().trim().isEmpty()) {
-            adminExistente.setSenha(dadosAtualizados.getSenha());
+            adminExistente.setSenha(passwordEncoder.encode(dadosAtualizados.getSenha()));
         }
 
         if (dadosAtualizados.getPessoa() != null && dadosAtualizados.getPessoa().getCpf() != null) {
