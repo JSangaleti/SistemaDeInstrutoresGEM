@@ -4,17 +4,18 @@ import com.gem.backend.dto.MetodoResponseDTO;
 import com.gem.backend.model.Metodo;
 import com.gem.backend.service.MetodoService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/metodos")
 public class MetodoController {
 
-    @Autowired
-    private MetodoService service;
+    private final MetodoService service;
+
+    public MetodoController(MetodoService service) {
+        this.service = service;
+    }
 
     @PostMapping
     public MetodoResponseDTO create(@Valid @RequestBody Metodo metodo) {

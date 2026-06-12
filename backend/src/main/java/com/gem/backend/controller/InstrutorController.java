@@ -12,7 +12,6 @@ import com.gem.backend.dto.InstrutorResponseDTO;
 import com.gem.backend.model.Instrutor;
 import com.gem.backend.service.InstrutorService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -20,8 +19,11 @@ import java.util.List;
 @RequestMapping("/instrutores")
 public class InstrutorController {
 
-    @Autowired
-    private InstrutorService service;
+    private final InstrutorService service;
+
+    public InstrutorController(InstrutorService service) {
+        this.service = service;
+    }
 
     @PostMapping
     public InstrutorResponseDTO create(@Valid @RequestBody Instrutor instrutor) {

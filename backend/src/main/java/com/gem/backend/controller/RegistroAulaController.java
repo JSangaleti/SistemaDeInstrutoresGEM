@@ -12,7 +12,6 @@ import com.gem.backend.dto.RegistroAulaResponseDTO;
 import com.gem.backend.model.RegistroAula;
 import com.gem.backend.service.RegistroAulaService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -20,8 +19,11 @@ import java.util.List;
 @RequestMapping("/registro-aulas")
 public class RegistroAulaController {
 
-    @Autowired
-    private RegistroAulaService service;
+    private final RegistroAulaService service;
+
+    public RegistroAulaController(RegistroAulaService service) {
+        this.service = service;
+    }
 
     @PostMapping
     public RegistroAulaResponseDTO create(@Valid @RequestBody RegistroAula aula) {
