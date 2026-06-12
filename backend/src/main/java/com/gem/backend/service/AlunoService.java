@@ -10,6 +10,7 @@ import com.gem.backend.model.Pessoa;
 import com.gem.backend.repository.AlunoRepository;
 import com.gem.backend.repository.ComumRepository;
 import com.gem.backend.repository.PessoaRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,15 +21,18 @@ public class AlunoService {
     private final AlunoRepository repository;
     private final PessoaRepository pessoaRepository;
     private final ComumRepository comumRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public AlunoService(
             AlunoRepository repository,
             PessoaRepository pessoaRepository,
-            ComumRepository comumRepository
+            ComumRepository comumRepository,
+            PasswordEncoder passwordEncoder
     ) {
         this.repository = repository;
         this.pessoaRepository = pessoaRepository;
         this.comumRepository = comumRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public AlunoResponseDTO createAluno(Aluno aluno) {
@@ -43,6 +47,7 @@ public class AlunoService {
         }
 
         aluno.setPessoa(pessoa);
+        aluno.setSenha(passwordEncoder.encode(aluno.getSenha()));
 
         if (aluno.getComum() != null && aluno.getComum().getId() != null) {
             Comum comum = comumRepository.findById(aluno.getComum().getId())
@@ -73,7 +78,7 @@ public class AlunoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado."));
 
         if (dadosAtualizados.getSenha() != null && !dadosAtualizados.getSenha().trim().isEmpty()) {
-            alunoExistente.setSenha(dadosAtualizados.getSenha());
+            alunoExistente.setSenha(passwordEncoder.encode(dadosAtualizados.getSenha()));
         }
 
         if (dadosAtualizados.getPessoa() != null && dadosAtualizados.getPessoa().getCpf() != null) {
