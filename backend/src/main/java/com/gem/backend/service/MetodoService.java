@@ -1,5 +1,6 @@
 package com.gem.backend.service;
 
+import com.gem.backend.dto.MetodoResponseDTO;
 import com.gem.backend.exception.BadRequestException;
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
@@ -10,7 +11,6 @@ import com.gem.backend.repository.AlunoRepository;
 import com.gem.backend.repository.InstrumentoRepository;
 import com.gem.backend.repository.MetodoRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -30,7 +30,7 @@ public class MetodoService {
         this.alunoRepository = alunoRepository;
     }
 
-    public Metodo createMetodo(Metodo metodo) {
+    public MetodoResponseDTO createMetodo(Metodo metodo) {
         if (metodo.getId() != null && repository.existsById(metodo.getId())) {
             throw new DuplicateResourceException("Já existe um método cadastrado com este ID.");
         }
@@ -43,20 +43,22 @@ public class MetodoService {
             metodo.setAluno(aluno);
         }
 
-        return repository.save(metodo);
+        return new MetodoResponseDTO(repository.save(metodo));
     }
 
-    public List<Metodo> getListMetodo() {
-        return repository.findAll();
+    public List<MetodoResponseDTO> getListMetodo() {
+        return repository.findAll().stream().map(MetodoResponseDTO::new).toList();
     }
 
-    public Metodo getMetodo(Integer id) {
-        return repository.findById(id)
+    public MetodoResponseDTO getMetodo(Integer id) {
+        Metodo metodo = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Método não encontrado."));
+        return new MetodoResponseDTO(metodo);
     }
 
-    public Metodo updateMetodo(Integer id, Metodo dadosAtualizados) {
-        Metodo existente = getMetodo(id);
+    public MetodoResponseDTO updateMetodo(Integer id, Metodo dadosAtualizados) {
+        Metodo existente = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Método não encontrado."));
 
         if (dadosAtualizados.getNome() != null && !dadosAtualizados.getNome().isBlank()) {
             existente.setNome(dadosAtualizados.getNome());
@@ -71,28 +73,24 @@ public class MetodoService {
             if (dadosAtualizados.getAluno().getId() == null) {
                 throw new BadRequestException("Informe o ID do aluno vinculado ao método.");
             }
-
             Aluno aluno = buscarAluno(dadosAtualizados.getAluno().getId());
             existente.setAluno(aluno);
         }
 
-        return repository.save(existente);
+        return new MetodoResponseDTO(repository.save(existente));
     }
 
     public void deleteMetodo(Integer id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Método não encontrado.");
         }
-
         repository.deleteById(id);
     }
 
     private Instrumento buscarInstrumentoObrigatorio(Metodo metodo) {
-        if (metodo.getInstrumento() == null
-                || metodo.getInstrumento().getId() == null) {
+        if (metodo.getInstrumento() == null || metodo.getInstrumento().getId() == null) {
             throw new BadRequestException("Informe o ID do instrumento vinculado ao método.");
         }
-
         return instrumentoRepository.findById(metodo.getInstrumento().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Instrumento não encontrado."));
     }

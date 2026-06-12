@@ -25,22 +25,22 @@ public class RegistroAulaController {
 
     @PostMapping
     public RegistroAulaResponseDTO create(@Valid @RequestBody RegistroAula aula) {
-        return new RegistroAulaResponseDTO(service.createRegistroAula(aula));
+        return service.createRegistroAula(aula);
     }
 
     @GetMapping
     public List<RegistroAulaResponseDTO> getList() {
-        return service.getListRegistroAula().stream().map(RegistroAulaResponseDTO::new).toList();
+        return service.getListRegistroAula();
     }
 
     @GetMapping("/{id}")
     public RegistroAulaResponseDTO getById(@PathVariable Integer id) {
-        return new RegistroAulaResponseDTO(service.getRegistroAula(id));
+        return service.getRegistroAula(id);
     }
 
     @PutMapping("/{id}")
     public RegistroAulaResponseDTO update(@PathVariable Integer id, @RequestBody RegistroAula aula) {
-        return new RegistroAulaResponseDTO(service.updateRegistroAula(id, aula));
+        return service.updateRegistroAula(id, aula);
     }
 
     @DeleteMapping("/{id}")

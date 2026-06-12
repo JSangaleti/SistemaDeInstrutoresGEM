@@ -8,6 +8,7 @@ package com.gem.backend.service;
  *
  * @author leonardo
  */
+import com.gem.backend.dto.InstrumentoResponseDTO;
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
 import com.gem.backend.model.Instrumento;
@@ -22,38 +23,37 @@ public class InstrumentoService {
     @Autowired
     private InstrumentoRepository repository;
 
-    public Instrumento createInstrumento(Instrumento instrumento) {
+    public InstrumentoResponseDTO createInstrumento(Instrumento instrumento) {
         if (instrumento.getId() != null && repository.existsById(instrumento.getId())) {
             throw new DuplicateResourceException("Já existe um instrumento cadastrado com este ID.");
         }
-
-        return repository.save(instrumento);
+        return new InstrumentoResponseDTO(repository.save(instrumento));
     }
 
-    public List<Instrumento> getListInstrumento() {
-        return repository.findAll();
+    public List<InstrumentoResponseDTO> getListInstrumento() {
+        return repository.findAll().stream().map(InstrumentoResponseDTO::new).toList();
     }
 
-    public Instrumento getInstrumento(Integer id) {
-        return repository.findById(id)
+    public InstrumentoResponseDTO getInstrumento(Integer id) {
+        Instrumento instrumento = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Instrumento não encontrado."));
+        return new InstrumentoResponseDTO(instrumento);
     }
 
-    public Instrumento updateInstrumento(Integer id, Instrumento dadosAtualizados) {
-        Instrumento existente = getInstrumento(id);
+    public InstrumentoResponseDTO updateInstrumento(Integer id, Instrumento dadosAtualizados) {
+        Instrumento existente = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Instrumento não encontrado."));
 
         if (dadosAtualizados.getNome() != null && !dadosAtualizados.getNome().isBlank()) {
             existente.setNome(dadosAtualizados.getNome());
         }
-
-        return repository.save(existente);
+        return new InstrumentoResponseDTO(repository.save(existente));
     }
 
     public void deleteInstrumento(Integer id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Instrumento não encontrado.");
         }
-
         repository.deleteById(id);
     }
 }
