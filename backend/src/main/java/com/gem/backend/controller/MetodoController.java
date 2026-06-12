@@ -6,9 +6,11 @@ import com.gem.backend.service.MetodoService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/metodos")
+@PreAuthorize("hasRole('ADMIN')")
 public class MetodoController {
 
     private final MetodoService service;

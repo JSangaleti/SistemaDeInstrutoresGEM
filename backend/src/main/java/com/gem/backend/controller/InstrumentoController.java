@@ -14,9 +14,11 @@ import com.gem.backend.service.InstrumentoService;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/instrumentos")
+@PreAuthorize("hasRole('ADMIN')")
 public class InstrumentoController {
 
     private final InstrumentoService service;

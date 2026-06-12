@@ -14,9 +14,11 @@ import com.gem.backend.service.InstrutorService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/instrutores")
+@PreAuthorize("hasRole('ADMIN')")
 public class InstrutorController {
 
     private final InstrutorService service;
