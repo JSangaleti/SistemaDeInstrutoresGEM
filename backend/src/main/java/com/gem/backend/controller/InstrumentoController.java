@@ -11,7 +11,6 @@ package com.gem.backend.controller;
 import com.gem.backend.dto.InstrumentoResponseDTO;
 import com.gem.backend.model.Instrumento;
 import com.gem.backend.service.InstrumentoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import jakarta.validation.Valid;
@@ -20,8 +19,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/instrumentos")
 public class InstrumentoController {
 
-    @Autowired
-    private InstrumentoService service;
+    private final InstrumentoService service;
+
+    public InstrumentoController(InstrumentoService service) {
+        this.service = service;
+    }
 
     @PostMapping
     public InstrumentoResponseDTO create(@Valid @RequestBody Instrumento instrumento) {
