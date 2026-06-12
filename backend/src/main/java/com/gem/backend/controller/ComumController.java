@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/comuns")
@@ -28,26 +29,31 @@ public class ComumController {
         this.service = service;
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<ComumResponseDTO> create(@Valid @RequestBody Comum comum) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createComum(comum));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR', 'ROLE_ALUNO')")
     @GetMapping
     public ResponseEntity<List<ComumResponseDTO>> getList() {
         return ResponseEntity.ok(service.getListComum());
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR', 'ROLE_ALUNO')")
     @GetMapping("/{id}")
     public ResponseEntity<ComumResponseDTO> get(@PathVariable Integer id) {
         return ResponseEntity.ok(service.getComum(id));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ComumResponseDTO> update(@PathVariable Integer id, @RequestBody Comum comum) {
         return ResponseEntity.ok(service.updateComum(id, comum));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         service.deleteComum(id);

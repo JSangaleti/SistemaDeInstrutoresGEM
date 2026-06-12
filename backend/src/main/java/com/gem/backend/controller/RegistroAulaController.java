@@ -12,6 +12,7 @@ import com.gem.backend.dto.RegistroAulaResponseDTO;
 import com.gem.backend.model.RegistroAula;
 import com.gem.backend.service.RegistroAulaService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -25,26 +26,31 @@ public class RegistroAulaController {
         this.service = service;
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
     @PostMapping
     public RegistroAulaResponseDTO create(@Valid @RequestBody RegistroAula aula) {
         return new RegistroAulaResponseDTO(service.createRegistroAula(aula));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
     @GetMapping
     public List<RegistroAulaResponseDTO> getList() {
         return service.getListRegistroAula().stream().map(RegistroAulaResponseDTO::new).toList();
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR', 'ROLE_ALUNO')")
     @GetMapping("/{id}")
     public RegistroAulaResponseDTO getById(@PathVariable Integer id) {
         return new RegistroAulaResponseDTO(service.getRegistroAula(id));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
     @PutMapping("/{id}")
     public RegistroAulaResponseDTO update(@PathVariable Integer id, @RequestBody RegistroAula aula) {
         return new RegistroAulaResponseDTO(service.updateRegistroAula(id, aula));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         service.deleteRegistroAula(id);

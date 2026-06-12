@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/pessoas")
@@ -20,6 +21,7 @@ public class PessoaController {
         this.service = service;
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
     @PostMapping
     public ResponseEntity<PessoaResponseDTO> create(@Valid @RequestBody Pessoa pessoa) {
         Pessoa pessoaSalva = service.createPessoa(pessoa);
@@ -28,6 +30,7 @@ public class PessoaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
     @GetMapping
     public ResponseEntity<List<PessoaResponseDTO>> getList() {
         List<PessoaResponseDTO> response = service.getListPessoa()
@@ -38,6 +41,7 @@ public class PessoaController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
     @GetMapping("/{cpf}")
     public ResponseEntity<PessoaResponseDTO> get(@PathVariable String cpf) {
         Pessoa pessoa = service.getPessoa(cpf);
@@ -46,6 +50,7 @@ public class PessoaController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
     @PutMapping("/{cpf}")
     public ResponseEntity<PessoaResponseDTO> update(
             @PathVariable String cpf,
@@ -57,6 +62,7 @@ public class PessoaController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{cpf}")
     public ResponseEntity<Void> delete(@PathVariable String cpf) {
         service.deletePessoa(cpf);
