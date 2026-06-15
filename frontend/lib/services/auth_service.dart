@@ -17,10 +17,10 @@ class AuthService {
       throw Exception('CPF, senha ou perfil inválido.');
     }
 
-    AuthSession.salvar(jsonDecode(response.body));
+    await AuthSession.salvar(jsonDecode(response.body));
   }
 
-  void logout() {
-    AuthSession.limpar();
+  Future<void> logout() async {
+    await AuthSession.limpar();
   }
 }

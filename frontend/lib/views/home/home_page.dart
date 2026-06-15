@@ -29,6 +29,18 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  String _cpfSemMascara() {
+    return _cpfController.text.replaceAll(RegExp(r'\D'), '');
+  }
+
+  Widget _paginaPorPerfil() {
+    return switch (_perfil) {
+      'ADMIN' => const AdminHomePage(),
+      'INSTRUTOR' => const InstrutorPanelPage(),
+      _ => const AlunoHomePage(),
+    };
+  }
+
   Future<void> _entrar() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -39,22 +51,17 @@ class _HomePageState extends State<HomePage> {
 
     try {
       await _authService.login(
-        cpf: _cpfController.text.trim(),
+        cpf: _cpfSemMascara(),
         senha: _senhaController.text,
         perfil: _perfil,
       );
 
       if (!mounted) return;
 
-      final page = switch (_perfil) {
-        'ADMIN' => const AdminHomePage(),
-        'INSTRUTOR' => const InstrutorPanelPage(),
-        _ => const AlunoHomePage(),
-      };
-
-      await Navigator.pushReplacement(
+      await Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => page),
+        MaterialPageRoute(builder: (context) => _paginaPorPerfil()),
+        (route) => false,
       );
     } catch (e) {
       setState(() {
@@ -91,11 +98,7 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.music_note,
-                        color: colorScheme.onPrimary,
-                        size: 40,
-                      ),
+                      Icon(Icons.music_note, color: colorScheme.onPrimary, size: 40),
                       const SizedBox(height: 20),
                       Text(
                         'Sistema GEM',
@@ -119,28 +122,13 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(
-                            'Login',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
+                          Text('Login', style: Theme.of(context).textTheme.titleLarge),
                           const SizedBox(height: 16),
                           SegmentedButton<String>(
                             segments: const [
-                              ButtonSegment(
-                                value: 'ALUNO',
-                                label: Text('Aluno'),
-                                icon: Icon(Icons.school),
-                              ),
-                              ButtonSegment(
-                                value: 'INSTRUTOR',
-                                label: Text('Instrutor'),
-                                icon: Icon(Icons.co_present),
-                              ),
-                              ButtonSegment(
-                                value: 'ADMIN',
-                                label: Text('Admin'),
-                                icon: Icon(Icons.admin_panel_settings),
-                              ),
+                              ButtonSegment(value: 'ALUNO', label: Text('Aluno'), icon: Icon(Icons.school)),
+                              ButtonSegment(value: 'INSTRUTOR', label: Text('Instrutor'), icon: Icon(Icons.co_present)),
+                              ButtonSegment(value: 'ADMIN', label: Text('Admin'), icon: Icon(Icons.admin_panel_settings)),
                             ],
                             selected: {_perfil},
                             onSelectionChanged: (value) {
@@ -158,7 +146,7 @@ class _HomePageState extends State<HomePage> {
                               prefixIcon: Icon(Icons.badge),
                             ),
                             validator: (value) {
-                              final cpf = value?.trim() ?? '';
+                              final cpf = (value ?? '').replaceAll(RegExp(r'\D'), '');
                               if (cpf.length != 11) {
                                 return 'Informe um CPF com 11 dígitos';
                               }
@@ -191,9 +179,7 @@ class _HomePageState extends State<HomePage> {
                                 ? const SizedBox(
                                     width: 18,
                                     height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
+                                    child: CircularProgressIndicator(strokeWidth: 2),
                                   )
                                 : const Icon(Icons.login),
                             label: Text(_loading ? 'Entrando...' : 'Entrar'),

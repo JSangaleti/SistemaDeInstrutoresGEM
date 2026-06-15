@@ -1,12 +1,22 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
-const String baseUrl = 'http://localhost:8080';
-
 class ApiConfig {
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:8080',
+  );
 }
 
 class AuthSession {
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();
+
+  static const String _tokenKey = 'auth_token';
+  static const String _perfilKey = 'auth_perfil';
+  static const String _usuarioIdKey = 'auth_usuario_id';
+  static const String _nomeKey = 'auth_nome';
+  static const String _cpfKey = 'auth_cpf';
+
   static String? token;
   static String? perfil;
   static int? usuarioId;
@@ -15,20 +25,42 @@ class AuthSession {
 
   static bool get autenticado => token != null && token!.isNotEmpty;
 
-  static void salvar(Map<String, dynamic> json) {
+  static Future<void> carregar() async {
+    token = await _storage.read(key: _tokenKey);
+    perfil = await _storage.read(key: _perfilKey);
+    nome = await _storage.read(key: _nomeKey);
+    cpf = await _storage.read(key: _cpfKey);
+
+    final usuarioIdTexto = await _storage.read(key: _usuarioIdKey);
+    usuarioId = int.tryParse(usuarioIdTexto ?? '');
+  }
+
+  static Future<void> salvar(Map<String, dynamic> json) async {
     token = json['token']?.toString();
     perfil = json['perfil']?.toString();
     usuarioId = _toInt(json['usuarioId']);
     nome = json['nome']?.toString();
     cpf = json['cpf']?.toString();
+
+    await _storage.write(key: _tokenKey, value: token);
+    await _storage.write(key: _perfilKey, value: perfil);
+    await _storage.write(key: _usuarioIdKey, value: usuarioId?.toString());
+    await _storage.write(key: _nomeKey, value: nome);
+    await _storage.write(key: _cpfKey, value: cpf);
   }
 
-  static void limpar() {
+  static Future<void> limpar() async {
     token = null;
     perfil = null;
     usuarioId = null;
     nome = null;
     cpf = null;
+
+    await _storage.delete(key: _tokenKey);
+    await _storage.delete(key: _perfilKey);
+    await _storage.delete(key: _usuarioIdKey);
+    await _storage.delete(key: _nomeKey);
+    await _storage.delete(key: _cpfKey);
   }
 
   static int? _toInt(dynamic value) {
@@ -41,7 +73,9 @@ class ApiClient {
   static Uri uri(String path) => Uri.parse('${ApiConfig.baseUrl}$path');
 
   static Map<String, String> headers({bool json = false}) {
-    final headers = <String, String>{};
+    final headers = <String, String>{
+      'Accept': 'application/json',
+    };
 
     if (json) {
       headers['Content-Type'] = 'application/json';
