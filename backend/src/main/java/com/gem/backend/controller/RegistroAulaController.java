@@ -29,25 +29,25 @@ public class RegistroAulaController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
     @PostMapping
     public RegistroAulaResponseDTO create(@Valid @RequestBody RegistroAula aula) {
-        return new RegistroAulaResponseDTO(service.createRegistroAula(aula));
+        return service.createRegistroAula(aula);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
     @GetMapping
     public List<RegistroAulaResponseDTO> getList() {
-        return service.getListRegistroAula().stream().map(RegistroAulaResponseDTO::new).toList();
+        return service.getListRegistroAula();
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR', 'ROLE_ALUNO')")
     @GetMapping("/{id}")
     public RegistroAulaResponseDTO getById(@PathVariable Integer id) {
-        return new RegistroAulaResponseDTO(service.getRegistroAula(id));
+        return service.getRegistroAula(id);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
     @PutMapping("/{id}")
     public RegistroAulaResponseDTO update(@PathVariable Integer id, @RequestBody RegistroAula aula) {
-        return new RegistroAulaResponseDTO(service.updateRegistroAula(id, aula));
+        return service.updateRegistroAula(id, aula);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")

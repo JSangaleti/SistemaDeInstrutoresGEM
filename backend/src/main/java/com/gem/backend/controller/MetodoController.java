@@ -22,25 +22,25 @@ public class MetodoController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public MetodoResponseDTO create(@Valid @RequestBody Metodo metodo) {
-        return new MetodoResponseDTO(service.createMetodo(metodo));
+        return service.createMetodo(metodo);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR', 'ROLE_ALUNO')")
     @GetMapping
     public List<MetodoResponseDTO> getList() {
-        return service.getListMetodo().stream().map(MetodoResponseDTO::new).toList();
+        return service.getListMetodo();
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR', 'ROLE_ALUNO')")
     @GetMapping("/{id}")
     public MetodoResponseDTO getById(@PathVariable Integer id) {
-        return new MetodoResponseDTO(service.getMetodo(id));
+        return service.getMetodo(id);
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public MetodoResponseDTO update(@PathVariable Integer id, @RequestBody Metodo metodo) {
-        return new MetodoResponseDTO(service.updateMetodo(id, metodo));
+        return service.updateMetodo(id, metodo);
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")

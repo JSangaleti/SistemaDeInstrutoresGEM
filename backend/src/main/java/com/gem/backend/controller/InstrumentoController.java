@@ -29,25 +29,25 @@ public class InstrumentoController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public InstrumentoResponseDTO create(@Valid @RequestBody Instrumento instrumento) {
-        return new InstrumentoResponseDTO(service.createInstrumento(instrumento));
+        return service.createInstrumento(instrumento);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR', 'ROLE_ALUNO')")
     @GetMapping
     public List<InstrumentoResponseDTO> getList() {
-        return service.getListInstrumento().stream().map(InstrumentoResponseDTO::new).toList();
+        return service.getListInstrumento();
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR', 'ROLE_ALUNO')")
     @GetMapping("/{id}")
     public InstrumentoResponseDTO getById(@PathVariable Integer id) {
-        return new InstrumentoResponseDTO(service.getInstrumento(id));
+        return service.getInstrumento(id);
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public InstrumentoResponseDTO update(@PathVariable Integer id, @RequestBody Instrumento instrumento) {
-        return new InstrumentoResponseDTO(service.updateInstrumento(id, instrumento));
+        return service.updateInstrumento(id, instrumento);
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")

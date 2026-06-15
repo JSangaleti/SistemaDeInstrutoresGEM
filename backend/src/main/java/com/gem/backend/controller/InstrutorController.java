@@ -29,22 +29,22 @@ public class InstrutorController {
 
     @PostMapping
     public InstrutorResponseDTO create(@Valid @RequestBody Instrutor instrutor) {
-        return new InstrutorResponseDTO(service.createInstrutor(instrutor));
+        return service.createInstrutor(instrutor);
     }
 
     @GetMapping
     public List<InstrutorResponseDTO> getList() {
-        return service.getListInstrutor().stream().map(InstrutorResponseDTO::new).toList();
+        return service.getListInstrutor();
     }
 
     @GetMapping("/{id}")
     public InstrutorResponseDTO getById(@PathVariable Integer id) {
-        return new InstrutorResponseDTO(service.getInstrutor(id));
+        return service.getInstrutor(id);
     }
 
     @PutMapping("/{id}")
     public InstrutorResponseDTO update(@PathVariable Integer id, @RequestBody Instrutor instrutor) {
-        return new InstrutorResponseDTO(service.updateInstrutor(id, instrutor));
+        return service.updateInstrutor(id, instrutor);
     }
 
     @DeleteMapping("/{id}")
