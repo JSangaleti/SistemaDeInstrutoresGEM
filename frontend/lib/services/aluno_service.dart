@@ -1,14 +1,12 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
+import '../config/api_config.dart';
 import '../models/aluno.dart';
 import '../models/comum.dart';
 
 class AlunoService {
-  static const String baseUrl = 'http://localhost:8080';
-
   Future<List<Aluno>> getAlunos() async {
-    final response = await http.get(Uri.parse('$baseUrl/alunos'));
+    final response = await ApiClient.get('/alunos');
 
     if (response.statusCode != 200) {
       throw Exception('Erro ao buscar alunos: ${response.statusCode}');
@@ -18,8 +16,19 @@ class AlunoService {
     return data.map((e) => Aluno.fromJson(e)).toList();
   }
 
+  Future<Aluno> getMeuPerfil() async {
+    final response = await ApiClient.get('/alunos/me');
+
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao buscar meu perfil: ${response.statusCode}');
+    }
+
+    final data = jsonDecode(response.body);
+    return Aluno.fromJson(data);
+  }
+
   Future<List<Comum>> getComuns() async {
-    final response = await http.get(Uri.parse('$baseUrl/comuns'));
+    final response = await ApiClient.get('/comuns');
 
     if (response.statusCode != 200) {
       throw Exception('Erro ao buscar comuns: ${response.statusCode}');
@@ -38,15 +47,12 @@ class AlunoService {
     final pessoaBody = {
       "cpf": cpf,
       "nome": nome,
-      "comum": {
-        "id": comumId,
-      }
+      "comum": {"id": comumId},
     };
 
-    final pessoaResponse = await http.post(
-      Uri.parse('$baseUrl/pessoas'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(pessoaBody),
+    final pessoaResponse = await ApiClient.post(
+      '/pessoas',
+      jsonEncode(pessoaBody),
     );
 
     if (pessoaResponse.statusCode != 200 && pessoaResponse.statusCode != 201) {
@@ -57,18 +63,13 @@ class AlunoService {
 
     final alunoBody = {
       "senha": senha,
-      "pessoa": {
-        "cpf": cpf,
-      },
-      "comum": {
-        "id": comumId,
-      }
+      "pessoa": {"cpf": cpf},
+      "comum": {"id": comumId},
     };
 
-    final alunoResponse = await http.post(
-      Uri.parse('$baseUrl/alunos'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(alunoBody),
+    final alunoResponse = await ApiClient.post(
+      '/alunos',
+      jsonEncode(alunoBody),
     );
 
     if (alunoResponse.statusCode != 200 && alunoResponse.statusCode != 201) {
@@ -87,15 +88,12 @@ class AlunoService {
     final pessoaBody = {
       "cpf": cpf,
       "nome": nome,
-      "comum": {
-        "id": comumId,
-      }
+      "comum": {"id": comumId},
     };
 
-    final pessoaResponse = await http.put(
-      Uri.parse('$baseUrl/pessoas/$cpf'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(pessoaBody),
+    final pessoaResponse = await ApiClient.put(
+      '/pessoas/$cpf',
+      jsonEncode(pessoaBody),
     );
 
     if (pessoaResponse.statusCode != 200) {
@@ -105,18 +103,13 @@ class AlunoService {
     }
 
     final alunoBody = {
-      "pessoa": {
-        "cpf": cpf,
-      },
-      "comum": {
-        "id": comumId,
-      }
+      "pessoa": {"cpf": cpf},
+      "comum": {"id": comumId},
     };
 
-    final alunoResponse = await http.put(
-      Uri.parse('$baseUrl/alunos/$id'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(alunoBody),
+    final alunoResponse = await ApiClient.put(
+      '/alunos/$id',
+      jsonEncode(alunoBody),
     );
 
     if (alunoResponse.statusCode != 200) {
@@ -125,9 +118,9 @@ class AlunoService {
       );
     }
   }
-  
+
   Future<void> deletarAluno(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/alunos/$id'));
+    final response = await ApiClient.delete('/alunos/$id');
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw Exception(
@@ -135,8 +128,9 @@ class AlunoService {
       );
     }
   }
+
   Future<Aluno> getAlunoById(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/alunos/$id'));
+    final response = await ApiClient.get('/alunos/$id');
 
     if (response.statusCode != 200) {
       throw Exception('Erro ao buscar aluno: ${response.statusCode}');

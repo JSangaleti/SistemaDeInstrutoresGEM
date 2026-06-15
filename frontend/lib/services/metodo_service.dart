@@ -1,14 +1,12 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
+import '../config/api_config.dart';
 import '../models/instrumento.dart';
 import '../models/metodo.dart';
 
 class MetodoService {
-  static const String baseUrl = 'http://localhost:8080';
-
   Future<List<Metodo>> getMetodos() async {
-    final response = await http.get(Uri.parse('$baseUrl/metodos'));
+    final response = await ApiClient.get('/metodos');
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -21,7 +19,7 @@ class MetodoService {
   }
 
   Future<List<Instrumento>> getInstrumentos() async {
-    final response = await http.get(Uri.parse('$baseUrl/instrumentos'));
+    final response = await ApiClient.get('/instrumentos');
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -37,14 +35,11 @@ class MetodoService {
     required String nome,
     required int instrumentoId,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/metodos'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
+    final response = await ApiClient.post(
+      '/metodos',
+      jsonEncode({
         'nome': nome,
-        'instrumento': {
-          'id': instrumentoId,
-        },
+        'instrumento': {'id': instrumentoId},
       }),
     );
 
@@ -60,15 +55,12 @@ class MetodoService {
     required String nome,
     required int instrumentoId,
   }) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/metodos/$id'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
+    final response = await ApiClient.put(
+      '/metodos/$id',
+      jsonEncode({
         'id': id,
         'nome': nome,
-        'instrumento': {
-          'id': instrumentoId,
-        },
+        'instrumento': {'id': instrumentoId},
       }),
     );
 
@@ -80,9 +72,7 @@ class MetodoService {
   }
 
   Future<void> deletarMetodo(int id) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl/metodos/$id'),
-    );
+    final response = await ApiClient.delete('/metodos/$id');
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw Exception(

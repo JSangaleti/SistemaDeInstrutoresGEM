@@ -20,9 +20,33 @@ class _ComumFormPageState extends State<ComumFormPage> {
   final TextEditingController bairroController = TextEditingController();
 
   final List<String> estados = const [
-    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO',
-    'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI',
-    'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+    'AC',
+    'AL',
+    'AP',
+    'AM',
+    'BA',
+    'CE',
+    'DF',
+    'ES',
+    'GO',
+    'MA',
+    'MT',
+    'MS',
+    'MG',
+    'PA',
+    'PB',
+    'PR',
+    'PE',
+    'PI',
+    'RJ',
+    'RN',
+    'RS',
+    'RO',
+    'RR',
+    'SC',
+    'SP',
+    'SE',
+    'TO',
   ];
 
   String? estadoSelecionado;
@@ -69,9 +93,9 @@ class _ComumFormPageState extends State<ComumFormPage> {
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao salvar: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao salvar: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -106,8 +130,12 @@ class _ComumFormPageState extends State<ComumFormPage> {
                 ),
                 validator: (value) {
                   final texto = value?.trim() ?? '';
-                  if (texto.isEmpty) return 'Informe o nome';
-                  if (texto.length > 100) return 'Nome deve ter no máximo 100 caracteres';
+                  if (texto.isEmpty) {
+                    return 'Informe o nome';
+                  }
+                  if (texto.length > 100) {
+                    return 'Nome deve ter no máximo 100 caracteres';
+                  }
                   return null;
                 },
               ),
@@ -123,22 +151,21 @@ class _ComumFormPageState extends State<ComumFormPage> {
                 ),
                 validator: (value) {
                   final texto = value?.trim() ?? '';
-                  if (texto.length > 60) return 'Cidade deve ter no máximo 60 caracteres';
+                  if (texto.length > 60) {
+                    return 'Cidade deve ter no máximo 60 caracteres';
+                  }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: estadoSelecionado,
+                initialValue: estadoSelecionado,
                 decoration: const InputDecoration(
                   labelText: 'Estado',
                   border: OutlineInputBorder(),
                 ),
                 items: estados.map((uf) {
-                  return DropdownMenuItem<String>(
-                    value: uf,
-                    child: Text(uf),
-                  );
+                  return DropdownMenuItem<String>(value: uf, child: Text(uf));
                 }).toList(),
                 onChanged: (value) {
                   setState(() {
@@ -158,7 +185,9 @@ class _ComumFormPageState extends State<ComumFormPage> {
                 ),
                 validator: (value) {
                   final texto = value?.trim() ?? '';
-                  if (texto.length > 60) return 'Bairro deve ter no máximo 60 caracteres';
+                  if (texto.length > 60) {
+                    return 'Bairro deve ter no máximo 60 caracteres';
+                  }
                   return null;
                 },
               ),

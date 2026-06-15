@@ -73,6 +73,13 @@ public class AlunoService {
         return new AlunoResponseDTO(aluno);
     }
 
+    public AlunoResponseDTO getAlunoPorCpf(String cpf) {
+        Aluno aluno = repository.findByPessoa_Cpf(cpf)
+                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado."));
+
+        return new AlunoResponseDTO(aluno);
+    }
+
     public AlunoResponseDTO updateAluno(Long id, Aluno dadosAtualizados) {
         Aluno alunoExistente = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado."));

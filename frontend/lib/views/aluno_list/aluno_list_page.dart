@@ -60,9 +60,7 @@ class _AlunoListPageState extends State<AlunoListPage> {
   Future<void> adicionarAluno() async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AlunoFormPage(),
-      ),
+      MaterialPageRoute(builder: (context) => const AlunoFormPage()),
     );
 
     if (resultado == true) {
@@ -102,9 +100,9 @@ class _AlunoListPageState extends State<AlunoListPage> {
         );
       } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao excluir: $e')));
       }
     }
   }
@@ -129,80 +127,81 @@ class _AlunoListPageState extends State<AlunoListPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Erro ao carregar alunos:\n$erro',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'Buscar aluno...',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.search),
-                        ),
-                        onChanged: filtrarAlunos,
-                      ),
-                    ),
-                    Expanded(
-                      child: alunos.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'Nenhum aluno cadastrado.',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            )
-                          : alunosFiltrados.isEmpty
-                              ? const Center(
-                                  child: Text(
-                                    'Nenhum aluno encontrado na busca.',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                )
-                              : ListView.separated(
-                                  itemCount: alunosFiltrados.length,
-                                  separatorBuilder: (_, __) =>
-                                      const Divider(height: 1),
-                                  itemBuilder: (context, index) {
-                                    final aluno = alunosFiltrados[index];
-
-                                    return ListTile(
-                                      leading: CircleAvatar(
-                                        child: Text(
-                                          aluno.nome.isNotEmpty
-                                              ? aluno.nome[0].toUpperCase()
-                                              : '?',
-                                        ),
-                                      ),
-                                      title: Text(aluno.nome),
-                                      subtitle: Text(aluno.comumCompleta),
-                                      onTap: () async {
-                                        await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => AlunoDetailPage(alunoId: aluno.id),
-                                          ),
-                                        );
-
-                                        carregarAlunos();
-                                      },
-                                      trailing: IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () => confirmarExclusao(aluno),
-                                      ),
-                                    );
-                                  },
-                                ),
-                    ),
-                  ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Erro ao carregar alunos:\n$erro',
+                  textAlign: TextAlign.center,
                 ),
+              ),
+            )
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      hintText: 'Buscar aluno...',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: filtrarAlunos,
+                  ),
+                ),
+                Expanded(
+                  child: alunos.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Nenhum aluno cadastrado.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )
+                      : alunosFiltrados.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Nenhum aluno encontrado na busca.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )
+                      : ListView.separated(
+                          itemCount: alunosFiltrados.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final aluno = alunosFiltrados[index];
+
+                            return ListTile(
+                              leading: CircleAvatar(
+                                child: Text(
+                                  aluno.nome.isNotEmpty
+                                      ? aluno.nome[0].toUpperCase()
+                                      : '?',
+                                ),
+                              ),
+                              title: Text(aluno.nome),
+                              subtitle: Text(aluno.comumCompleta),
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        AlunoDetailPage(alunoId: aluno.id),
+                                  ),
+                                );
+
+                                carregarAlunos();
+                              },
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => confirmarExclusao(aluno),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }

@@ -1,13 +1,11 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
+import '../config/api_config.dart';
 import '../models/instrumento.dart';
 
 class InstrumentoService {
-  static const String baseUrl = 'http://localhost:8080';
-
   Future<List<Instrumento>> getInstrumentos() async {
-    final response = await http.get(Uri.parse('$baseUrl/instrumentos'));
+    final response = await ApiClient.get('/instrumentos');
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -19,15 +17,10 @@ class InstrumentoService {
     return data.map((e) => Instrumento.fromJson(e)).toList();
   }
 
-  Future<void> criarInstrumento({
-    required String nome,
-  }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/instrumentos'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'nome': nome,
-      }),
+  Future<void> criarInstrumento({required String nome}) async {
+    final response = await ApiClient.post(
+      '/instrumentos',
+      jsonEncode({'nome': nome}),
     );
 
     if (response.statusCode != 200 && response.statusCode != 201) {
@@ -41,13 +34,9 @@ class InstrumentoService {
     required int id,
     required String nome,
   }) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/instrumentos/$id'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'id': id,
-        'nome': nome,
-      }),
+    final response = await ApiClient.put(
+      '/instrumentos/$id',
+      jsonEncode({'id': id, 'nome': nome}),
     );
 
     if (response.statusCode != 200) {
@@ -58,9 +47,7 @@ class InstrumentoService {
   }
 
   Future<void> deletarInstrumento(int id) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl/instrumentos/$id'),
-    );
+    final response = await ApiClient.delete('/instrumentos/$id');
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw Exception(

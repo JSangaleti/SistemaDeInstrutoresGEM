@@ -65,9 +65,7 @@ class _InstrutorListPageState extends State<InstrutorListPage> {
   Future<void> adicionarInstrutor() async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const InstrutorFormPage(),
-      ),
+      MaterialPageRoute(builder: (context) => const InstrutorFormPage()),
     );
 
     if (resultado == true) {
@@ -94,9 +92,9 @@ class _InstrutorListPageState extends State<InstrutorListPage> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao carregar instrutor: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao carregar instrutor: $e')));
     }
   }
 
@@ -134,9 +132,9 @@ class _InstrutorListPageState extends State<InstrutorListPage> {
       } catch (e) {
         if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao excluir: $e')));
       }
     }
   }
@@ -161,73 +159,71 @@ class _InstrutorListPageState extends State<InstrutorListPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Erro ao carregar instrutores:\n$erro',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'Buscar instrutor...',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.search),
-                        ),
-                        onChanged: filtrarInstrutores,
-                      ),
-                    ),
-                    Expanded(
-                      child: instrutores.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'Nenhum instrutor cadastrado.',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            )
-                          : instrutoresFiltrados.isEmpty
-                              ? const Center(
-                                  child: Text(
-                                    'Nenhum instrutor encontrado na busca.',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                )
-                              : ListView.separated(
-                                  itemCount: instrutoresFiltrados.length,
-                                  separatorBuilder: (context, index) =>
-                                      const Divider(height: 1),
-                                  itemBuilder: (context, index) {
-                                    final instrutor =
-                                        instrutoresFiltrados[index];
-
-                                    return ListTile(
-                                      leading: CircleAvatar(
-                                        child: Text(
-                                          instrutor.nome.isNotEmpty
-                                              ? instrutor.nome[0].toUpperCase()
-                                              : '?',
-                                        ),
-                                      ),
-                                      title: Text(instrutor.nome),
-                                      subtitle: Text(instrutor.comumCompleta),
-                                      onTap: () => editarInstrutor(instrutor),
-                                      trailing: IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () =>
-                                            confirmarExclusao(instrutor),
-                                      ),
-                                    );
-                                  },
-                                ),
-                    ),
-                  ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Erro ao carregar instrutores:\n$erro',
+                  textAlign: TextAlign.center,
                 ),
+              ),
+            )
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      hintText: 'Buscar instrutor...',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: filtrarInstrutores,
+                  ),
+                ),
+                Expanded(
+                  child: instrutores.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Nenhum instrutor cadastrado.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )
+                      : instrutoresFiltrados.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Nenhum instrutor encontrado na busca.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )
+                      : ListView.separated(
+                          itemCount: instrutoresFiltrados.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final instrutor = instrutoresFiltrados[index];
+
+                            return ListTile(
+                              leading: CircleAvatar(
+                                child: Text(
+                                  instrutor.nome.isNotEmpty
+                                      ? instrutor.nome[0].toUpperCase()
+                                      : '?',
+                                ),
+                              ),
+                              title: Text(instrutor.nome),
+                              subtitle: Text(instrutor.comumCompleta),
+                              onTap: () => editarInstrutor(instrutor),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => confirmarExclusao(instrutor),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }

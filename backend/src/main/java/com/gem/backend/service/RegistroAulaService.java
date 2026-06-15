@@ -51,7 +51,15 @@ public class RegistroAulaService {
     }
 
     public List<RegistroAulaResponseDTO> getListRegistroAula() {
-        return repository.findAll().stream().map(RegistroAulaResponseDTO::new).toList();
+        return repository.findAllByOrderByDataDescIdDesc().stream()
+                .map(RegistroAulaResponseDTO::new)
+                .toList();
+    }
+
+    public List<RegistroAulaResponseDTO> getHistoricoDoAlunoAutenticado(String cpf) {
+        return repository.findByAluno_Pessoa_CpfOrderByDataDescIdDesc(cpf).stream()
+                .map(RegistroAulaResponseDTO::new)
+                .toList();
     }
 
     public RegistroAulaResponseDTO getRegistroAula(Integer id) {

@@ -7,6 +7,7 @@ import '../../services/instrutor_service.dart';
 import '../../services/metodo_service.dart';
 import '../../services/pessoa_service.dart';
 import '../../services/registro_aula_service.dart';
+import '../../widgets/logout_button.dart';
 import '../aluno_form/aluno_form_page.dart';
 import '../aluno_list/aluno_list_page.dart';
 import '../comum_form/comum_form_page.dart';
@@ -110,6 +111,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
             icon: const Icon(Icons.refresh),
             tooltip: 'Atualizar',
           ),
+          const LogoutButton(),
         ],
       ),
       body: loading
@@ -167,9 +169,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+                _ResumoGrid(
                   children: [
                     _ResumoCard(
                       titulo: 'Alunos',
@@ -266,6 +266,37 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 }
 
+class _ResumoGrid extends StatelessWidget {
+  final List<Widget> children;
+
+  const _ResumoGrid({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final largura = constraints.maxWidth;
+        final colunas = largura >= 900
+            ? 5
+            : largura >= 640
+            ? 4
+            : largura >= 340
+            ? 2
+            : 1;
+        final larguraItem = (largura - (colunas - 1) * 10) / colunas;
+
+        return Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: children
+              .map((child) => SizedBox(width: larguraItem, child: child))
+              .toList(),
+        );
+      },
+    );
+  }
+}
+
 class _ResumoCard extends StatelessWidget {
   final String titulo;
   final int total;
@@ -281,36 +312,67 @@ class _ResumoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 220,
-      child: Card(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 76),
+            child: Row(
               children: [
-                Icon(icone, size: 36),
-                const SizedBox(height: 16),
-                Text(
-                  titulo,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icone,
+                    size: 21,
+                    color: colorScheme.onPrimaryContainer,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  total.toString(),
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        titulo,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        total.toString(),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              height: 1,
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'cadastrados',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text('cadastrados'),
               ],
             ),
           ),

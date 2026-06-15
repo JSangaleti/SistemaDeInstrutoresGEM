@@ -26,7 +26,8 @@ class Aluno {
         ? json['comum'] as Map<String, dynamic>
         : null;
 
-    final comumPessoa = pessoa != null && pessoa['comum'] is Map<String, dynamic>
+    final comumPessoa =
+        pessoa != null && pessoa['comum'] is Map<String, dynamic>
         ? pessoa['comum'] as Map<String, dynamic>
         : null;
 
@@ -48,10 +49,12 @@ class Aluno {
       cpf: json['cpf']?.toString() ?? pessoa?['cpf']?.toString(),
       comumId: json['comumId'] ?? comumObj?['id'],
       comumNome: comumNomeExtraida,
-      comumCidade: json['comumCidade']?.toString() ??
+      comumCidade:
+          json['comumCidade']?.toString() ??
           json['cidade']?.toString() ??
           comumObj?['cidade']?.toString(),
-      comumUF: json['comumUF']?.toString() ??
+      comumUF:
+          json['comumUF']?.toString() ??
           json['uf']?.toString() ??
           json['estado']?.toString() ??
           json['comumEstado']?.toString() ??
