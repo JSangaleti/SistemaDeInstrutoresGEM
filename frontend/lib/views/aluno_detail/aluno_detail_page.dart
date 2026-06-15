@@ -7,10 +7,7 @@ import '../aluno_form/aluno_form_page.dart';
 class AlunoDetailPage extends StatefulWidget {
   final int alunoId;
 
-  const AlunoDetailPage({
-    super.key,
-    required this.alunoId,
-  });
+  const AlunoDetailPage({super.key, required this.alunoId});
 
   @override
   State<AlunoDetailPage> createState() => _AlunoDetailPageState();
@@ -57,9 +54,7 @@ class _AlunoDetailPageState extends State<AlunoDetailPage> {
 
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => AlunoFormPage(aluno: alunoAtual),
-      ),
+      MaterialPageRoute(builder: (context) => AlunoFormPage(aluno: alunoAtual)),
     );
 
     if (resultado == true) {
@@ -90,69 +85,69 @@ class _AlunoDetailPageState extends State<AlunoDetailPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Erro ao carregar aluno:\n$erro',
-                      textAlign: TextAlign.center,
-                    ),
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Erro ao carregar aluno:\n$erro',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          : alunoAtual == null
+          ? const Center(child: Text('Aluno não encontrado.'))
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                CircleAvatar(
+                  radius: 36,
+                  child: Text(
+                    alunoAtual.nome.isNotEmpty
+                        ? alunoAtual.nome[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(fontSize: 28),
                   ),
-                )
-              : alunoAtual == null
-                  ? const Center(child: Text('Aluno não encontrado.'))
-                  : ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        CircleAvatar(
-                          radius: 36,
-                          child: Text(
-                            alunoAtual.nome.isNotEmpty
-                                ? alunoAtual.nome[0].toUpperCase()
-                                : '?',
-                            style: const TextStyle(fontSize: 28),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: Text(
-                            alunoAtual.nome,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        _InfoCard(
-                          titulo: 'CPF',
-                          valor: alunoAtual.cpf ?? 'Não informado',
-                          icone: Icons.badge,
-                        ),
-                        _InfoCard(
-                          titulo: 'Comum',
-                          valor: alunoAtual.comumCompleta,
-                          icone: Icons.location_city,
-                        ),
-                        _InfoCard(
-                          titulo: 'Cidade',
-                          valor: alunoAtual.comumCidade ?? 'Não informada',
-                          icone: Icons.location_on,
-                        ),
-                        _InfoCard(
-                          titulo: 'Estado/UF',
-                          valor: alunoAtual.comumUF ?? 'Não informado',
-                          icone: Icons.map,
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: editarAluno,
-                          icon: const Icon(Icons.edit),
-                          label: const Text('Editar aluno'),
-                        ),
-                      ],
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    alunoAtual.nome,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _InfoCard(
+                  titulo: 'CPF',
+                  valor: alunoAtual.cpf ?? 'Não informado',
+                  icone: Icons.badge,
+                ),
+                _InfoCard(
+                  titulo: 'Comum',
+                  valor: alunoAtual.comumCompleta,
+                  icone: Icons.location_city,
+                ),
+                _InfoCard(
+                  titulo: 'Cidade',
+                  valor: alunoAtual.comumCidade ?? 'Não informada',
+                  icone: Icons.location_on,
+                ),
+                _InfoCard(
+                  titulo: 'Estado/UF',
+                  valor: alunoAtual.comumUF ?? 'Não informado',
+                  icone: Icons.map,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: editarAluno,
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Editar aluno'),
+                ),
+              ],
+            ),
     );
   }
 }
@@ -177,10 +172,7 @@ class _InfoCard extends StatelessWidget {
       child: ListTile(
         leading: Icon(icone),
         title: Text(titulo),
-        subtitle: Text(
-          texto,
-          style: const TextStyle(fontSize: 16),
-        ),
+        subtitle: Text(texto, style: const TextStyle(fontSize: 16)),
       ),
     );
   }

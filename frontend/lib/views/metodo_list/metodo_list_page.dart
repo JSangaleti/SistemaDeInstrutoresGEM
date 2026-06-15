@@ -62,9 +62,7 @@ class _MetodoListPageState extends State<MetodoListPage> {
   Future<void> adicionarMetodo() async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const MetodoFormPage(),
-      ),
+      MaterialPageRoute(builder: (context) => const MetodoFormPage()),
     );
 
     if (resultado == true) {
@@ -75,9 +73,7 @@ class _MetodoListPageState extends State<MetodoListPage> {
   Future<void> editarMetodo(Metodo metodo) async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => MetodoFormPage(metodo: metodo),
-      ),
+      MaterialPageRoute(builder: (context) => MetodoFormPage(metodo: metodo)),
     );
 
     if (resultado == true) {
@@ -119,9 +115,9 @@ class _MetodoListPageState extends State<MetodoListPage> {
       } catch (e) {
         if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir método: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao excluir método: $e')));
       }
     }
   }
@@ -145,53 +141,51 @@ class _MetodoListPageState extends State<MetodoListPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(child: Text('Erro ao carregar métodos:\n$erro'))
-              : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'Buscar método...',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.search),
-                        ),
-                        onChanged: filtrarMetodos,
-                      ),
+          ? Center(child: Text('Erro ao carregar métodos:\n$erro'))
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      hintText: 'Buscar método...',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.search),
                     ),
-                    Expanded(
-                      child: metodosFiltrados.isEmpty
-                          ? const Center(
-                              child: Text('Nenhum método encontrado.'),
-                            )
-                          : ListView.separated(
-                              itemCount: metodosFiltrados.length,
-                              separatorBuilder: (context, index) =>
-                                  const Divider(height: 1),
-                              itemBuilder: (context, index) {
-                                final metodo = metodosFiltrados[index];
-
-                                return ListTile(
-                                  leading: CircleAvatar(
-                                    child: Text(
-                                      metodo.nome.isNotEmpty
-                                          ? metodo.nome[0].toUpperCase()
-                                          : '?',
-                                    ),
-                                  ),
-                                  title: Text(metodo.nome),
-                                  subtitle: Text(metodo.instrumentoTexto),
-                                  onTap: () => editarMetodo(metodo),
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () => confirmarExclusao(metodo),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
+                    onChanged: filtrarMetodos,
+                  ),
                 ),
+                Expanded(
+                  child: metodosFiltrados.isEmpty
+                      ? const Center(child: Text('Nenhum método encontrado.'))
+                      : ListView.separated(
+                          itemCount: metodosFiltrados.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final metodo = metodosFiltrados[index];
+
+                            return ListTile(
+                              leading: CircleAvatar(
+                                child: Text(
+                                  metodo.nome.isNotEmpty
+                                      ? metodo.nome[0].toUpperCase()
+                                      : '?',
+                                ),
+                              ),
+                              title: Text(metodo.nome),
+                              subtitle: Text(metodo.instrumentoTexto),
+                              onTap: () => editarMetodo(metodo),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => confirmarExclusao(metodo),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }

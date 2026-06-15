@@ -62,9 +62,7 @@ class _ComumListPageState extends State<ComumListPage> {
   Future<void> adicionarComum() async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const ComumFormPage(),
-      ),
+      MaterialPageRoute(builder: (context) => const ComumFormPage()),
     );
 
     if (resultado == true) {
@@ -76,7 +74,7 @@ class _ComumListPageState extends State<ComumListPage> {
     try {
       final comumCompleta = await service.getComumById(comum.id);
 
-      if (!context.mounted) return;
+      if (!mounted) return;
 
       final resultado = await Navigator.push(
         context,
@@ -89,10 +87,10 @@ class _ComumListPageState extends State<ComumListPage> {
         carregarComuns();
       }
     } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao carregar comum: $e')),
-      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao carregar comum: $e')));
     }
   }
 
@@ -122,12 +120,12 @@ class _ComumListPageState extends State<ComumListPage> {
         await service.deletarComum(comum.id);
         await carregarComuns();
 
-        if (!context.mounted) return;
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Comum excluída com sucesso.')),
         );
       } catch (e) {
-        if (!context.mounted) return;
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -170,71 +168,71 @@ class _ComumListPageState extends State<ComumListPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Erro ao carregar comuns:\n$erro',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'Buscar comum...',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.search),
-                        ),
-                        onChanged: filtrarComuns,
-                      ),
-                    ),
-                    Expanded(
-                      child: comuns.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'Nenhuma comum cadastrada.',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            )
-                          : comunsFiltradas.isEmpty
-                              ? const Center(
-                                  child: Text(
-                                    'Nenhuma comum encontrada na busca.',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                )
-                              : ListView.separated(
-                                  itemCount: comunsFiltradas.length,
-                                  separatorBuilder: (_, __) =>
-                                      const Divider(height: 1),
-                                  itemBuilder: (context, index) {
-                                    final comum = comunsFiltradas[index];
-
-                                    return ListTile(
-                                      leading: CircleAvatar(
-                                        child: Text(
-                                          comum.nome.isNotEmpty
-                                              ? comum.nome[0].toUpperCase()
-                                              : '?',
-                                        ),
-                                      ),
-                                      title: Text(comum.nome),
-                                      subtitle: Text(montarDescricao(comum)),
-                                      onTap: () => editarComum(comum),
-                                      trailing: IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () => confirmarExclusao(comum),
-                                      ),
-                                    );
-                                  },
-                                ),
-                    ),
-                  ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Erro ao carregar comuns:\n$erro',
+                  textAlign: TextAlign.center,
                 ),
+              ),
+            )
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      hintText: 'Buscar comum...',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: filtrarComuns,
+                  ),
+                ),
+                Expanded(
+                  child: comuns.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Nenhuma comum cadastrada.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )
+                      : comunsFiltradas.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Nenhuma comum encontrada na busca.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )
+                      : ListView.separated(
+                          itemCount: comunsFiltradas.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final comum = comunsFiltradas[index];
+
+                            return ListTile(
+                              leading: CircleAvatar(
+                                child: Text(
+                                  comum.nome.isNotEmpty
+                                      ? comum.nome[0].toUpperCase()
+                                      : '?',
+                                ),
+                              ),
+                              title: Text(comum.nome),
+                              subtitle: Text(montarDescricao(comum)),
+                              onTap: () => editarComum(comum),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => confirmarExclusao(comum),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }

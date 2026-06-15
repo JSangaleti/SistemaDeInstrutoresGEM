@@ -13,6 +13,12 @@ import com.gem.backend.model.RegistroAula;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface RegistroAulaRepository extends JpaRepository<RegistroAula, Integer> {
+
+    List<RegistroAula> findAllByOrderByDataDescIdDesc();
+
+    List<RegistroAula> findByAluno_Pessoa_CpfOrderByDataDescIdDesc(String cpf);
 }
