@@ -57,4 +57,18 @@ public class TokenService {
     private Instant gerarDataExpiracao() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
     }
+
+    public String extrairPerfil(String token) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            return JWT.require(algorithm)
+                    .withIssuer("SistemaDeInstrutoresGEM")
+                    .build()
+                    .verify(token)
+                    .getClaim("perfil")
+                    .asString();
+        } catch (JWTVerificationException exception) {
+            return "";
+        }
+    }
 }
