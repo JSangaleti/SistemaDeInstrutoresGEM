@@ -1,5 +1,6 @@
 package com.gem.backend.service;
 
+import com.gem.backend.dto.RegistroAulaResponseDTO;
 import com.gem.backend.exception.BadRequestException;
 import com.gem.backend.exception.DuplicateResourceException;
 import com.gem.backend.exception.ResourceNotFoundException;
@@ -10,7 +11,6 @@ import com.gem.backend.repository.AlunoRepository;
 import com.gem.backend.repository.InstrutorRepository;
 import com.gem.backend.repository.RegistroAulaRepository;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class RegistroAulaService {
         this.instrutorRepository = instrutorRepository;
     }
 
-    public RegistroAula createRegistroAula(RegistroAula aula) {
+    public RegistroAulaResponseDTO createRegistroAula(RegistroAula aula) {
         if (aula.getId() != null && repository.existsById(aula.getId())) {
             throw new DuplicateResourceException("Já existe uma aula cadastrada com este ID.");
         }
@@ -47,23 +47,22 @@ public class RegistroAulaService {
         }
 
         RegistroAula aulaSalva = repository.save(aula);
-        aulaSalva.setAluno(aluno);
-        aulaSalva.setInstrutor(instrutor);
-
-        return aulaSalva;
+        return new RegistroAulaResponseDTO(aulaSalva);
     }
 
-    public List<RegistroAula> getListRegistroAula() {
-        return repository.findAll();
+    public List<RegistroAulaResponseDTO> getListRegistroAula() {
+        return repository.findAll().stream().map(RegistroAulaResponseDTO::new).toList();
     }
 
-    public RegistroAula getRegistroAula(Integer id) {
-        return repository.findById(id)
+    public RegistroAulaResponseDTO getRegistroAula(Integer id) {
+        RegistroAula aula = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Registro de aula não encontrado."));
+        return new RegistroAulaResponseDTO(aula);
     }
 
-    public RegistroAula updateRegistroAula(Integer id, RegistroAula dadosAtualizados) {
-        RegistroAula existente = getRegistroAula(id);
+    public RegistroAulaResponseDTO updateRegistroAula(Integer id, RegistroAula dadosAtualizados) {
+        RegistroAula existente = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Registro de aula não encontrado."));
 
         if (dadosAtualizados.getAluno() != null) {
             Aluno aluno = buscarAlunoObrigatorio(dadosAtualizados);
@@ -91,14 +90,13 @@ public class RegistroAulaService {
             existente.setData(dadosAtualizados.getData());
         }
 
-        return repository.save(existente);
+        return new RegistroAulaResponseDTO(repository.save(existente));
     }
 
     public void deleteRegistroAula(Integer id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Registro de aula não encontrado.");
         }
-
         repository.deleteById(id);
     }
 
@@ -106,7 +104,6 @@ public class RegistroAulaService {
         if (aula.getAluno() == null || aula.getAluno().getId() == null) {
             throw new BadRequestException("Informe o ID do aluno vinculado ao registro de aula.");
         }
-
         return alunoRepository.findById(aula.getAluno().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado."));
     }
@@ -115,7 +112,6 @@ public class RegistroAulaService {
         if (aula.getInstrutor() == null || aula.getInstrutor().getId() == null) {
             throw new BadRequestException("Informe o ID do instrutor vinculado ao registro de aula.");
         }
-
         return instrutorRepository.findById(aula.getInstrutor().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Instrutor não encontrado."));
     }

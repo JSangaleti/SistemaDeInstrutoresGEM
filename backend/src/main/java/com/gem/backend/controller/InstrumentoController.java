@@ -27,22 +27,22 @@ public class InstrumentoController {
 
     @PostMapping
     public InstrumentoResponseDTO create(@Valid @RequestBody Instrumento instrumento) {
-        return new InstrumentoResponseDTO(service.createInstrumento(instrumento));
+        return service.createInstrumento(instrumento);
     }
 
     @GetMapping
     public List<InstrumentoResponseDTO> getList() {
-        return service.getListInstrumento().stream().map(InstrumentoResponseDTO::new).toList();
+        return service.getListInstrumento();
     }
 
     @GetMapping("/{id}")
     public InstrumentoResponseDTO getById(@PathVariable Integer id) {
-        return new InstrumentoResponseDTO(service.getInstrumento(id));
+        return service.getInstrumento(id);
     }
 
     @PutMapping("/{id}")
     public InstrumentoResponseDTO update(@PathVariable Integer id, @RequestBody Instrumento instrumento) {
-        return new InstrumentoResponseDTO(service.updateInstrumento(id, instrumento));
+        return service.updateInstrumento(id, instrumento);
     }
 
     @DeleteMapping("/{id}")

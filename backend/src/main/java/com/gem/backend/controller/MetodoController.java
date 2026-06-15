@@ -19,22 +19,22 @@ public class MetodoController {
 
     @PostMapping
     public MetodoResponseDTO create(@Valid @RequestBody Metodo metodo) {
-        return new MetodoResponseDTO(service.createMetodo(metodo));
+        return service.createMetodo(metodo);
     }
 
     @GetMapping
     public List<MetodoResponseDTO> getList() {
-        return service.getListMetodo().stream().map(MetodoResponseDTO::new).toList();
+        return service.getListMetodo();
     }
 
     @GetMapping("/{id}")
     public MetodoResponseDTO getById(@PathVariable Integer id) {
-        return new MetodoResponseDTO(service.getMetodo(id));
+        return service.getMetodo(id);
     }
 
     @PutMapping("/{id}")
     public MetodoResponseDTO update(@PathVariable Integer id, @RequestBody Metodo metodo) {
-        return new MetodoResponseDTO(service.updateMetodo(id, metodo));
+        return service.updateMetodo(id, metodo);
     }
 
     @DeleteMapping("/{id}")
