@@ -6,10 +6,7 @@ import '../../services/instrumento_service.dart';
 class InstrumentoFormPage extends StatefulWidget {
   final Instrumento? instrumento;
 
-  const InstrumentoFormPage({
-    super.key,
-    this.instrumento,
-  });
+  const InstrumentoFormPage({super.key, this.instrumento});
 
   @override
   State<InstrumentoFormPage> createState() => _InstrumentoFormPageState();
@@ -54,9 +51,7 @@ class _InstrumentoFormPageState extends State<InstrumentoFormPage> {
           nome: nomeController.text.trim(),
         );
       } else {
-        await service.criarInstrumento(
-          nome: nomeController.text.trim(),
-        );
+        await service.criarInstrumento(nome: nomeController.text.trim());
       }
 
       if (!mounted) return;
@@ -64,9 +59,9 @@ class _InstrumentoFormPageState extends State<InstrumentoFormPage> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao salvar instrumento: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao salvar instrumento: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -116,8 +111,8 @@ class _InstrumentoFormPageState extends State<InstrumentoFormPage> {
                   salvando
                       ? 'Salvando...'
                       : isEdicao
-                          ? 'Salvar alterações'
-                          : 'Cadastrar',
+                      ? 'Salvar alterações'
+                      : 'Cadastrar',
                 ),
               ),
             ],

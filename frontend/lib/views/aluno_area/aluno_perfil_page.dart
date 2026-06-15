@@ -28,23 +28,13 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
   }
 
   Future<void> carregarAluno() async {
-    final id = widget.alunoId ?? widget.aluno?.id;
-
-    if (id == null) {
-      setState(() {
-        loading = false;
-        erro = null;
-      });
-      return;
-    }
-
     setState(() {
       loading = true;
       erro = null;
     });
 
     try {
-      final resultado = await service.getAlunoById(id);
+      final resultado = await service.getMeuPerfil();
       setState(() {
         aluno = resultado;
         loading = false;
@@ -92,25 +82,32 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                CircleAvatar(
-                  radius: 36,
-                  child: Text(
-                    aluno!.nome.isNotEmpty ? aluno!.nome[0].toUpperCase() : '?',
-                    style: const TextStyle(fontSize: 28),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 34,
+                          child: Text(
+                            aluno!.nome.isNotEmpty
+                                ? aluno!.nome[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(fontSize: 28),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            aluno!.nome,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                Center(
-                  child: Text(
-                    aluno!.nome,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 24),
                 _InfoCard(
                   titulo: 'CPF',
                   valor: valorPadrao(aluno!.cpf),

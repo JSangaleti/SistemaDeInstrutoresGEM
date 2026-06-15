@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../config/api_config.dart';
 import '../../models/aluno.dart';
 import '../../models/registro_aula.dart';
 import '../../services/registro_aula_service.dart';
@@ -16,35 +17,26 @@ class AlunoHistoricoPage extends StatefulWidget {
 class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
   final RegistroAulaService service = RegistroAulaService();
 
-  List<Aluno> alunos = [];
-  List<Aluno> alunosFiltrados = [];
   List<RegistroAula> registros = [];
-  Aluno? alunoSelecionado;
   bool loading = true;
   String? erro;
 
   @override
   void initState() {
     super.initState();
-    alunoSelecionado = widget.aluno;
-    carregarDados();
+    carregarHistorico();
   }
 
-  Future<void> carregarDados() async {
+  Future<void> carregarHistorico() async {
     setState(() {
       loading = true;
       erro = null;
     });
 
     try {
-      final alunosLista = await service.getAlunos();
-      final registrosLista = await service.getRegistrosAula();
-
+      final lista = await service.getMeuHistorico();
       setState(() {
-        alunos = alunosLista;
-        alunosFiltrados = alunosLista;
-        alunoSelecionado ??= _buscarAlunoInicial(alunosLista);
-        registros = registrosLista;
+        registros = lista;
         loading = false;
       });
     } catch (e) {
@@ -55,50 +47,6 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
     }
   }
 
-  Aluno? _buscarAlunoInicial(List<Aluno> lista) {
-    final aluno = widget.aluno;
-    if (aluno == null) return null;
-
-    for (final item in lista) {
-      if (item.id == aluno.id) return item;
-    }
-
-    return aluno;
-  }
-
-  void filtrarAlunos(String texto) {
-    final busca = texto.trim().toLowerCase();
-
-    setState(() {
-      alunosFiltrados = alunos.where((aluno) {
-        return busca.isEmpty ||
-            aluno.nome.toLowerCase().contains(busca) ||
-            (aluno.cpf ?? '').toLowerCase().contains(busca) ||
-            aluno.comumCompleta.toLowerCase().contains(busca);
-      }).toList();
-    });
-  }
-
-  List<RegistroAula> historicoAluno(Aluno aluno) {
-    final nomeAluno = _normalizar(aluno.nome);
-
-    final historico = registros.where((registro) {
-      if (registro.alunoId != null) {
-        return registro.alunoId == aluno.id;
-      }
-
-      return _normalizar(registro.alunoNome ?? '') == nomeAluno;
-    }).toList();
-
-    historico.sort((a, b) {
-      final dataA = a.data ?? DateTime(1900);
-      final dataB = b.data ?? DateTime(1900);
-      return dataB.compareTo(dataA);
-    });
-
-    return historico;
-  }
-
   String valorOuPadrao(String? valor) {
     final texto = valor?.trim() ?? '';
     return texto.isEmpty ? 'Não informado' : texto;
@@ -106,16 +54,15 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
 
   @override
   Widget build(BuildContext context) {
-    final aluno = alunoSelecionado;
-    final historico = aluno == null ? <RegistroAula>[] : historicoAluno(aluno);
     final colorScheme = Theme.of(context).colorScheme;
+    final nome = widget.aluno?.nome ?? AuthSession.nome ?? 'Aluno';
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Meu Histórico de Aulas'),
         actions: [
           IconButton(
-            onPressed: carregarDados,
+            onPressed: carregarHistorico,
             icon: const Icon(Icons.refresh),
             tooltip: 'Atualizar',
           ),
@@ -124,14 +71,10 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Erro ao carregar histórico:\n$erro',
-                  textAlign: TextAlign.center,
-                ),
-              ),
+          ? _EstadoMensagem(
+              icone: Icons.error_outline,
+              mensagem: 'Erro ao carregar histórico:\n$erro',
+              onRetry: carregarHistorico,
             )
           : ListView(
               padding: const EdgeInsets.all(16),
@@ -142,84 +85,34 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
                     color: colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        aluno == null
-                            ? 'Selecione um aluno'
-                            : 'Histórico de ${aluno.nome}',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                      Icon(Icons.history, color: colorScheme.primary),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Histórico de $nome',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 4),
+                            Text('${registros.length} registro(s) de aula'),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        aluno == null
-                            ? 'Escolha o cadastro para visualizar os registros de aula.'
-                            : _textoAluno(aluno),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (widget.aluno == null) ...[
-                  TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Buscar aluno por nome, CPF ou comum...',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                    onChanged: filtrarAlunos,
-                  ),
-                  const SizedBox(height: 12),
-                  if (alunosFiltrados.isEmpty)
-                    const _EstadoVazio(
-                      icone: Icons.person_search,
-                      mensagem: 'Nenhum aluno encontrado.',
-                    )
-                  else
-                    ...alunosFiltrados.map((item) {
-                      final selecionado = alunoSelecionado?.id == item.id;
-
-                      return Card(
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          leading: CircleAvatar(
-                            child: Text(_inicial(item.nome)),
-                          ),
-                          title: Text(item.nome),
-                          subtitle: Text(_textoAluno(item)),
-                          selected: selecionado,
-                          trailing: selecionado
-                              ? const Icon(Icons.check)
-                              : const Icon(Icons.chevron_right),
-                          onTap: () {
-                            setState(() {
-                              alunoSelecionado = item;
-                            });
-                          },
-                        ),
-                      );
-                    }),
-                  const SizedBox(height: 16),
-                ],
-                if (aluno == null)
-                  const _EstadoVazio(
-                    icone: Icons.history,
-                    mensagem: 'Selecione um aluno para ver o histórico.',
-                  )
-                else if (historico.isEmpty)
-                  const _EstadoVazio(
+                if (registros.isEmpty)
+                  const _EstadoMensagem(
                     icone: Icons.event_busy,
-                    mensagem: 'Nenhum registro de aula para este aluno.',
+                    mensagem: 'Nenhum registro de aula encontrado.',
                   )
                 else
-                  ...historico.map((registro) {
+                  ...registros.map((registro) {
                     return Card(
                       margin: const EdgeInsets.only(bottom: 10),
                       child: Padding(
@@ -232,16 +125,12 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
                                 Expanded(
                                   child: Text(
                                     registro.dataTexto,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
                                   ),
                                 ),
-                                Chip(
-                                  label: Text(registro.presencaTexto),
-                                  visualDensity: VisualDensity.compact,
-                                ),
+                                Chip(label: Text(registro.presencaTexto)),
                               ],
                             ),
                             const SizedBox(height: 12),
@@ -269,17 +158,22 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
   }
 }
 
-class _EstadoVazio extends StatelessWidget {
+class _EstadoMensagem extends StatelessWidget {
   final IconData icone;
   final String mensagem;
+  final VoidCallback? onRetry;
 
-  const _EstadoVazio({required this.icone, required this.mensagem});
+  const _EstadoMensagem({
+    required this.icone,
+    required this.mensagem,
+    this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 28),
+        padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -290,6 +184,14 @@ class _EstadoVazio extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16),
             ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Tentar novamente'),
+              ),
+            ],
           ],
         ),
       ),
@@ -321,19 +223,4 @@ class _HistoricoLinha extends StatelessWidget {
       ),
     );
   }
-}
-
-String _inicial(String nome) {
-  final texto = nome.trim();
-  return texto.isEmpty ? '?' : texto[0].toUpperCase();
-}
-
-String _normalizar(String texto) => texto.trim().toLowerCase();
-
-String _textoAluno(Aluno aluno) {
-  final cpf = aluno.cpf?.trim().isEmpty ?? true
-      ? 'CPF não informado'
-      : aluno.cpf!.trim();
-
-  return '$cpf - ${aluno.comumCompleta}';
 }

@@ -20,7 +20,8 @@ class Metodo {
       id: json['id'],
       nome: json['nome']?.toString() ?? '',
       instrumentoId: json['instrumentoId'] ?? instrumento?['id'],
-      instrumentoNome: json['instrumentoNome']?.toString() ??
+      instrumentoNome:
+          json['instrumentoNome']?.toString() ??
           instrumento?['nome']?.toString(),
     );
   }

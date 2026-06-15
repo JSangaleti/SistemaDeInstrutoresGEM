@@ -1,13 +1,12 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
+import '../config/api_config.dart';
 import '../models/comum.dart';
 import '../models/instrutor.dart';
-class InstrutorService {
-  static const String baseUrl = 'http://localhost:8080';
 
+class InstrutorService {
   Future<List<Instrutor>> getInstrutores() async {
-    final response = await http.get(Uri.parse('$baseUrl/instrutores'));
+    final response = await ApiClient.get('/instrutores');
 
     if (response.statusCode != 200) {
       throw Exception('Erro ao buscar instrutores: ${response.statusCode}');
@@ -18,7 +17,7 @@ class InstrutorService {
   }
 
   Future<Instrutor> getInstrutorById(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/instrutores/$id'));
+    final response = await ApiClient.get('/instrutores/$id');
 
     if (response.statusCode != 200) {
       throw Exception('Erro ao buscar instrutor: ${response.statusCode}');
@@ -29,7 +28,7 @@ class InstrutorService {
   }
 
   Future<List<Comum>> getComuns() async {
-    final response = await http.get(Uri.parse('$baseUrl/comuns'));
+    final response = await ApiClient.get('/comuns');
 
     if (response.statusCode != 200) {
       throw Exception('Erro ao buscar comuns: ${response.statusCode}');
@@ -48,15 +47,12 @@ class InstrutorService {
     final pessoaBody = {
       "cpf": cpf,
       "nome": nome,
-      "comum": {
-        "id": comumId,
-      }
+      "comum": {"id": comumId},
     };
 
-    final pessoaResponse = await http.post(
-      Uri.parse('$baseUrl/pessoas'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(pessoaBody),
+    final pessoaResponse = await ApiClient.post(
+      '/pessoas',
+      jsonEncode(pessoaBody),
     );
 
     if (pessoaResponse.statusCode != 200 && pessoaResponse.statusCode != 201) {
@@ -67,15 +63,12 @@ class InstrutorService {
 
     final instrutorBody = {
       "senha": senha,
-      "pessoa": {
-        "cpf": cpf,
-      }
+      "pessoa": {"cpf": cpf},
     };
 
-    final instrutorResponse = await http.post(
-      Uri.parse('$baseUrl/instrutores'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(instrutorBody),
+    final instrutorResponse = await ApiClient.post(
+      '/instrutores',
+      jsonEncode(instrutorBody),
     );
 
     if (instrutorResponse.statusCode != 200 &&
@@ -95,15 +88,12 @@ class InstrutorService {
     final pessoaBody = {
       "cpf": cpf,
       "nome": nome,
-      "comum": {
-        "id": comumId,
-      }
+      "comum": {"id": comumId},
     };
 
-    final pessoaResponse = await http.put(
-      Uri.parse('$baseUrl/pessoas/$cpf'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(pessoaBody),
+    final pessoaResponse = await ApiClient.put(
+      '/pessoas/$cpf',
+      jsonEncode(pessoaBody),
     );
 
     if (pessoaResponse.statusCode != 200) {
@@ -113,15 +103,12 @@ class InstrutorService {
     }
 
     final instrutorBody = {
-      "pessoa": {
-        "cpf": cpf,
-      }
+      "pessoa": {"cpf": cpf},
     };
 
-    final instrutorResponse = await http.put(
-      Uri.parse('$baseUrl/instrutores/$id'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(instrutorBody),
+    final instrutorResponse = await ApiClient.put(
+      '/instrutores/$id',
+      jsonEncode(instrutorBody),
     );
 
     if (instrutorResponse.statusCode != 200) {
@@ -132,7 +119,7 @@ class InstrutorService {
   }
 
   Future<void> deletarInstrutor(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/instrutores/$id'));
+    final response = await ApiClient.delete('/instrutores/$id');
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw Exception(

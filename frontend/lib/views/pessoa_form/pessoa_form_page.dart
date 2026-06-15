@@ -4,6 +4,7 @@ import '../../models/comum.dart';
 import '../../models/pessoa.dart';
 import '../../services/aluno_service.dart';
 import '../../services/pessoa_service.dart';
+import '../../widgets/searchable_selection.dart';
 
 class PessoaFormPage extends StatefulWidget {
   final Pessoa? pessoa;
@@ -86,9 +87,9 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
     if (!_formKey.currentState!.validate()) return;
 
     if (comumSelecionadaId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecione uma comum')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Selecione uma comum')));
       return;
     }
 
@@ -116,9 +117,9 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao salvar: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao salvar: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -146,6 +147,14 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
     return null;
   }
 
+  Comum? comumSelecionada() {
+    for (final comum in comuns) {
+      if (comum.id == comumSelecionadaId) return comum;
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,93 +164,91 @@ class _PessoaFormPageState extends State<PessoaFormPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Erro ao carregar comuns:\n$erro',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Form(
-                    key: _formKey,
-                    child: ListView(
-                      children: [
-                        TextFormField(
-                          controller: nomeController,
-                          decoration: const InputDecoration(
-                            labelText: 'Nome',
-                            border: OutlineInputBorder(),
-                          ),
-                          textCapitalization: TextCapitalization.words,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Informe o nome';
-                            }
-
-                            if (value.trim().length > 64) {
-                              return 'Nome deve ter no máximo 64 caracteres';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: cpfController,
-                          decoration: const InputDecoration(
-                            labelText: 'CPF',
-                            border: OutlineInputBorder(),
-                            helperText: 'Digite apenas números',
-                          ),
-                          keyboardType: TextInputType.number,
-                          readOnly: isEdicao,
-                          validator: validarCpf,
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<int>(
-                          initialValue: comumSelecionadaId,
-                          decoration: const InputDecoration(
-                            labelText: 'Comum',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: comuns.map((comum) {
-                            return DropdownMenuItem<int>(
-                              value: comum.id,
-                              child: Text(comum.nomeCompleto),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              comumSelecionadaId = value;
-                            });
-                          },
-                          validator: (value) {
-                            if (value == null) {
-                              return 'Selecione uma comum';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: salvando ? null : salvar,
-                          child: Text(
-                            salvando
-                                ? 'Salvando...'
-                                : isEdicao
-                                    ? 'Salvar alterações'
-                                    : 'Cadastrar',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Erro ao carregar comuns:\n$erro',
+                  textAlign: TextAlign.center,
                 ),
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    TextFormField(
+                      controller: nomeController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nome',
+                        border: OutlineInputBorder(),
+                      ),
+                      textCapitalization: TextCapitalization.words,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Informe o nome';
+                        }
+
+                        if (value.trim().length > 64) {
+                          return 'Nome deve ter no máximo 64 caracteres';
+                        }
+
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: cpfController,
+                      decoration: const InputDecoration(
+                        labelText: 'CPF',
+                        border: OutlineInputBorder(),
+                        helperText: 'Digite apenas números',
+                      ),
+                      keyboardType: TextInputType.number,
+                      readOnly: isEdicao,
+                      validator: validarCpf,
+                    ),
+                    const SizedBox(height: 16),
+                    SearchableSelectionField<Comum>(
+                      labelText: 'Comum',
+                      dialogTitle: 'Selecionar comum',
+                      items: comuns,
+                      value: comumSelecionada(),
+                      itemTitle: (comum) => comum.nomeCompleto,
+                      itemSubtitle: (comum) => comum.bairro,
+                      itemSearchText: (comum) =>
+                          '${comum.nome} ${comum.cidade ?? ''} ${comum.estado ?? ''}',
+                      searchHintText: 'Buscar por nome, cidade ou estado...',
+                      onChanged: (comum) {
+                        setState(() {
+                          comumSelecionadaId = comum?.id;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Selecione uma comum';
+                        }
+
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: salvando ? null : salvar,
+                      child: Text(
+                        salvando
+                            ? 'Salvando...'
+                            : isEdicao
+                            ? 'Salvar alterações'
+                            : 'Cadastrar',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }

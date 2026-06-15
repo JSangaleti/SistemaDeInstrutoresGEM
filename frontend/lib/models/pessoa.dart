@@ -36,10 +36,12 @@ class Pessoa {
       nome: json['nome']?.toString() ?? '',
       comumId: json['comumId'] ?? comumObj?['id'],
       comumNome: comumNomeExtraida,
-      comumCidade: json['comumCidade']?.toString() ??
+      comumCidade:
+          json['comumCidade']?.toString() ??
           json['cidade']?.toString() ??
           comumObj?['cidade']?.toString(),
-      comumUF: json['comumUF']?.toString() ??
+      comumUF:
+          json['comumUF']?.toString() ??
           json['uf']?.toString() ??
           json['estado']?.toString() ??
           json['comumEstado']?.toString() ??

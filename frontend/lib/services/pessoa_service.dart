@@ -1,13 +1,11 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
+import '../config/api_config.dart';
 import '../models/pessoa.dart';
 
 class PessoaService {
-  static const String baseUrl = 'http://localhost:8080';
-
   Future<List<Pessoa>> getPessoas() async {
-    final response = await http.get(Uri.parse('$baseUrl/pessoas'));
+    final response = await ApiClient.get('/pessoas');
 
     if (response.statusCode != 200) {
       throw Exception('Erro ao buscar pessoas: ${response.statusCode}');
@@ -18,7 +16,7 @@ class PessoaService {
   }
 
   Future<Pessoa> getPessoaByCpf(String cpf) async {
-    final response = await http.get(Uri.parse('$baseUrl/pessoas/$cpf'));
+    final response = await ApiClient.get('/pessoas/$cpf');
 
     if (response.statusCode != 200) {
       throw Exception('Erro ao buscar pessoa: ${response.statusCode}');
@@ -36,16 +34,10 @@ class PessoaService {
     final body = {
       "cpf": cpf,
       "nome": nome,
-      "comum": {
-        "id": comumId,
-      }
+      "comum": {"id": comumId},
     };
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/pessoas'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
+    final response = await ApiClient.post('/pessoas', jsonEncode(body));
 
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception(
@@ -62,16 +54,10 @@ class PessoaService {
     final body = {
       "cpf": cpf,
       "nome": nome,
-      "comum": {
-        "id": comumId,
-      }
+      "comum": {"id": comumId},
     };
 
-    final response = await http.put(
-      Uri.parse('$baseUrl/pessoas/$cpf'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
+    final response = await ApiClient.put('/pessoas/$cpf', jsonEncode(body));
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -81,7 +67,7 @@ class PessoaService {
   }
 
   Future<void> deletarPessoa(String cpf) async {
-    final response = await http.delete(Uri.parse('$baseUrl/pessoas/$cpf'));
+    final response = await ApiClient.delete('/pessoas/$cpf');
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw Exception(

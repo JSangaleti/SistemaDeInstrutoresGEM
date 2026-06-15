@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../config/api_config.dart';
 import '../../models/aluno.dart';
 import '../../services/aluno_service.dart';
+import '../../widgets/logout_button.dart';
 import 'aluno_historico_page.dart';
 import 'aluno_perfil_page.dart';
 
@@ -17,32 +19,27 @@ class AlunoHomePage extends StatefulWidget {
 class _AlunoHomePageState extends State<AlunoHomePage> {
   final AlunoService service = AlunoService();
 
-  List<Aluno> alunos = [];
-  List<Aluno> alunosFiltrados = [];
-  Aluno? alunoSelecionado;
+  Aluno? aluno;
   bool loading = true;
   String? erro;
 
   @override
   void initState() {
     super.initState();
-    alunoSelecionado = widget.aluno;
-    carregarAlunos();
+    aluno = widget.aluno;
+    carregarAluno();
   }
 
-  Future<void> carregarAlunos() async {
+  Future<void> carregarAluno() async {
     setState(() {
       loading = true;
       erro = null;
     });
 
     try {
-      final lista = await service.getAlunos();
-
+      final resultado = await service.getMeuPerfil();
       setState(() {
-        alunos = lista;
-        alunosFiltrados = lista;
-        alunoSelecionado ??= _buscarAlunoInicial(lista);
+        aluno = resultado;
         loading = false;
       });
     } catch (e) {
@@ -53,46 +50,17 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
     }
   }
 
-  Aluno? _buscarAlunoInicial(List<Aluno> lista) {
-    final aluno = widget.aluno;
-    if (aluno == null) return null;
-
-    for (final item in lista) {
-      if (item.id == aluno.id) return item;
-    }
-
-    return aluno;
-  }
-
-  void filtrarAlunos(String texto) {
-    final busca = texto.trim().toLowerCase();
-
-    setState(() {
-      alunosFiltrados = alunos.where((aluno) {
-        return busca.isEmpty ||
-            aluno.nome.toLowerCase().contains(busca) ||
-            (aluno.cpf ?? '').toLowerCase().contains(busca) ||
-            aluno.comumCompleta.toLowerCase().contains(busca);
-      }).toList();
-    });
-  }
-
-  void selecionarAluno(Aluno aluno) {
-    setState(() {
-      alunoSelecionado = aluno;
-    });
-  }
-
   Future<void> abrirTela(Widget page) async {
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => page),
     );
+    carregarAluno();
   }
 
   @override
   Widget build(BuildContext context) {
-    final aluno = alunoSelecionado;
+    final alunoAtual = aluno;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -100,125 +68,84 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
         title: const Text('Área do Aluno'),
         actions: [
           IconButton(
-            onPressed: carregarAlunos,
+            onPressed: carregarAluno,
             icon: const Icon(Icons.refresh),
             tooltip: 'Atualizar',
           ),
+          const LogoutButton(),
         ],
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Erro ao carregar alunos:\n$erro',
-                  textAlign: TextAlign.center,
-                ),
-              ),
+          ? _ErroTela(
+              mensagem: 'Erro ao carregar a área do aluno:\n$erro',
+              onRetry: carregarAluno,
             )
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
                     color: colorScheme.secondaryContainer,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Icon(
-                        Icons.school,
-                        size: 36,
-                        color: colorScheme.onSecondaryContainer,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Painel do Aluno',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSecondaryContainer,
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: colorScheme.secondary,
+                        foregroundColor: colorScheme.onSecondary,
+                        child: Text(
+                          _inicial(alunoAtual?.nome ?? AuthSession.nome ?? ''),
+                          style: const TextStyle(fontSize: 24),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        aluno == null
-                            ? 'Selecione seu cadastro para consultar perfil e histórico de aulas.'
-                            : 'Olá, ${aluno.nome}.',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: colorScheme.onSecondaryContainer,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Olá, ${alunoAtual?.nome ?? AuthSession.nome ?? 'aluno'}',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: colorScheme.onSecondaryContainer,
+                                  ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              alunoAtual?.comumCompleta ??
+                                  'Área pessoal do aluno',
+                              style: TextStyle(
+                                color: colorScheme.onSecondaryContainer,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  decoration: const InputDecoration(
-                    hintText: 'Buscar aluno por nome, CPF ou comum...',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.search),
-                  ),
-                  onChanged: filtrarAlunos,
-                ),
-                const SizedBox(height: 12),
-                if (alunosFiltrados.isEmpty)
-                  const _EstadoVazio(
-                    icone: Icons.person_search,
-                    mensagem: 'Nenhum aluno encontrado.',
-                  )
-                else
-                  ...alunosFiltrados.map((item) {
-                    final selecionado = aluno?.id == item.id;
-
-                    return Card(
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        leading: CircleAvatar(child: Text(_inicial(item.nome))),
-                        title: Text(item.nome),
-                        subtitle: Text(_textoAluno(item)),
-                        selected: selecionado,
-                        trailing: selecionado
-                            ? const Icon(Icons.check)
-                            : const Icon(Icons.chevron_right),
-                        onTap: () => selecionarAluno(item),
-                      ),
-                    );
-                  }),
-                const SizedBox(height: 24),
-                const Text(
+                const SizedBox(height: 20),
+                Text(
                   'Consultas',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 12),
                 _AlunoAreaCard(
-                  titulo: 'Perfil',
-                  descricao: aluno == null
-                      ? 'Selecione um aluno para visualizar o perfil.'
-                      : 'Dados cadastrais de ${aluno.nome}.',
+                  titulo: 'Meu perfil',
+                  descricao: 'Dados cadastrais vinculados ao seu login.',
                   icone: Icons.account_circle,
-                  onTap: aluno == null
-                      ? null
-                      : () => abrirTela(AlunoPerfilPage(aluno: aluno)),
+                  onTap: () => abrirTela(AlunoPerfilPage(aluno: alunoAtual)),
                 ),
                 const SizedBox(height: 12),
                 _AlunoAreaCard(
-                  titulo: 'Histórico de Aulas',
-                  descricao: aluno == null
-                      ? 'Selecione um aluno para consultar os registros.'
-                      : 'Registros, presença e observações das aulas.',
+                  titulo: 'Meu histórico de aulas',
+                  descricao: 'Registros, presença e orientações das aulas.',
                   icone: Icons.history,
-                  onTap: aluno == null
-                      ? null
-                      : () => abrirTela(AlunoHistoricoPage(aluno: aluno)),
+                  onTap: () => abrirTela(const AlunoHistoricoPage()),
                 ),
               ],
             ),
@@ -230,7 +157,7 @@ class _AlunoAreaCard extends StatelessWidget {
   final String titulo;
   final String descricao;
   final IconData icone;
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
 
   const _AlunoAreaCard({
     required this.titulo,
@@ -241,8 +168,9 @@ class _AlunoAreaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
-      elevation: 1,
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: onTap,
@@ -250,7 +178,12 @@ class _AlunoAreaCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              CircleAvatar(radius: 24, child: Icon(icone)),
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: colorScheme.primaryContainer,
+                foregroundColor: colorScheme.onPrimaryContainer,
+                child: Icon(icone),
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -258,10 +191,7 @@ class _AlunoAreaCard extends StatelessWidget {
                   children: [
                     Text(
                       titulo,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 4),
                     Text(descricao),
@@ -269,7 +199,7 @@ class _AlunoAreaCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Icon(onTap == null ? Icons.lock_outline : Icons.chevron_right),
+              const Icon(Icons.chevron_right),
             ],
           ),
         ),
@@ -278,26 +208,28 @@ class _AlunoAreaCard extends StatelessWidget {
   }
 }
 
-class _EstadoVazio extends StatelessWidget {
-  final IconData icone;
+class _ErroTela extends StatelessWidget {
   final String mensagem;
+  final VoidCallback onRetry;
 
-  const _EstadoVazio({required this.icone, required this.mensagem});
+  const _ErroTela({required this.mensagem, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 28),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icone, size: 48),
+            const Icon(Icons.error_outline, size: 48),
             const SizedBox(height: 12),
-            Text(
-              mensagem,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
+            Text(mensagem, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Tentar novamente'),
             ),
           ],
         ),
@@ -309,12 +241,4 @@ class _EstadoVazio extends StatelessWidget {
 String _inicial(String nome) {
   final texto = nome.trim();
   return texto.isEmpty ? '?' : texto[0].toUpperCase();
-}
-
-String _textoAluno(Aluno aluno) {
-  final cpf = aluno.cpf?.trim().isEmpty ?? true
-      ? 'CPF não informado'
-      : aluno.cpf!.trim();
-
-  return '$cpf - ${aluno.comumCompleta}';
 }

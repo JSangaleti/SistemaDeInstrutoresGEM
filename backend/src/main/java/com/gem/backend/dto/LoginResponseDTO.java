@@ -4,11 +4,17 @@
  */
 package com.gem.backend.dto;
 
+import com.gem.backend.enums.Perfil;
+
 /**
  *
  * @author leonardo
  */
 
 public record LoginResponseDTO(
-    String token
+    String token,
+    Perfil perfil,
+    Long usuarioId,
+    String nome,
+    String cpf
 ) {}

@@ -11,6 +11,7 @@ package com.gem.backend.service;
 
 import com.gem.backend.dto.LoginRequestDTO;
 import com.gem.backend.dto.LoginResponseDTO;
+import com.gem.backend.enums.Perfil;
 import com.gem.backend.repository.AdminRepository;
 import com.gem.backend.repository.AlunoRepository;
 import com.gem.backend.repository.InstrutorRepository;
@@ -40,22 +41,34 @@ public class AuthService {
 
     public LoginResponseDTO login(LoginRequestDTO dto) {
         String hashBanco;
+        Long usuarioId;
+        String nome;
+        String cpf;
 
         switch (dto.perfil()) {
             case ALUNO -> {
                 var aluno = alunoRepository.findByPessoa_Cpf(dto.cpf())
                         .orElseThrow(() -> new RuntimeException("Credenciais inválidas"));
                 hashBanco = aluno.getSenha();
+                usuarioId = aluno.getId();
+                nome = aluno.getPessoa().getNome();
+                cpf = aluno.getPessoa().getCpf();
             }
             case INSTRUTOR -> {
                 var instrutor = instrutorRepository.findByPessoa_Cpf(dto.cpf())
                         .orElseThrow(() -> new RuntimeException("Credenciais inválidas"));
                 hashBanco = instrutor.getSenha();
+                usuarioId = instrutor.getId().longValue();
+                nome = instrutor.getPessoa().getNome();
+                cpf = instrutor.getPessoa().getCpf();
             }
             case ADMIN -> {
                 var admin = adminRepository.findByPessoa_Cpf(dto.cpf())
                         .orElseThrow(() -> new RuntimeException("Credenciais inválidas"));
                 hashBanco = admin.getSenha();
+                usuarioId = admin.getId().longValue();
+                nome = admin.getPessoa().getNome();
+                cpf = admin.getPessoa().getCpf();
             }
             default -> throw new RuntimeException("Perfil inválido");
         }
@@ -65,6 +78,7 @@ public class AuthService {
         }
 
         String token = tokenService.gerarToken(dto.cpf(), dto.perfil());
-        return new LoginResponseDTO(token);
+        Perfil perfil = dto.perfil();
+        return new LoginResponseDTO(token, perfil, usuarioId, nome, cpf);
     }
 }
