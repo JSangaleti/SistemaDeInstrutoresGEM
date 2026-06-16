@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../services/admin_service.dart';
 import '../../services/aluno_service.dart';
 import '../../services/comum_service.dart';
 import '../../services/instrumento_service.dart';
@@ -8,6 +9,8 @@ import '../../services/metodo_service.dart';
 import '../../services/pessoa_service.dart';
 import '../../services/registro_aula_service.dart';
 import '../../widgets/logout_button.dart';
+import '../admin_form/admin_form_page.dart';
+import '../admin_list/admin_list_page.dart';
 import '../aluno_form/aluno_form_page.dart';
 import '../aluno_list/aluno_list_page.dart';
 import '../comum_form/comum_form_page.dart';
@@ -31,6 +34,7 @@ class AdminHomePage extends StatefulWidget {
 }
 
 class _AdminHomePageState extends State<AdminHomePage> {
+  final AdminService adminService = AdminService();
   final AlunoService alunoService = AlunoService();
   final PessoaService pessoaService = PessoaService();
   final ComumService comumService = ComumService();
@@ -42,6 +46,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   bool loading = true;
   String? erro;
 
+  int totalAdmins = 0;
   int totalAlunos = 0;
   int totalPessoas = 0;
   int totalComuns = 0;
@@ -63,6 +68,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
     });
 
     try {
+      final admins = await adminService.getAdmins();
       final alunos = await alunoService.getAlunos();
       final pessoas = await pessoaService.getPessoas();
       final comuns = await comumService.getComuns();
@@ -72,6 +78,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
       final registrosAula = await registroAulaService.getRegistrosAula();
 
       setState(() {
+        totalAdmins = admins.length;
         totalAlunos = alunos.length;
         totalPessoas = pessoas.length;
         totalComuns = comuns.length;
@@ -172,6 +179,12 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 _ResumoGrid(
                   children: [
                     _ResumoCard(
+                      titulo: 'Administradores',
+                      total: totalAdmins,
+                      icone: Icons.admin_panel_settings,
+                      onTap: () => abrirTela(const AdminListPage()),
+                    ),
+                    _ResumoCard(
                       titulo: 'Alunos',
                       total: totalAlunos,
                       icone: Icons.school,
@@ -223,6 +236,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 const SizedBox(height: 12),
                 _AcoesGrid(
                   children: [
+                    _AcaoRapidaCard(
+                      texto: 'Novo administrador',
+                      icone: Icons.admin_panel_settings,
+                      onTap: () => abrirTela(const AdminFormPage()),
+                    ),
                     _AcaoRapidaCard(
                       texto: 'Novo aluno',
                       icone: Icons.person_add,

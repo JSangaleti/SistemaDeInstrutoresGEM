@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 
-import '../../models/instrutor.dart';
+import '../../models/admin.dart';
 import '../../models/pessoa.dart';
-import '../../services/instrutor_service.dart';
+import '../../services/admin_service.dart';
 import '../../services/pessoa_service.dart';
 import '../../widgets/searchable_selection.dart';
 
-class InstrutorFormPage extends StatefulWidget {
-  final Instrutor? instrutor;
+class AdminFormPage extends StatefulWidget {
+  final Admin? admin;
 
-  const InstrutorFormPage({super.key, this.instrutor});
+  const AdminFormPage({super.key, this.admin});
 
   @override
-  State<InstrutorFormPage> createState() => _InstrutorFormPageState();
+  State<AdminFormPage> createState() => _AdminFormPageState();
 }
 
-class _InstrutorFormPageState extends State<InstrutorFormPage> {
+class _AdminFormPageState extends State<AdminFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final InstrutorService service = InstrutorService();
+  final AdminService service = AdminService();
   final PessoaService pessoaService = PessoaService();
 
   final TextEditingController senhaController = TextEditingController();
@@ -29,14 +29,14 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
   bool salvando = false;
   String? erro;
 
-  bool get isEdicao => widget.instrutor != null;
+  bool get isEdicao => widget.admin != null;
 
   @override
   void initState() {
     super.initState();
 
-    if (widget.instrutor != null) {
-      cpfSelecionado = widget.instrutor!.cpf;
+    if (widget.admin != null) {
+      cpfSelecionado = widget.admin!.cpf;
     }
 
     carregarPessoas();
@@ -80,12 +80,13 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
 
     try {
       if (isEdicao) {
-        await service.editarInstrutor(
-          id: widget.instrutor!.id,
+        await service.editarAdmin(
+          id: widget.admin!.id,
           cpf: cpfSelecionado!,
+          senha: senhaController.text.trim(),
         );
       } else {
-        await service.criarInstrutor(
+        await service.criarAdmin(
           cpf: cpfSelecionado!,
           senha: senhaController.text.trim(),
         );
@@ -109,15 +110,13 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
   }
 
   String? validarSenha(String? value) {
-    if (isEdicao) return null;
-
     final senha = value?.trim() ?? '';
 
-    if (senha.isEmpty) {
+    if (!isEdicao && senha.isEmpty) {
       return 'Informe a senha';
     }
 
-    if (senha.length > 16) {
+    if (senha.isNotEmpty && senha.length > 16) {
       return 'Senha deve ter no máximo 16 caracteres';
     }
 
@@ -140,7 +139,9 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdicao ? 'Editar Instrutor' : 'Cadastrar Instrutor'),
+        title: Text(
+          isEdicao ? 'Editar Administrador' : 'Cadastrar Administrador',
+        ),
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
@@ -184,18 +185,16 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    if (!isEdicao) ...[
-                      TextFormField(
-                        controller: senhaController,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Senha',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: validarSenha,
+                    TextFormField(
+                      controller: senhaController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: isEdicao ? 'Nova senha (opcional)' : 'Senha',
+                        border: const OutlineInputBorder(),
                       ),
-                      const SizedBox(height: 16),
-                    ],
+                      validator: validarSenha,
+                    ),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: salvando ? null : salvar,
                       child: Text(
