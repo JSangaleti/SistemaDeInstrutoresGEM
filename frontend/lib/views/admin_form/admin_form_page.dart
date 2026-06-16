@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 
-import '../../models/aluno.dart';
+import '../../models/admin.dart';
 import '../../models/pessoa.dart';
-import '../../services/aluno_service.dart';
+import '../../services/admin_service.dart';
 import '../../services/pessoa_service.dart';
 import '../../widgets/searchable_selection.dart';
 
-class AlunoFormPage extends StatefulWidget {
-  final Aluno? aluno;
+class AdminFormPage extends StatefulWidget {
+  final Admin? admin;
 
-  const AlunoFormPage({super.key, this.aluno});
+  const AdminFormPage({super.key, this.admin});
 
   @override
-  State<AlunoFormPage> createState() => _AlunoFormPageState();
+  State<AdminFormPage> createState() => _AdminFormPageState();
 }
 
-class _AlunoFormPageState extends State<AlunoFormPage> {
+class _AdminFormPageState extends State<AdminFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final AlunoService service = AlunoService();
+  final AdminService service = AdminService();
   final PessoaService pessoaService = PessoaService();
 
   final TextEditingController senhaController = TextEditingController();
@@ -29,14 +29,14 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
   bool salvando = false;
   String? erro;
 
-  bool get isEdicao => widget.aluno != null;
+  bool get isEdicao => widget.admin != null;
 
   @override
   void initState() {
     super.initState();
 
-    if (widget.aluno != null) {
-      cpfSelecionado = widget.aluno!.cpf;
+    if (widget.admin != null) {
+      cpfSelecionado = widget.admin!.cpf;
     }
 
     carregarPessoas();
@@ -80,13 +80,13 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
 
     try {
       if (isEdicao) {
-        await service.editarAluno(
-          id: widget.aluno!.id,
+        await service.editarAdmin(
+          id: widget.admin!.id,
           cpf: cpfSelecionado!,
           senha: senhaController.text.trim(),
         );
       } else {
-        await service.criarAluno(
+        await service.criarAdmin(
           cpf: cpfSelecionado!,
           senha: senhaController.text.trim(),
         );
@@ -139,7 +139,9 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdicao ? 'Editar Aluno' : 'Cadastrar Aluno'),
+        title: Text(
+          isEdicao ? 'Editar Administrador' : 'Cadastrar Administrador',
+        ),
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
@@ -178,6 +180,7 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
                         if (value == null) {
                           return 'Selecione uma pessoa';
                         }
+
                         return null;
                       },
                     ),
@@ -191,7 +194,7 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
                       ),
                       validator: validarSenha,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: salvando ? null : salvar,
                       child: Text(

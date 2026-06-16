@@ -6,12 +6,14 @@ import com.gem.backend.service.AdminService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/admins")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final AdminService service;
