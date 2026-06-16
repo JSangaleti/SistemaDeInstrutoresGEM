@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../models/aluno.dart';
-import '../../models/comum.dart';
+import '../../models/pessoa.dart';
 import '../../services/aluno_service.dart';
+import '../../services/pessoa_service.dart';
 import '../../widgets/searchable_selection.dart';
 
 class AlunoFormPage extends StatefulWidget {
@@ -17,13 +18,12 @@ class AlunoFormPage extends StatefulWidget {
 class _AlunoFormPageState extends State<AlunoFormPage> {
   final _formKey = GlobalKey<FormState>();
   final AlunoService service = AlunoService();
+  final PessoaService pessoaService = PessoaService();
 
-  final TextEditingController nomeController = TextEditingController();
-  final TextEditingController cpfController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
 
-  List<Comum> comuns = [];
-  int? comumSelecionadaId;
+  List<Pessoa> pessoas = [];
+  String? cpfSelecionado;
 
   bool loading = true;
   bool salvando = false;
@@ -36,28 +36,24 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
     super.initState();
 
     if (widget.aluno != null) {
-      nomeController.text = widget.aluno!.nome;
-      cpfController.text = widget.aluno!.cpf ?? '';
-      comumSelecionadaId = widget.aluno!.comumId;
+      cpfSelecionado = widget.aluno!.cpf;
     }
 
-    carregarComuns();
+    carregarPessoas();
   }
 
   @override
   void dispose() {
-    nomeController.dispose();
-    cpfController.dispose();
     senhaController.dispose();
     super.dispose();
   }
 
-  Future<void> carregarComuns() async {
+  Future<void> carregarPessoas() async {
     try {
-      final lista = await service.getComuns();
+      final lista = await pessoaService.getPessoas();
 
       setState(() {
-        comuns = lista;
+        pessoas = lista;
         loading = false;
       });
     } catch (e) {
@@ -71,10 +67,10 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
   Future<void> salvar() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (comumSelecionadaId == null) {
+    if (cpfSelecionado == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Selecione uma comum')));
+      ).showSnackBar(const SnackBar(content: Text('Selecione uma pessoa')));
       return;
     }
 
@@ -84,18 +80,11 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
 
     try {
       if (isEdicao) {
-        await service.editarAluno(
-          id: widget.aluno!.id,
-          nome: nomeController.text.trim(),
-          cpf: cpfController.text.trim(),
-          comumId: comumSelecionadaId!,
-        );
+        await service.editarAluno(id: widget.aluno!.id, cpf: cpfSelecionado!);
       } else {
         await service.criarAluno(
-          nome: nomeController.text.trim(),
-          cpf: cpfController.text.trim(),
+          cpf: cpfSelecionado!,
           senha: senhaController.text.trim(),
-          comumId: comumSelecionadaId!,
         );
       }
 
@@ -116,24 +105,6 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
     }
   }
 
-  String? validarCpf(String? value) {
-    final cpf = value?.trim() ?? '';
-
-    if (cpf.isEmpty) {
-      return 'Informe o CPF';
-    }
-
-    if (cpf.length != 11) {
-      return 'CPF deve ter 11 dígitos';
-    }
-
-    if (!RegExp(r'^[0-9]+$').hasMatch(cpf)) {
-      return 'CPF deve conter apenas números';
-    }
-
-    return null;
-  }
-
   String? validarSenha(String? value) {
     if (isEdicao) return null;
 
@@ -150,19 +121,13 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
     return null;
   }
 
-  String textoComum(Comum comum) {
-    final partes = <String>[
-      comum.nome,
-      comum.cidade ?? '',
-      comum.estado ?? '',
-    ].where((item) => item.trim().isNotEmpty).toList();
-
-    return partes.join(' - ');
+  String textoPessoa(Pessoa pessoa) {
+    return '${pessoa.nome} - ${pessoa.cpf}';
   }
 
-  Comum? comumSelecionada() {
-    for (final comum in comuns) {
-      if (comum.id == comumSelecionadaId) return comum;
+  Pessoa? pessoaSelecionada() {
+    for (final pessoa in pessoas) {
+      if (pessoa.cpf == cpfSelecionado) return pessoa;
     }
 
     return null;
@@ -192,36 +157,27 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
                 key: _formKey,
                 child: ListView(
                   children: [
-                    TextFormField(
-                      controller: nomeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nome',
-                        border: OutlineInputBorder(),
-                      ),
-                      textCapitalization: TextCapitalization.words,
+                    SearchableSelectionField<Pessoa>(
+                      labelText: 'Pessoa',
+                      dialogTitle: 'Selecionar pessoa',
+                      items: pessoas,
+                      value: pessoaSelecionada(),
+                      itemTitle: textoPessoa,
+                      itemSubtitle: (pessoa) => pessoa.comumCompleta,
+                      itemSearchText: (pessoa) =>
+                          '${pessoa.nome} ${pessoa.cpf} ${pessoa.comumCompleta}',
+                      searchHintText: 'Buscar por nome, CPF ou comum...',
+                      onChanged: (pessoa) {
+                        setState(() {
+                          cpfSelecionado = pessoa?.cpf;
+                        });
+                      },
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Informe o nome';
+                        if (value == null) {
+                          return 'Selecione uma pessoa';
                         }
-
-                        if (value.trim().length > 64) {
-                          return 'Nome deve ter no máximo 64 caracteres';
-                        }
-
                         return null;
                       },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: cpfController,
-                      enabled: !isEdicao,
-                      decoration: const InputDecoration(
-                        labelText: 'CPF',
-                        border: OutlineInputBorder(),
-                        helperText: 'Digite apenas números',
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: validarCpf,
                     ),
                     const SizedBox(height: 16),
                     if (!isEdicao) ...[
@@ -236,28 +192,6 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
                       ),
                       const SizedBox(height: 16),
                     ],
-                    SearchableSelectionField<Comum>(
-                      labelText: 'Comum',
-                      dialogTitle: 'Selecionar comum',
-                      items: comuns,
-                      value: comumSelecionada(),
-                      itemTitle: textoComum,
-                      itemSubtitle: (comum) => comum.bairro,
-                      itemSearchText: (comum) =>
-                          '${comum.nome} ${comum.cidade ?? ''} ${comum.estado ?? ''}',
-                      searchHintText: 'Buscar por nome, cidade ou estado...',
-                      onChanged: (comum) {
-                        setState(() {
-                          comumSelecionadaId = comum?.id;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Selecione uma comum';
-                        }
-                        return null;
-                      },
-                    ),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: salvando ? null : salvar,
