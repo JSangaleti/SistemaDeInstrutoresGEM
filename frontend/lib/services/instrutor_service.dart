@@ -51,9 +51,11 @@ class InstrutorService {
   Future<void> editarInstrutor({
     required int id,
     required String cpf,
+    String? senha,
   }) async {
     final instrutorBody = {
       "pessoa": {"cpf": cpf},
+      if (senha != null && senha.trim().isNotEmpty) "senha": senha.trim(),
     };
 
     final instrutorResponse = await ApiClient.put(

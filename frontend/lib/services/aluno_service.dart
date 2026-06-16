@@ -38,7 +38,10 @@ class AlunoService {
     return data.map((e) => Comum.fromJson(e)).toList();
   }
 
-  Future<void> criarAluno({required String cpf, required String senha}) async {
+  Future<void> criarAluno({
+    required String cpf,
+    required String senha,
+  }) async {
     final alunoBody = {
       "senha": senha,
       "pessoa": {"cpf": cpf},
@@ -56,9 +59,14 @@ class AlunoService {
     }
   }
 
-  Future<void> editarAluno({required int id, required String cpf}) async {
+  Future<void> editarAluno({
+    required int id,
+    required String cpf,
+    String? senha,
+  }) async {
     final alunoBody = {
       "pessoa": {"cpf": cpf},
+      if (senha != null && senha.trim().isNotEmpty) "senha": senha.trim(),
     };
 
     final alunoResponse = await ApiClient.put(

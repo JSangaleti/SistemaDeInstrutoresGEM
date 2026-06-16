@@ -80,7 +80,11 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
 
     try {
       if (isEdicao) {
-        await service.editarAluno(id: widget.aluno!.id, cpf: cpfSelecionado!);
+        await service.editarAluno(
+          id: widget.aluno!.id,
+          cpf: cpfSelecionado!,
+          senha: senhaController.text.trim(),
+        );
       } else {
         await service.criarAluno(
           cpf: cpfSelecionado!,
@@ -106,15 +110,13 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
   }
 
   String? validarSenha(String? value) {
-    if (isEdicao) return null;
-
     final senha = value?.trim() ?? '';
 
-    if (senha.isEmpty) {
+    if (!isEdicao && senha.isEmpty) {
       return 'Informe a senha';
     }
 
-    if (senha.length > 16) {
+    if (senha.isNotEmpty && senha.length > 16) {
       return 'Senha deve ter no máximo 16 caracteres';
     }
 
@@ -146,7 +148,7 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'Erro ao carregar comuns:\n$erro',
+                  'Erro ao carregar pessoas:\n$erro',
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -180,18 +182,15 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    if (!isEdicao) ...[
-                      TextFormField(
-                        controller: senhaController,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Senha',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: validarSenha,
+                    TextFormField(
+                      controller: senhaController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: isEdicao ? 'Nova senha (opcional)' : 'Senha',
+                        border: const OutlineInputBorder(),
                       ),
-                      const SizedBox(height: 16),
-                    ],
+                      validator: validarSenha,
+                    ),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: salvando ? null : salvar,

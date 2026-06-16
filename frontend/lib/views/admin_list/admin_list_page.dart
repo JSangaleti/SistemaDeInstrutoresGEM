@@ -216,7 +216,9 @@ class _AdminListPageState extends State<AdminListPage> {
                                 [
                                   admin.cpf ?? '',
                                   admin.comumCompleta,
-                                ].where((item) => item.trim().isNotEmpty).join(' • '),
+                                ].where((item) => item.trim().isNotEmpty).join(
+                                  ' • ',
+                                ),
                               ),
                               onTap: () => editarAdmin(admin),
                               trailing: IconButton(
