@@ -11,6 +11,10 @@ import com.gem.backend.repository.AlunoRepository;
 import com.gem.backend.repository.InstrumentoRepository;
 import com.gem.backend.repository.MetodoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.util.List;
 
 @Service
@@ -50,9 +54,20 @@ public class MetodoService {
         return repository.findAll().stream().map(MetodoResponseDTO::new).toList();
     }
 
-    public MetodoResponseDTO getMetodo(Integer id) {
+public MetodoResponseDTO getMetodo(Integer id) {
         Metodo metodo = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Método não encontrado."));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String cpfLogado = auth.getName();
+
+        boolean isAdminOuInstrutor = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_INSTRUTOR"));
+
+        if (!isAdminOuInstrutor && metodo.getAluno() != null && !metodo.getAluno().getPessoa().getCpf().equals(cpfLogado)) {
+            throw new AccessDeniedException("Acesso negado: Este método está vinculado a outro aluno.");
+        }
+
         return new MetodoResponseDTO(metodo);
     }
 

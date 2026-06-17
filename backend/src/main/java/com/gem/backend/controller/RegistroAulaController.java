@@ -46,7 +46,7 @@ public class RegistroAulaController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR','ALUNO')")
     public RegistroAulaResponseDTO getById(@PathVariable Integer id) {
         return service.getRegistroAula(id);
     }

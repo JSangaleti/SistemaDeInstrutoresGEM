@@ -6,9 +6,11 @@ import com.gem.backend.service.MetodoService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/metodos")
+@PreAuthorize("hasAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
 public class MetodoController {
 
     private final MetodoService service;
@@ -17,26 +19,31 @@ public class MetodoController {
         this.service = service;
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public MetodoResponseDTO create(@Valid @RequestBody Metodo metodo) {
         return service.createMetodo(metodo);
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR', 'ROLE_ALUNO')")
     @GetMapping
     public List<MetodoResponseDTO> getList() {
         return service.getListMetodo();
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR', 'ROLE_ALUNO')")
     @GetMapping("/{id}")
     public MetodoResponseDTO getById(@PathVariable Integer id) {
         return service.getMetodo(id);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public MetodoResponseDTO update(@PathVariable Integer id, @RequestBody Metodo metodo) {
         return service.updateMetodo(id, metodo);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         service.deleteMetodo(id);

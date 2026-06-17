@@ -49,7 +49,7 @@ public class AlunoController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR','ALUNO')") 
     public ResponseEntity<AlunoResponseDTO> get(@PathVariable Long id) {
         return ResponseEntity.ok(service.getAluno(id));
     }

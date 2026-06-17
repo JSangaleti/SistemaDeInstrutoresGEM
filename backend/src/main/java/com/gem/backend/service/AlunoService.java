@@ -10,6 +10,9 @@ import com.gem.backend.model.Pessoa;
 import com.gem.backend.repository.AlunoRepository;
 import com.gem.backend.repository.ComumRepository;
 import com.gem.backend.repository.PessoaRepository;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +72,16 @@ public class AlunoService {
     public AlunoResponseDTO getAluno(Long id) {
         Aluno aluno = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado."));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String cpfLogado = auth.getName();
+
+        boolean isAdminOuInstrutor = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_INSTRUTOR"));
+
+        if (!isAdminOuInstrutor && !aluno.getPessoa().getCpf().equals(cpfLogado)) {
+            throw new AccessDeniedException("Acesso negado: Você só pode acessar o seu próprio perfil.");
+        }
 
         return new AlunoResponseDTO(aluno);
     }

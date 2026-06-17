@@ -10,7 +10,11 @@ import com.gem.backend.model.RegistroAula;
 import com.gem.backend.repository.AlunoRepository;
 import com.gem.backend.repository.InstrutorRepository;
 import com.gem.backend.repository.RegistroAulaRepository;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -65,6 +69,17 @@ public class RegistroAulaService {
     public RegistroAulaResponseDTO getRegistroAula(Integer id) {
         RegistroAula aula = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Registro de aula não encontrado."));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String cpfLogado = auth.getName();
+
+        boolean isAdminOuInstrutor = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_INSTRUTOR"));
+
+        if (!isAdminOuInstrutor && !aula.getAluno().getPessoa().getCpf().equals(cpfLogado)) {
+            throw new AccessDeniedException("Acesso negado: Você só pode acessar seus próprios registros de aula.");
+        }
+
         return new RegistroAulaResponseDTO(aula);
     }
 
