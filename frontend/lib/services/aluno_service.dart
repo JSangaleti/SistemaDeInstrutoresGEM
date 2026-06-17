@@ -39,32 +39,12 @@ class AlunoService {
   }
 
   Future<void> criarAluno({
-    required String nome,
     required String cpf,
     required String senha,
-    required int comumId,
   }) async {
-    final pessoaBody = {
-      "cpf": cpf,
-      "nome": nome,
-      "comum": {"id": comumId},
-    };
-
-    final pessoaResponse = await ApiClient.post(
-      '/pessoas',
-      jsonEncode(pessoaBody),
-    );
-
-    if (pessoaResponse.statusCode != 200 && pessoaResponse.statusCode != 201) {
-      throw Exception(
-        'Erro ao cadastrar pessoa: ${pessoaResponse.statusCode} - ${pessoaResponse.body}',
-      );
-    }
-
     final alunoBody = {
       "senha": senha,
       "pessoa": {"cpf": cpf},
-      "comum": {"id": comumId},
     };
 
     final alunoResponse = await ApiClient.post(
@@ -81,30 +61,12 @@ class AlunoService {
 
   Future<void> editarAluno({
     required int id,
-    required String nome,
     required String cpf,
-    required int comumId,
+    String? senha,
   }) async {
-    final pessoaBody = {
-      "cpf": cpf,
-      "nome": nome,
-      "comum": {"id": comumId},
-    };
-
-    final pessoaResponse = await ApiClient.put(
-      '/pessoas/$cpf',
-      jsonEncode(pessoaBody),
-    );
-
-    if (pessoaResponse.statusCode != 200) {
-      throw Exception(
-        'Erro ao editar pessoa: ${pessoaResponse.statusCode} - ${pessoaResponse.body}',
-      );
-    }
-
     final alunoBody = {
       "pessoa": {"cpf": cpf},
-      "comum": {"id": comumId},
+      if (senha != null && senha.trim().isNotEmpty) "senha": senha.trim(),
     };
 
     final alunoResponse = await ApiClient.put(
