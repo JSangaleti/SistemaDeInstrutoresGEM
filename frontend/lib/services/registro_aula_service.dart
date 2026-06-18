@@ -9,11 +9,10 @@ class RegistroAulaService {
   Future<List<RegistroAula>> getRegistrosAula() async {
     final response = await ApiClient.get('/registro-aulas');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar registros de aula: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar registros de aula.',
+    );
 
     final List data = jsonDecode(response.body);
     return _ordenarPorDataDesc(
@@ -24,11 +23,10 @@ class RegistroAulaService {
   Future<List<RegistroAula>> getMeuHistorico() async {
     final response = await ApiClient.get('/registro-aulas/meu-historico');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar meu histórico: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar meu histórico.',
+    );
 
     final List data = jsonDecode(response.body);
     return _ordenarPorDataDesc(
@@ -39,11 +37,10 @@ class RegistroAulaService {
   Future<List<Aluno>> getAlunos() async {
     final response = await ApiClient.get('/alunos');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar alunos: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar alunos.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Aluno.fromJson(e)).toList();
@@ -52,11 +49,10 @@ class RegistroAulaService {
   Future<List<Instrutor>> getInstrutores() async {
     final response = await ApiClient.get('/instrutores');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar instrutores: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar instrutores.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Instrutor.fromJson(e)).toList();
@@ -84,11 +80,11 @@ class RegistroAulaService {
       ),
     );
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(
-        'Erro ao criar registro de aula: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 201],
+      fallbackMessage: 'Erro ao criar registro de aula.',
+    );
   }
 
   Future<void> editarRegistroAula({
@@ -115,21 +111,20 @@ class RegistroAulaService {
       }),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao editar registro de aula: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao editar registro de aula.',
+    );
   }
 
   Future<void> deletarRegistroAula(int id) async {
     final response = await ApiClient.delete('/registro-aulas/$id');
 
-    if (response.statusCode != 200 && response.statusCode != 204) {
-      throw Exception(
-        'Erro ao excluir registro de aula: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 204],
+      fallbackMessage: 'Erro ao excluir registro de aula.',
+    );
   }
 
   Map<String, dynamic> _body({

@@ -13,9 +13,10 @@ class AuthService {
       jsonEncode({'cpf': cpf, 'senha': senha, 'perfil': perfil}),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception('CPF, senha ou perfil inválido.');
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'CPF, senha ou perfil inválido.',
+    );
 
     await AuthSession.salvar(jsonDecode(response.body));
   }

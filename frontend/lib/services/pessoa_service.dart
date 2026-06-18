@@ -7,9 +7,10 @@ class PessoaService {
   Future<List<Pessoa>> getPessoas() async {
     final response = await ApiClient.get('/pessoas');
 
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao buscar pessoas: ${response.statusCode}');
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar pessoas.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Pessoa.fromJson(e)).toList();
@@ -18,9 +19,10 @@ class PessoaService {
   Future<Pessoa> getPessoaByCpf(String cpf) async {
     final response = await ApiClient.get('/pessoas/$cpf');
 
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao buscar pessoa: ${response.statusCode}');
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar pessoa.',
+    );
 
     final data = jsonDecode(response.body);
     return Pessoa.fromJson(data);
@@ -39,11 +41,11 @@ class PessoaService {
 
     final response = await ApiClient.post('/pessoas', jsonEncode(body));
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(
-        'Erro ao criar pessoa: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 201],
+      fallbackMessage: 'Erro ao criar pessoa.',
+    );
   }
 
   Future<void> editarPessoa({
@@ -59,20 +61,19 @@ class PessoaService {
 
     final response = await ApiClient.put('/pessoas/$cpf', jsonEncode(body));
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao editar pessoa: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao editar pessoa.',
+    );
   }
 
   Future<void> deletarPessoa(String cpf) async {
     final response = await ApiClient.delete('/pessoas/$cpf');
 
-    if (response.statusCode != 200 && response.statusCode != 204) {
-      throw Exception(
-        'Erro ao excluir pessoa: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 204],
+      fallbackMessage: 'Erro ao excluir pessoa.',
+    );
   }
 }

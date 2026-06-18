@@ -7,9 +7,10 @@ class InstrutorService {
   Future<List<Instrutor>> getInstrutores() async {
     final response = await ApiClient.get('/instrutores');
 
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao buscar instrutores: ${response.statusCode}');
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar instrutores.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Instrutor.fromJson(e)).toList();
@@ -18,9 +19,10 @@ class InstrutorService {
   Future<Instrutor> getInstrutorById(int id) async {
     final response = await ApiClient.get('/instrutores/$id');
 
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao buscar instrutor: ${response.statusCode}');
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar instrutor.',
+    );
 
     final data = jsonDecode(response.body);
     return Instrutor.fromJson(data);
@@ -40,12 +42,11 @@ class InstrutorService {
       jsonEncode(instrutorBody),
     );
 
-    if (instrutorResponse.statusCode != 200 &&
-        instrutorResponse.statusCode != 201) {
-      throw Exception(
-        'Erro ao cadastrar instrutor: ${instrutorResponse.statusCode} - ${instrutorResponse.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      instrutorResponse,
+      acceptedStatusCodes: [200, 201],
+      fallbackMessage: 'Erro ao cadastrar instrutor.',
+    );
   }
 
   Future<void> editarInstrutor({
@@ -63,20 +64,19 @@ class InstrutorService {
       jsonEncode(instrutorBody),
     );
 
-    if (instrutorResponse.statusCode != 200) {
-      throw Exception(
-        'Erro ao editar instrutor: ${instrutorResponse.statusCode} - ${instrutorResponse.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      instrutorResponse,
+      fallbackMessage: 'Erro ao editar instrutor.',
+    );
   }
 
   Future<void> deletarInstrutor(int id) async {
     final response = await ApiClient.delete('/instrutores/$id');
 
-    if (response.statusCode != 200 && response.statusCode != 204) {
-      throw Exception(
-        'Erro ao excluir instrutor: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 204],
+      fallbackMessage: 'Erro ao excluir instrutor.',
+    );
   }
 }
