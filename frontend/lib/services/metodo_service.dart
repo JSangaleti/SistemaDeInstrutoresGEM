@@ -8,11 +8,10 @@ class MetodoService {
   Future<List<Metodo>> getMetodos() async {
     final response = await ApiClient.get('/metodos');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar métodos: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar métodos.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Metodo.fromJson(e)).toList();
@@ -21,11 +20,10 @@ class MetodoService {
   Future<List<Instrumento>> getInstrumentos() async {
     final response = await ApiClient.get('/instrumentos');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar instrumentos: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar instrumentos.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Instrumento.fromJson(e)).toList();
@@ -43,11 +41,11 @@ class MetodoService {
       }),
     );
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(
-        'Erro ao criar método: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 201],
+      fallbackMessage: 'Erro ao criar método.',
+    );
   }
 
   Future<void> editarMetodo({
@@ -64,20 +62,19 @@ class MetodoService {
       }),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao editar método: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao editar método.',
+    );
   }
 
   Future<void> deletarMetodo(int id) async {
     final response = await ApiClient.delete('/metodos/$id');
 
-    if (response.statusCode != 200 && response.statusCode != 204) {
-      throw Exception(
-        'Erro ao excluir método: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 204],
+      fallbackMessage: 'Erro ao excluir método.',
+    );
   }
 }

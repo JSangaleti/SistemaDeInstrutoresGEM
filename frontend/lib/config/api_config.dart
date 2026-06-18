@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -69,13 +71,101 @@ class AuthSession {
   }
 }
 
+class ApiException implements Exception {
+  final int? statusCode;
+  final String message;
+  final List<String> details;
+
+  const ApiException(this.message, {this.statusCode, this.details = const []});
+
+  factory ApiException.fromResponse(
+    http.Response response, {
+    String? fallbackMessage,
+  }) {
+    final body = response.body.trim();
+
+    if (body.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(body);
+
+        if (decoded is Map<String, dynamic>) {
+          final message = decoded['message']?.toString().trim();
+          final error = decoded['error']?.toString().trim();
+          final parsedDetails = _parseDetails(decoded['details']);
+
+          if (message != null && message.isNotEmpty) {
+            return ApiException(
+              message,
+              statusCode: response.statusCode,
+              details: parsedDetails,
+            );
+          }
+
+          if (error != null && error.isNotEmpty) {
+            return ApiException(
+              error,
+              statusCode: response.statusCode,
+              details: parsedDetails,
+            );
+          }
+        }
+
+        if (decoded is String && decoded.trim().isNotEmpty) {
+          return ApiException(decoded.trim(), statusCode: response.statusCode);
+        }
+      } catch (_) {
+        // Se o corpo da resposta não for JSON válido, usa fallback abaixo.
+      }
+    }
+
+    return ApiException(
+      fallbackMessage ?? _defaultMessageForStatus(response.statusCode),
+      statusCode: response.statusCode,
+    );
+  }
+
+  static List<String> _parseDetails(dynamic details) {
+    if (details is! List) return [];
+
+    return details
+        .where((item) => item != null)
+        .map((item) => item.toString().trim())
+        .where((item) => item.isNotEmpty)
+        .toList();
+  }
+
+  static String _defaultMessageForStatus(int statusCode) {
+    switch (statusCode) {
+      case 400:
+        return 'Dados inválidos. Verifique as informações enviadas.';
+      case 401:
+        return 'Sessão inválida ou expirada. Faça login novamente.';
+      case 403:
+        return 'Você não tem permissão para realizar esta ação.';
+      case 404:
+        return 'Registro não encontrado.';
+      case 409:
+        return 'Não foi possível concluir a operação por conflito nos dados.';
+      case 500:
+        return 'Erro interno no servidor.';
+      default:
+        return 'Erro inesperado na comunicação com o servidor.';
+    }
+  }
+
+  @override
+  String toString() {
+    if (details.isEmpty) return message;
+
+    return '$message\n${details.map((detail) => '• $detail').join('\n')}';
+  }
+}
+
 class ApiClient {
   static Uri uri(String path) => Uri.parse('${ApiConfig.baseUrl}$path');
 
   static Map<String, String> headers({bool json = false}) {
-    final headers = <String, String>{
-      'Accept': 'application/json',
-    };
+    final headers = <String, String>{'Accept': 'application/json'};
 
     if (json) {
       headers['Content-Type'] = 'application/json';
@@ -90,18 +180,47 @@ class ApiClient {
   }
 
   static Future<http.Response> get(String path) {
-    return http.get(uri(path), headers: headers());
+    return _send(() => http.get(uri(path), headers: headers()));
   }
 
   static Future<http.Response> post(String path, Object? body) {
-    return http.post(uri(path), headers: headers(json: true), body: body);
+    return _send(
+      () => http.post(uri(path), headers: headers(json: true), body: body),
+    );
   }
 
   static Future<http.Response> put(String path, Object? body) {
-    return http.put(uri(path), headers: headers(json: true), body: body);
+    return _send(
+      () => http.put(uri(path), headers: headers(json: true), body: body),
+    );
   }
 
   static Future<http.Response> delete(String path) {
-    return http.delete(uri(path), headers: headers());
+    return _send(() => http.delete(uri(path), headers: headers()));
+  }
+
+  static Future<http.Response> _send(
+    Future<http.Response> Function() request,
+  ) async {
+    try {
+      return await request();
+    } catch (_) {
+      throw const ApiException(
+        'Não foi possível conectar ao servidor. Tente novamente mais tarde',
+      );
+    }
+  }
+
+  static void ensureSuccess(
+    http.Response response, {
+    List<int> acceptedStatusCodes = const [200],
+    String? fallbackMessage,
+  }) {
+    if (!acceptedStatusCodes.contains(response.statusCode)) {
+      throw ApiException.fromResponse(
+        response,
+        fallbackMessage: fallbackMessage,
+      );
+    }
   }
 }

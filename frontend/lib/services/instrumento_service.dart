@@ -7,11 +7,10 @@ class InstrumentoService {
   Future<List<Instrumento>> getInstrumentos() async {
     final response = await ApiClient.get('/instrumentos');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar instrumentos: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar instrumentos.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Instrumento.fromJson(e)).toList();
@@ -23,11 +22,11 @@ class InstrumentoService {
       jsonEncode({'nome': nome}),
     );
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(
-        'Erro ao criar instrumento: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 201],
+      fallbackMessage: 'Erro ao criar instrumento.',
+    );
   }
 
   Future<void> editarInstrumento({
@@ -39,20 +38,19 @@ class InstrumentoService {
       jsonEncode({'id': id, 'nome': nome}),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao editar instrumento: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao editar instrumento.',
+    );
   }
 
   Future<void> deletarInstrumento(int id) async {
     final response = await ApiClient.delete('/instrumentos/$id');
 
-    if (response.statusCode != 200 && response.statusCode != 204) {
-      throw Exception(
-        'Erro ao excluir instrumento: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 204],
+      fallbackMessage: 'Erro ao excluir instrumento.',
+    );
   }
 }
