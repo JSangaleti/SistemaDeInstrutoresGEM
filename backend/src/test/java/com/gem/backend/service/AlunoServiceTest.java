@@ -80,7 +80,8 @@ class AlunoServiceTest {
         aluno.setPessoa(pessoa);
         aluno.setSenha("senha-codificada");
 
-        when(alunoRepository.findById(1L)).thenReturn(Optional.of(aluno));
+        when(alunoRepository.findByIdForUpdate(aluno.getId()))
+            .thenReturn(Optional.of(aluno));
         when(alunoRepository.save(any(Aluno.class))).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
