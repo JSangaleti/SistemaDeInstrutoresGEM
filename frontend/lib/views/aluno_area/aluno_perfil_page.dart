@@ -198,21 +198,20 @@ class _MetodosInstrumentoPrincipalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final instrumentoPrincipal = aluno.instrumentoPrincipal;
 
-    final metodos =
-        instrumentoPrincipal == null
-              ? []
-              : aluno.metodos.where((metodo) {
-                  final mesmoId =
-                      metodo.instrumentoId != null &&
-                      metodo.instrumentoId == instrumentoPrincipal.id;
+    final metodos = instrumentoPrincipal == null
+        ? []
+        : aluno.metodos.where((metodo) {
+            final mesmoId =
+                metodo.instrumentoId != null &&
+                metodo.instrumentoId == instrumentoPrincipal.id;
 
-                  final mesmoNome =
-                      metodo.instrumentoNome != null &&
-                      metodo.instrumentoNome!.trim().toLowerCase() ==
-                          instrumentoPrincipal.nome.trim().toLowerCase();
+            final mesmoNome =
+                metodo.instrumentoNome != null &&
+                metodo.instrumentoNome!.trim().toLowerCase() ==
+                    instrumentoPrincipal.nome.trim().toLowerCase();
 
-                  return mesmoId || mesmoNome;
-                }).toList()
+            return mesmoId || mesmoNome;
+          }).toList()
           ..sort(
             (a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()),
           );
