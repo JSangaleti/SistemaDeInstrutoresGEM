@@ -9,7 +9,7 @@ package com.gem.backend.controller;
  * @author leonardo
  */
 import com.gem.backend.dto.AlunoResponseDTO;
-import com.gem.backend.model.Aluno;
+import com.gem.backend.dto.AlunoRequestDTO;
 import com.gem.backend.service.AlunoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -32,7 +32,7 @@ public class AlunoController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
-    public ResponseEntity<AlunoResponseDTO> create(@Valid @RequestBody Aluno aluno) {
+    public ResponseEntity<AlunoResponseDTO> create(@Valid @RequestBody AlunoRequestDTO aluno) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createAluno(aluno));
     }
 
@@ -56,7 +56,10 @@ public class AlunoController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
-    public ResponseEntity<AlunoResponseDTO> update(@PathVariable Long id, @RequestBody Aluno aluno) {
+    public ResponseEntity<AlunoResponseDTO> update(
+            @PathVariable Long id,
+            @Valid @RequestBody AlunoRequestDTO aluno
+    ) {
         return ResponseEntity.ok(service.updateAluno(id, aluno));
     }
 

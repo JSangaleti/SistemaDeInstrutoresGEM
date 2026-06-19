@@ -12,7 +12,9 @@ import com.gem.backend.model.Comum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface ComumRepository extends JpaRepository<Comum, Integer> {
-
+    Optional<Comum> findByNomeAndCidade(String nome, String cidade);
 }

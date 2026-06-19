@@ -13,5 +13,9 @@ import com.gem.backend.model.Instrumento;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
-public interface InstrumentoRepository extends JpaRepository<Instrumento, Integer> {}
+public interface InstrumentoRepository extends JpaRepository<Instrumento, Integer> {
+    Optional<Instrumento> findByNome(String nome);
+}
