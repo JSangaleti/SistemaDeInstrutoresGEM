@@ -140,6 +140,8 @@ class _AlunoDetailPageState extends State<AlunoDetailPage> {
                   valor: alunoAtual.comumUF ?? 'Não informado',
                   icone: Icons.map,
                 ),
+                _InstrumentosCard(aluno: alunoAtual),
+                _MetodosCard(aluno: alunoAtual),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: editarAluno,
@@ -148,6 +150,113 @@ class _AlunoDetailPageState extends State<AlunoDetailPage> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+class _InstrumentosCard extends StatelessWidget {
+  final Aluno aluno;
+
+  const _InstrumentosCard({required this.aluno});
+
+  @override
+  Widget build(BuildContext context) {
+    final instrumentos = [...aluno.instrumentos]
+      ..sort((a, b) {
+        if (a.principal == b.principal) {
+          return a.nome.toLowerCase().compareTo(b.nome.toLowerCase());
+        }
+        return a.principal ? -1 : 1;
+      });
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const ListTile(
+            leading: Icon(Icons.music_note),
+            title: Text('Instrumentos'),
+          ),
+          if (instrumentos.isEmpty)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text('Nenhum instrumento informado.'),
+            )
+          else
+            ...instrumentos.map(
+              (instrumento) => ListTile(
+                dense: true,
+                leading: Icon(
+                  instrumento.principal ? Icons.star : Icons.music_note,
+                  color: instrumento.principal
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                ),
+                title: Text(instrumento.nome),
+                trailing: instrumento.principal
+                    ? const Chip(label: Text('Principal'))
+                    : null,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetodosCard extends StatelessWidget {
+  final Aluno aluno;
+
+  const _MetodosCard({required this.aluno});
+
+  @override
+  Widget build(BuildContext context) {
+    final instrumentoPrincipal = aluno.instrumentoPrincipal;
+    final metodos =
+        aluno.metodos
+            .where(
+              (metodo) =>
+                  instrumentoPrincipal != null &&
+                  metodo.instrumentoId == instrumentoPrincipal.id,
+            )
+            .toList()
+          ..sort(
+            (a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()),
+          );
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.menu_book),
+            title: const Text('Métodos em estudo'),
+            subtitle: instrumentoPrincipal == null
+                ? const Text('Instrumento principal não definido')
+                : Text('Instrumento principal: ${instrumentoPrincipal.nome}'),
+          ),
+          if (metodos.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text(
+                instrumentoPrincipal == null
+                    ? 'Defina o instrumento principal para visualizar os métodos.'
+                    : 'Nenhum método informado para o instrumento principal.',
+              ),
+            )
+          else
+            ...metodos.map(
+              (metodo) => ListTile(
+                dense: true,
+                leading: const Icon(Icons.book_outlined),
+                title: Text(metodo.nome),
+                subtitle: Text(metodo.instrumentoTexto),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

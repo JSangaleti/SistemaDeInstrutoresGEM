@@ -13,6 +13,12 @@ import com.gem.backend.model.Metodo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface MetodoRepository extends JpaRepository<Metodo, Integer> {
+    List<Metodo> findByAluno_Id(Long alunoId);
+
+    Optional<Metodo> findByNomeAndInstrumento_Id(String nome, Integer instrumentoId);
 }

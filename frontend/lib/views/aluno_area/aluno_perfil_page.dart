@@ -54,6 +54,8 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
 
   @override
   Widget build(BuildContext context) {
+    final alunoAtual = aluno;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Perfil do aluno'),
@@ -77,7 +79,7 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                 ),
               ),
             )
-          : aluno == null
+          : alunoAtual == null
           ? const Center(child: Text('Aluno não encontrado.'))
           : ListView(
               padding: const EdgeInsets.all(16),
@@ -90,8 +92,8 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                         CircleAvatar(
                           radius: 34,
                           child: Text(
-                            aluno!.nome.isNotEmpty
-                                ? aluno!.nome[0].toUpperCase()
+                            alunoAtual.nome.isNotEmpty
+                                ? alunoAtual.nome[0].toUpperCase()
                                 : '?',
                             style: const TextStyle(fontSize: 28),
                           ),
@@ -99,7 +101,7 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: Text(
-                            aluno!.nome,
+                            alunoAtual.nome,
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                         ),
@@ -110,26 +112,146 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                 const SizedBox(height: 16),
                 _InfoCard(
                   titulo: 'CPF',
-                  valor: valorPadrao(aluno!.cpf),
+                  valor: valorPadrao(alunoAtual.cpf),
                   icone: Icons.badge,
                 ),
                 _InfoCard(
                   titulo: 'Comum',
-                  valor: valorPadrao(aluno!.comumCompleta),
+                  valor: valorPadrao(alunoAtual.comumCompleta),
                   icone: Icons.location_city,
                 ),
                 _InfoCard(
                   titulo: 'Cidade',
-                  valor: valorPadrao(aluno!.comumCidade),
+                  valor: valorPadrao(alunoAtual.comumCidade),
                   icone: Icons.location_on,
                 ),
                 _InfoCard(
                   titulo: 'Estado/UF',
-                  valor: valorPadrao(aluno!.comumUF),
+                  valor: valorPadrao(alunoAtual.comumUF),
                   icone: Icons.map,
                 ),
+                _InstrumentosCard(aluno: alunoAtual),
+                _MetodosInstrumentoPrincipalCard(aluno: alunoAtual),
               ],
             ),
+    );
+  }
+}
+
+class _InstrumentosCard extends StatelessWidget {
+  final Aluno aluno;
+
+  const _InstrumentosCard({required this.aluno});
+
+  @override
+  Widget build(BuildContext context) {
+    final instrumentos = [...aluno.instrumentos]
+      ..sort((a, b) {
+        if (a.principal == b.principal) {
+          return a.nome.toLowerCase().compareTo(b.nome.toLowerCase());
+        }
+        return a.principal ? -1 : 1;
+      });
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const ListTile(
+            leading: Icon(Icons.music_note),
+            title: Text('Instrumentos que toca'),
+          ),
+          if (instrumentos.isEmpty)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text('Nenhum instrumento informado.'),
+            )
+          else
+            ...instrumentos.map(
+              (instrumento) => ListTile(
+                dense: true,
+                leading: Icon(
+                  instrumento.principal ? Icons.star : Icons.music_note,
+                  color: instrumento.principal
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                ),
+                title: Text(instrumento.nome),
+                trailing: instrumento.principal
+                    ? const Chip(label: Text('Principal'))
+                    : null,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetodosInstrumentoPrincipalCard extends StatelessWidget {
+  final Aluno aluno;
+
+  const _MetodosInstrumentoPrincipalCard({required this.aluno});
+
+  @override
+  Widget build(BuildContext context) {
+    final instrumentoPrincipal = aluno.instrumentoPrincipal;
+
+    final metodos = instrumentoPrincipal == null
+        ? []
+        : aluno.metodos.where((metodo) {
+            final mesmoId =
+                metodo.instrumentoId != null &&
+                metodo.instrumentoId == instrumentoPrincipal.id;
+
+            final mesmoNome =
+                metodo.instrumentoNome != null &&
+                metodo.instrumentoNome!.trim().toLowerCase() ==
+                    instrumentoPrincipal.nome.trim().toLowerCase();
+
+            return mesmoId || mesmoNome;
+          }).toList()
+          ..sort(
+            (a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()),
+          );
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.menu_book),
+            title: const Text('Métodos do instrumento principal'),
+            subtitle: Text(
+              instrumentoPrincipal == null
+                  ? 'Instrumento principal não informado'
+                  : 'Instrumento principal: ${instrumentoPrincipal.nome}',
+            ),
+          ),
+          if (instrumentoPrincipal == null)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text('Nenhum instrumento principal informado.'),
+            )
+          else if (metodos.isEmpty)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text(
+                'Nenhum método informado para o instrumento principal.',
+              ),
+            )
+          else
+            ...metodos.map(
+              (metodo) => ListTile(
+                dense: true,
+                leading: const Icon(Icons.book_outlined),
+                title: Text(metodo.nome),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

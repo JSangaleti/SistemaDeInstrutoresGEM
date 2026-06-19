@@ -44,10 +44,15 @@ class AlunoService {
   Future<void> criarAluno({
     required String cpf,
     required String senha,
+    required Set<int> instrumentoIds,
+    required int instrumentoPrincipalId,
+    required Set<int> metodoIds,
   }) async {
     final alunoBody = {
       "senha": senha,
       "pessoa": {"cpf": cpf},
+      "instrumentos": _instrumentosBody(instrumentoIds, instrumentoPrincipalId),
+      "metodoIds": metodoIds.toList(),
     };
 
     final alunoResponse = await ApiClient.post(
@@ -66,10 +71,15 @@ class AlunoService {
     required int id,
     required String cpf,
     String? senha,
+    required Set<int> instrumentoIds,
+    required int instrumentoPrincipalId,
+    required Set<int> metodoIds,
   }) async {
     final alunoBody = {
       "pessoa": {"cpf": cpf},
       if (senha != null && senha.trim().isNotEmpty) "senha": senha.trim(),
+      "instrumentos": _instrumentosBody(instrumentoIds, instrumentoPrincipalId),
+      "metodoIds": metodoIds.toList(),
     };
 
     final alunoResponse = await ApiClient.put(
@@ -96,12 +106,23 @@ class AlunoService {
   Future<Aluno> getAlunoById(int id) async {
     final response = await ApiClient.get('/alunos/$id');
 
-    ApiClient.ensureSuccess(
-      response,
-      fallbackMessage: 'Erro ao buscar aluno.',
-    );
+    ApiClient.ensureSuccess(response, fallbackMessage: 'Erro ao buscar aluno.');
 
     final data = jsonDecode(response.body);
     return Aluno.fromJson(data);
+  }
+
+  List<Map<String, dynamic>> _instrumentosBody(
+    Set<int> instrumentoIds,
+    int instrumentoPrincipalId,
+  ) {
+    return instrumentoIds
+        .map(
+          (id) => {
+            'instrumentoId': id,
+            'principal': id == instrumentoPrincipalId,
+          },
+        )
+        .toList();
   }
 }

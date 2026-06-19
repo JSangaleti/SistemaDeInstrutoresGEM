@@ -14,7 +14,13 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "alunos_has_instrumentos")
+@Table(
+        name = "alunos_has_instrumentos",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_aluno_instrumento",
+                columnNames = {"aluno_id", "instrumento_id"}
+        )
+)
 public class AlunoInstrumento {
 
     @Id
@@ -23,18 +29,18 @@ public class AlunoInstrumento {
 
     @NotNull(message = "Aluno é obrigatório.")
     @ManyToOne
-    @JoinColumn(name = "aluno_id")
+    @JoinColumn(name = "aluno_id", nullable = false)
     private Aluno aluno;
 
     @NotNull(message = "Instrumento é obrigatório.")
     @ManyToOne
-    @JoinColumn(name = "instrumento_id")
+    @JoinColumn(name = "instrumento_id", nullable = false)
     private Instrumento instrumento;
 
     @NotNull(message = "Informe se é o instrumento principal.")
     @Min(value = 0, message = "Instrumento principal deve ser 0 ou 1.")
     @Max(value = 1, message = "Instrumento principal deve ser 0 ou 1.")
-    @Column(name = "eh_instrumento_principal")
+    @Column(name = "eh_instrumento_principal", nullable = false)
     private Short ehInstrumentoPrincipal;
 
     public AlunoInstrumento() {
