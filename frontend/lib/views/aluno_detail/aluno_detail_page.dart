@@ -212,22 +212,39 @@ class _MetodosCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final metodos = [...aluno.metodos]
-      ..sort((a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()));
+    final instrumentoPrincipal = aluno.instrumentoPrincipal;
+    final metodos =
+        aluno.metodos
+            .where(
+              (metodo) =>
+                  instrumentoPrincipal != null &&
+                  metodo.instrumentoId == instrumentoPrincipal.id,
+            )
+            .toList()
+          ..sort(
+            (a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()),
+          );
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const ListTile(
-            leading: Icon(Icons.menu_book),
-            title: Text('Métodos em estudo'),
+          ListTile(
+            leading: const Icon(Icons.menu_book),
+            title: const Text('Métodos em estudo'),
+            subtitle: instrumentoPrincipal == null
+                ? const Text('Instrumento principal não definido')
+                : Text('Instrumento principal: ${instrumentoPrincipal.nome}'),
           ),
           if (metodos.isEmpty)
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Text('Nenhum método informado.'),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text(
+                instrumentoPrincipal == null
+                    ? 'Defina o instrumento principal para visualizar os métodos.'
+                    : 'Nenhum método informado para o instrumento principal.',
+              ),
             )
           else
             ...metodos.map(
