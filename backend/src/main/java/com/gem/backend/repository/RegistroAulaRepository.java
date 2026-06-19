@@ -21,4 +21,6 @@ public interface RegistroAulaRepository extends JpaRepository<RegistroAula, Inte
     List<RegistroAula> findAllByOrderByDataDescIdDesc();
 
     List<RegistroAula> findByAluno_Pessoa_CpfOrderByDataDescIdDesc(String cpf);
+
+    boolean existsByAluno_IdAndDescricao(Long alunoId, String descricao);
 }

@@ -46,7 +46,7 @@ public class InstrumentoController {
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public InstrumentoResponseDTO update(@PathVariable Integer id, @RequestBody Instrumento instrumento) {
+    public InstrumentoResponseDTO update(@PathVariable Integer id, @Valid @RequestBody Instrumento instrumento) {
         return service.updateInstrumento(id, instrumento);
     }
 

@@ -49,7 +49,7 @@ public class ComumController {
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<ComumResponseDTO> update(@PathVariable Integer id, @RequestBody Comum comum) {
+    public ResponseEntity<ComumResponseDTO> update(@PathVariable Integer id, @Valid @RequestBody Comum comum) {
         return ResponseEntity.ok(service.updateComum(id, comum));
     }
 

@@ -12,6 +12,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import com.gem.backend.validation.ValidationGroups;
 import java.util.List;
 
 @Entity
@@ -22,7 +23,7 @@ public class Instrutor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "Senha é obrigatória.")
+    @NotBlank(message = "Senha é obrigatória.", groups = ValidationGroups.Create.class)
     @Size(max = 255, message = "Senha deve ter no máximo 255 caracteres.")
     @Column(length = 255, nullable = false)
     private String senha;

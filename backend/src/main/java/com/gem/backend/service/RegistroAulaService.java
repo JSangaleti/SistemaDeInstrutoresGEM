@@ -14,6 +14,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -35,13 +36,14 @@ public class RegistroAulaService {
         this.instrutorRepository = instrutorRepository;
     }
 
-    public RegistroAulaResponseDTO createRegistroAula(RegistroAula aula) {
+    @Transactional
+    public RegistroAulaResponseDTO createRegistroAula(RegistroAula aula, Authentication authentication) {
         if (aula.getId() != null && repository.existsById(aula.getId())) {
             throw new DuplicateResourceException("Já existe uma aula cadastrada com este ID.");
         }
 
         Aluno aluno = buscarAlunoObrigatorio(aula);
-        Instrutor instrutor = buscarInstrutorObrigatorio(aula);
+        Instrutor instrutor = resolverInstrutor(aula, authentication);
 
         aula.setAluno(aluno);
         aula.setInstrutor(instrutor);
@@ -83,16 +85,29 @@ public class RegistroAulaService {
         return new RegistroAulaResponseDTO(aula);
     }
 
-    public RegistroAulaResponseDTO updateRegistroAula(Integer id, RegistroAula dadosAtualizados) {
+    @Transactional
+    public RegistroAulaResponseDTO updateRegistroAula(
+            Integer id,
+            RegistroAula dadosAtualizados,
+            Authentication authentication
+    ) {
         RegistroAula existente = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Registro de aula não encontrado."));
+
+        if (isInstrutor(authentication)) {
+            Instrutor instrutorAutenticado = buscarInstrutorAutenticado(authentication);
+            if (!existente.getInstrutor().getId().equals(instrutorAutenticado.getId())) {
+                throw new AccessDeniedException("Você só pode editar registros de aula de sua autoria.");
+            }
+            existente.setInstrutor(instrutorAutenticado);
+        }
 
         if (dadosAtualizados.getAluno() != null) {
             Aluno aluno = buscarAlunoObrigatorio(dadosAtualizados);
             existente.setAluno(aluno);
         }
 
-        if (dadosAtualizados.getInstrutor() != null) {
+        if (!isInstrutor(authentication) && dadosAtualizados.getInstrutor() != null) {
             Instrutor instrutor = buscarInstrutorObrigatorio(dadosAtualizados);
             existente.setInstrutor(instrutor);
         }
@@ -137,5 +152,26 @@ public class RegistroAulaService {
         }
         return instrutorRepository.findById(aula.getInstrutor().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Instrutor não encontrado."));
+    }
+
+    private Instrutor resolverInstrutor(RegistroAula aula, Authentication authentication) {
+        if (isInstrutor(authentication)) {
+            return buscarInstrutorAutenticado(authentication);
+        }
+        return buscarInstrutorObrigatorio(aula);
+    }
+
+    private Instrutor buscarInstrutorAutenticado(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new AccessDeniedException("Instrutor autenticado não identificado.");
+        }
+
+        return instrutorRepository.findByPessoa_Cpf(authentication.getName())
+                .orElseThrow(() -> new AccessDeniedException("Instrutor autenticado não encontrado."));
+    }
+
+    private boolean isInstrutor(Authentication authentication) {
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_INSTRUTOR"));
     }
 }

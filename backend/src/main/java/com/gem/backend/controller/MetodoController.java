@@ -10,7 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/metodos")
-@PreAuthorize("hasAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_INSTRUTOR')")
 public class MetodoController {
 
     private final MetodoService service;
@@ -39,7 +39,7 @@ public class MetodoController {
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public MetodoResponseDTO update(@PathVariable Integer id, @RequestBody Metodo metodo) {
+    public MetodoResponseDTO update(@PathVariable Integer id, @Valid @RequestBody Metodo metodo) {
         return service.updateMetodo(id, metodo);
     }
 

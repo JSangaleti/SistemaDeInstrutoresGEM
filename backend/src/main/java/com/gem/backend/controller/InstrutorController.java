@@ -11,10 +11,12 @@ package com.gem.backend.controller;
 import com.gem.backend.dto.InstrutorResponseDTO;
 import com.gem.backend.model.Instrutor;
 import com.gem.backend.service.InstrutorService;
+import com.gem.backend.validation.ValidationGroups;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
 @RequestMapping("/instrutores")
@@ -28,7 +30,9 @@ public class InstrutorController {
     }
 
     @PostMapping
-    public InstrutorResponseDTO create(@Valid @RequestBody Instrutor instrutor) {
+    public InstrutorResponseDTO create(
+            @Validated(ValidationGroups.Create.class) @RequestBody Instrutor instrutor
+    ) {
         return service.createInstrutor(instrutor);
     }
 
@@ -43,7 +47,7 @@ public class InstrutorController {
     }
 
     @PutMapping("/{id}")
-    public InstrutorResponseDTO update(@PathVariable Integer id, @RequestBody Instrutor instrutor) {
+    public InstrutorResponseDTO update(@PathVariable Integer id, @Valid @RequestBody Instrutor instrutor) {
         return service.updateInstrutor(id, instrutor);
     }
 
