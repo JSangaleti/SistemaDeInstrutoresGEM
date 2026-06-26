@@ -121,7 +121,7 @@ class _ComumFormPageState extends State<ComumFormPage> {
             children: [
               TextFormField(
                 controller: nomeController,
-                maxLength: 100,
+                maxLength: 32,
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   labelText: 'Nome',
@@ -133,8 +133,8 @@ class _ComumFormPageState extends State<ComumFormPage> {
                   if (texto.isEmpty) {
                     return 'Informe o nome';
                   }
-                  if (texto.length > 100) {
-                    return 'Nome deve ter no máximo 100 caracteres';
+                  if (texto.length > 32) {
+                    return 'Nome deve ter no máximo 32 caracteres';
                   }
                   return null;
                 },
@@ -142,7 +142,7 @@ class _ComumFormPageState extends State<ComumFormPage> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: cidadeController,
-                maxLength: 60,
+                maxLength: 32,
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   labelText: 'Cidade',
@@ -151,8 +151,8 @@ class _ComumFormPageState extends State<ComumFormPage> {
                 ),
                 validator: (value) {
                   final texto = value?.trim() ?? '';
-                  if (texto.length > 60) {
-                    return 'Cidade deve ter no máximo 60 caracteres';
+                  if (texto.length > 32) {
+                    return 'Cidade deve ter no máximo 32 caracteres';
                   }
                   return null;
                 },
@@ -176,7 +176,7 @@ class _ComumFormPageState extends State<ComumFormPage> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: bairroController,
-                maxLength: 60,
+                maxLength: 32,
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   labelText: 'Bairro',
@@ -185,8 +185,8 @@ class _ComumFormPageState extends State<ComumFormPage> {
                 ),
                 validator: (value) {
                   final texto = value?.trim() ?? '';
-                  if (texto.length > 60) {
-                    return 'Bairro deve ter no máximo 60 caracteres';
+                  if (texto.length > 32) {
+                    return 'Bairro deve ter no máximo 32 caracteres';
                   }
                   return null;
                 },

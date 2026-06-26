@@ -28,6 +28,18 @@ class InstrutorService {
     return Instrutor.fromJson(data);
   }
 
+  Future<Instrutor> getMeuPerfil() async {
+    final response = await ApiClient.get('/instrutores/me');
+
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar meu perfil.',
+    );
+
+    final data = jsonDecode(response.body);
+    return Instrutor.fromJson(data);
+  }
+
   Future<void> criarInstrutor({
     required String cpf,
     required String senha,

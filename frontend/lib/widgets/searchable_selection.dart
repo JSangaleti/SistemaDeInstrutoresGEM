@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class SearchableSelectionField<T> extends StatelessWidget {
+class SearchableSelectionField<T> extends StatefulWidget {
   final String labelText;
   final String dialogTitle;
   final List<T> items;
@@ -33,32 +33,66 @@ class SearchableSelectionField<T> extends StatelessWidget {
   });
 
   @override
+  State<SearchableSelectionField<T>> createState() =>
+      _SearchableSelectionFieldState<T>();
+}
+
+class _SearchableSelectionFieldState<T>
+    extends State<SearchableSelectionField<T>> {
+  T? _fieldValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _fieldValue = widget.value;
+  }
+
+  @override
+  void didUpdateWidget(covariant SearchableSelectionField<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _fieldValue = widget.value;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FormField<T>(
-      initialValue: value,
-      validator: validator,
+      initialValue: _fieldValue,
+      validator: widget.validator,
       builder: (field) {
-        final selecionado = value;
+        if (field.value != _fieldValue) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              field.didChange(_fieldValue);
+            }
+          });
+        }
+
+        final selecionado = _fieldValue;
 
         return InkWell(
           borderRadius: BorderRadius.circular(8),
-          onTap: enabled
+          onTap: widget.enabled
               ? () async {
                   final resultado = await showSearchableSelection<T>(
                     context: context,
-                    title: dialogTitle,
-                    items: items,
-                    selected: value,
-                    itemTitle: itemTitle,
-                    itemSubtitle: itemSubtitle,
-                    itemSearchText: itemSearchText,
-                    searchHintText: searchHintText,
-                    emptyText: emptyText,
+                    title: widget.dialogTitle,
+                    items: widget.items,
+                    selected: _fieldValue,
+                    itemTitle: widget.itemTitle,
+                    itemSubtitle: widget.itemSubtitle,
+                    itemSearchText: widget.itemSearchText,
+                    searchHintText: widget.searchHintText,
+                    emptyText: widget.emptyText,
                   );
 
                   if (resultado == null) return;
 
-                  onChanged(resultado);
+                  setState(() {
+                    _fieldValue = resultado;
+                  });
+                  widget.onChanged(resultado);
                   field.didChange(resultado);
                   field.validate();
                 }
@@ -66,14 +100,14 @@ class SearchableSelectionField<T> extends StatelessWidget {
           child: InputDecorator(
             isEmpty: selecionado == null,
             decoration: InputDecoration(
-              labelText: labelText,
+              labelText: widget.labelText,
               border: const OutlineInputBorder(),
               errorText: field.errorText,
-              enabled: enabled,
-              suffixIcon: suffixIcon ?? const Icon(Icons.search),
+              enabled: widget.enabled,
+              suffixIcon: widget.suffixIcon ?? const Icon(Icons.search),
             ),
             child: Text(
-              selecionado == null ? '' : itemTitle(selecionado),
+              selecionado == null ? '' : widget.itemTitle(selecionado),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

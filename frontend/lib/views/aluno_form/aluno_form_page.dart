@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../config/api_config.dart';
 import '../../models/aluno.dart';
 import '../../models/instrumento.dart';
 import '../../models/metodo.dart';
@@ -41,6 +42,7 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
   String? erro;
 
   bool get isEdicao => widget.aluno != null;
+  bool get podeInformarSenha => !isEdicao || AuthSession.perfil == 'ADMIN';
 
   List<Metodo> get metodosDoInstrumentoPrincipal {
     final principalId = instrumentoPrincipalId;
@@ -135,7 +137,7 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
         await service.editarAluno(
           id: widget.aluno!.id,
           cpf: cpfSelecionado!,
-          senha: senhaController.text.trim(),
+          senha: podeInformarSenha ? senhaController.text.trim() : null,
           instrumentoIds: instrumentoIdsSelecionados,
           instrumentoPrincipalId: principalId,
           metodoIds: metodoIdsSelecionados,
@@ -189,8 +191,8 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
   String? validarSenha(String? value) {
     final senha = value?.trim() ?? '';
     if (!isEdicao && senha.isEmpty) return 'Informe a senha';
-    if (senha.isNotEmpty && senha.length > 16) {
-      return 'Senha deve ter no máximo 16 caracteres';
+    if (senha.isNotEmpty && senha.length > 255) {
+      return 'Senha deve ter no máximo 255 caracteres';
     }
     return null;
   }
@@ -273,15 +275,16 @@ class _AlunoFormPageState extends State<AlunoFormPage> {
           validator: (value) => value == null ? 'Selecione uma pessoa' : null,
         ),
         const SizedBox(height: 16),
-        TextFormField(
-          controller: senhaController,
-          obscureText: true,
-          decoration: InputDecoration(
-            labelText: isEdicao ? 'Nova senha (opcional)' : 'Senha',
-            border: const OutlineInputBorder(),
+        if (podeInformarSenha)
+          TextFormField(
+            controller: senhaController,
+            obscureText: true,
+            decoration: InputDecoration(
+              labelText: isEdicao ? 'Nova senha (opcional)' : 'Senha',
+              border: const OutlineInputBorder(),
+            ),
+            validator: validarSenha,
           ),
-          validator: validarSenha,
-        ),
       ],
     );
   }

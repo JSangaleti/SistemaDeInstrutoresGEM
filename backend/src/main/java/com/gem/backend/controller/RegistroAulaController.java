@@ -29,14 +29,17 @@ public class RegistroAulaController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
-    public RegistroAulaResponseDTO create(@Valid @RequestBody RegistroAula aula) {
-        return service.createRegistroAula(aula);
+    public RegistroAulaResponseDTO create(
+            @Valid @RequestBody RegistroAula aula,
+            Authentication authentication
+    ) {
+        return service.createRegistroAula(aula, authentication);
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
-    public List<RegistroAulaResponseDTO> getList() {
-        return service.getListRegistroAula();
+    public List<RegistroAulaResponseDTO> getList(Authentication authentication) {
+        return service.getListRegistroAula(authentication);
     }
 
     @GetMapping("/meu-historico")
@@ -53,8 +56,12 @@ public class RegistroAulaController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
-    public RegistroAulaResponseDTO update(@PathVariable Integer id, @RequestBody RegistroAula aula) {
-        return service.updateRegistroAula(id, aula);
+    public RegistroAulaResponseDTO update(
+            @PathVariable Integer id,
+            @Valid @RequestBody RegistroAula aula,
+            Authentication authentication
+    ) {
+        return service.updateRegistroAula(id, aula, authentication);
     }
 
     @DeleteMapping("/{id}")

@@ -123,9 +123,18 @@ public class AlunoService {
 
     @Transactional
     public AlunoResponseDTO updateAluno(Long id, AlunoRequestDTO dados) {
-        Aluno alunoExistente = buscarAluno(id);
+        return updateAluno(id, dados, SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Transactional
+    public AlunoResponseDTO updateAluno(Long id, AlunoRequestDTO dados, Authentication authentication) {
+        Aluno alunoExistente = repository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado."));
 
         if (dados.senha() != null && !dados.senha().isBlank()) {
+            if (!isAdmin(authentication)) {
+                throw new AccessDeniedException("Apenas administradores podem alterar senhas de alunos.");
+            }
             alunoExistente.setSenha(passwordEncoder.encode(dados.senha()));
         }
 
@@ -286,5 +295,10 @@ public class AlunoService {
         Comum comum = comumRepository.findById(comumInformada.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Comum não encontrada."));
         aluno.setComum(comum);
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }

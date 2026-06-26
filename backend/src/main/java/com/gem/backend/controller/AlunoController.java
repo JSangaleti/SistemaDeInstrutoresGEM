@@ -58,9 +58,10 @@ public class AlunoController {
     @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
     public ResponseEntity<AlunoResponseDTO> update(
             @PathVariable Long id,
-            @Valid @RequestBody AlunoRequestDTO aluno
+            @Valid @RequestBody AlunoRequestDTO aluno,
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(service.updateAluno(id, aluno));
+        return ResponseEntity.ok(service.updateAluno(id, aluno, authentication));
     }
 
     @DeleteMapping("/{id}")

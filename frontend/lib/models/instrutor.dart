@@ -31,7 +31,8 @@ class Instrutor {
       comumId: comumDaPessoa?['id'] ?? json['comumId'],
       comum: comumDaPessoa?['nome'] ?? json['comum'],
       comumCidade: comumDaPessoa?['cidade'] ?? json['comumCidade'],
-      comumEstado: comumDaPessoa?['estado'] ?? json['comumEstado'],
+      comumEstado:
+          comumDaPessoa?['estado'] ?? json['comumUF'] ?? json['comumEstado'],
     );
   }
 

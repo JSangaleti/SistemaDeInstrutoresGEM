@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../config/api_config.dart';
 import '../../models/aluno.dart';
 import '../../models/registro_aula.dart';
 import '../../services/registro_aula_service.dart';
@@ -91,7 +92,11 @@ class _InstrutorHistoricoPageState extends State<InstrutorHistoricoPage> {
     final resultado = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RegistroAulaFormPage(alunoInicialId: aluno.id),
+        builder: (context) => RegistroAulaFormPage(
+          alunoInicialId: aluno.id,
+          instrutorFixoId: AuthSession.usuarioId,
+          instrutorFixoNome: AuthSession.nome,
+        ),
       ),
     );
 

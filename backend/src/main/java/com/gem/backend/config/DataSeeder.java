@@ -186,31 +186,50 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private Aluno garantirAluno(Pessoa pessoa, Comum comum) {
-        return alunoRepository.findByPessoa_Cpf(pessoa.getCpf()).orElseGet(() -> {
-            Aluno aluno = new Aluno();
-            aluno.setSenha(passwordEncoder.encode(SENHA_USUARIO));
-            aluno.setPessoa(pessoa);
-            aluno.setComum(comum);
-            return alunoRepository.save(aluno);
+        Aluno aluno = alunoRepository.findByPessoa_Cpf(pessoa.getCpf()).orElseGet(() -> {
+            Aluno novoAluno = new Aluno();
+            novoAluno.setSenha(passwordEncoder.encode(SENHA_USUARIO));
+            novoAluno.setPessoa(pessoa);
+            novoAluno.setComum(comum);
+            return alunoRepository.save(novoAluno);
         });
+
+        if (SENHA_USUARIO.equals(aluno.getSenha())) {
+            aluno.setSenha(passwordEncoder.encode(SENHA_USUARIO));
+            return alunoRepository.save(aluno);
+        }
+
+        return aluno;
     }
 
     private Instrutor garantirInstrutor(Pessoa pessoa) {
-        return instrutorRepository.findByPessoa_Cpf(pessoa.getCpf()).orElseGet(() -> {
-            Instrutor instrutor = new Instrutor();
-            instrutor.setSenha(passwordEncoder.encode(SENHA_USUARIO));
-            instrutor.setPessoa(pessoa);
-            return instrutorRepository.save(instrutor);
+        Instrutor instrutor = instrutorRepository.findByPessoa_Cpf(pessoa.getCpf()).orElseGet(() -> {
+            Instrutor novoInstrutor = new Instrutor();
+            novoInstrutor.setSenha(passwordEncoder.encode(SENHA_USUARIO));
+            novoInstrutor.setPessoa(pessoa);
+            return instrutorRepository.save(novoInstrutor);
         });
+
+        if (SENHA_USUARIO.equals(instrutor.getSenha())) {
+            instrutor.setSenha(passwordEncoder.encode(SENHA_USUARIO));
+            return instrutorRepository.save(instrutor);
+        }
+
+        return instrutor;
     }
 
     private void garantirAdmin(Pessoa pessoa) {
-        adminRepository.findByPessoa_Cpf(pessoa.getCpf()).orElseGet(() -> {
-            Admin admin = new Admin();
-            admin.setSenha(passwordEncoder.encode(SENHA_ADMIN));
-            admin.setPessoa(pessoa);
-            return adminRepository.save(admin);
+        Admin admin = adminRepository.findByPessoa_Cpf(pessoa.getCpf()).orElseGet(() -> {
+            Admin novoAdmin = new Admin();
+            novoAdmin.setSenha(passwordEncoder.encode(SENHA_ADMIN));
+            novoAdmin.setPessoa(pessoa);
+            return adminRepository.save(novoAdmin);
         });
+
+        if (SENHA_ADMIN.equals(admin.getSenha())) {
+            admin.setSenha(passwordEncoder.encode(SENHA_ADMIN));
+            adminRepository.save(admin);
+        }
     }
 
     private Instrumento garantirInstrumento(String nome) {

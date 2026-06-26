@@ -116,8 +116,8 @@ class _AdminFormPageState extends State<AdminFormPage> {
       return 'Informe a senha';
     }
 
-    if (senha.isNotEmpty && senha.length > 16) {
-      return 'Senha deve ter no máximo 16 caracteres';
+    if (senha.isNotEmpty && senha.length > 255) {
+      return 'Senha deve ter no máximo 255 caracteres';
     }
 
     return null;

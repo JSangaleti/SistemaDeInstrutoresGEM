@@ -22,6 +22,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashSet;
@@ -32,6 +35,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -80,8 +84,9 @@ class AlunoServiceTest {
         aluno.setPessoa(pessoa);
         aluno.setSenha("senha-codificada");
 
-        when(alunoRepository.findById(1L)).thenReturn(Optional.of(aluno));
-        when(alunoRepository.save(any(Aluno.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(alunoRepository.findByIdForUpdate(aluno.getId()))
+            .thenReturn(Optional.of(aluno));
+        lenient().when(alunoRepository.save(any(Aluno.class))).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -151,6 +156,29 @@ class AlunoServiceTest {
         );
 
         assertEquals("Selecione exatamente um instrumento principal.", exception.getMessage());
+    }
+
+    @Test
+    void deveBloquearInstrutorAoAlterarSenhaDoAluno() {
+        AlunoRequestDTO request = new AlunoRequestDTO(
+                "nova-senha",
+                null,
+                null,
+                null,
+                null
+        );
+        var authentication = new TestingAuthenticationToken(
+                "instrutor",
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_INSTRUTOR"))
+        );
+
+        AccessDeniedException exception = assertThrows(
+                AccessDeniedException.class,
+                () -> service.updateAluno(1L, request, authentication)
+        );
+
+        assertEquals("Apenas administradores podem alterar senhas de alunos.", exception.getMessage());
     }
 
     private Instrumento instrumento(int id, String nome) {

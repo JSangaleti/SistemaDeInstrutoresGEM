@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/aluno.dart';
 import '../../services/aluno_service.dart';
+import '../../widgets/alterar_senha_card.dart';
 
 class AlunoPerfilPage extends StatefulWidget {
   final Aluno? aluno;
@@ -132,6 +133,7 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                 ),
                 _InstrumentosCard(aluno: alunoAtual),
                 _MetodosInstrumentoPrincipalCard(aluno: alunoAtual),
+                const AlterarSenhaCard(),
               ],
             ),
     );
@@ -198,20 +200,21 @@ class _MetodosInstrumentoPrincipalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final instrumentoPrincipal = aluno.instrumentoPrincipal;
 
-    final metodos = instrumentoPrincipal == null
-        ? []
-        : aluno.metodos.where((metodo) {
-            final mesmoId =
-                metodo.instrumentoId != null &&
-                metodo.instrumentoId == instrumentoPrincipal.id;
+    final metodos =
+        instrumentoPrincipal == null
+              ? []
+              : aluno.metodos.where((metodo) {
+                  final mesmoId =
+                      metodo.instrumentoId != null &&
+                      metodo.instrumentoId == instrumentoPrincipal.id;
 
-            final mesmoNome =
-                metodo.instrumentoNome != null &&
-                metodo.instrumentoNome!.trim().toLowerCase() ==
-                    instrumentoPrincipal.nome.trim().toLowerCase();
+                  final mesmoNome =
+                      metodo.instrumentoNome != null &&
+                      metodo.instrumentoNome!.trim().toLowerCase() ==
+                          instrumentoPrincipal.nome.trim().toLowerCase();
 
-            return mesmoId || mesmoNome;
-          }).toList()
+                  return mesmoId || mesmoNome;
+                }).toList()
           ..sort(
             (a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()),
           );
