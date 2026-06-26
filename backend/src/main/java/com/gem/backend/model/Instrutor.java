@@ -75,4 +75,5 @@ public class Instrutor {
     public void setAulas(List<RegistroAula> aulas) {
         this.aulas = aulas;
     }
+
 }

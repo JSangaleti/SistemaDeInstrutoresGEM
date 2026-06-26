@@ -38,8 +38,8 @@ public class RegistroAulaController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
-    public List<RegistroAulaResponseDTO> getList() {
-        return service.getListRegistroAula();
+    public List<RegistroAulaResponseDTO> getList(Authentication authentication) {
+        return service.getListRegistroAula(authentication);
     }
 
     @GetMapping("/meu-historico")

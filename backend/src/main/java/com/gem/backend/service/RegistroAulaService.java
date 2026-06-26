@@ -56,8 +56,18 @@ public class RegistroAulaService {
         return new RegistroAulaResponseDTO(aulaSalva);
     }
 
-    public List<RegistroAulaResponseDTO> getListRegistroAula() {
-        return repository.findAllByOrderByDataDescIdDesc().stream()
+    public List<RegistroAulaResponseDTO> getListRegistroAula(Authentication authentication) {
+        var registros = repository.findAllByOrderByDataDescIdDesc().stream();
+
+        if (isInstrutor(authentication)) {
+            Instrutor instrutorAutenticado = buscarInstrutorAutenticado(authentication);
+            registros = registros.filter(registro ->
+                    registro.getInstrutor() != null
+                            && registro.getInstrutor().getId().equals(instrutorAutenticado.getId())
+            );
+        }
+
+        return registros
                 .map(RegistroAulaResponseDTO::new)
                 .toList();
     }

@@ -10,6 +10,8 @@ import com.gem.backend.repository.InstrutorRepository;
 import com.gem.backend.repository.PessoaRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -19,12 +21,17 @@ public class InstrutorService {
     private final PessoaRepository pessoaRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public InstrutorService(InstrutorRepository repository, PessoaRepository pessoaRepository, PasswordEncoder passwordEncoder) {
+    public InstrutorService(
+            InstrutorRepository repository,
+            PessoaRepository pessoaRepository,
+            PasswordEncoder passwordEncoder
+    ) {
         this.repository = repository;
         this.pessoaRepository = pessoaRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public InstrutorResponseDTO createInstrutor(Instrutor instrutor) {
         if (instrutor.getId() != null && repository.existsById(instrutor.getId())) {
             throw new DuplicateResourceException("Já existe um instrutor cadastrado com este ID.");
@@ -42,16 +49,26 @@ public class InstrutorService {
         return new InstrutorResponseDTO(repository.save(instrutor));
     }
 
+    @Transactional(readOnly = true)
     public List<InstrutorResponseDTO> getListInstrutor() {
         return repository.findAll().stream().map(InstrutorResponseDTO::new).toList();
     }
 
+    @Transactional(readOnly = true)
     public InstrutorResponseDTO getInstrutor(Integer id) {
         Instrutor instrutor = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Instrutor não encontrado."));
         return new InstrutorResponseDTO(instrutor);
     }
 
+    @Transactional(readOnly = true)
+    public InstrutorResponseDTO getInstrutorPorCpf(String cpf) {
+        Instrutor instrutor = repository.findByPessoa_Cpf(cpf)
+                .orElseThrow(() -> new ResourceNotFoundException("Instrutor não encontrado."));
+        return new InstrutorResponseDTO(instrutor);
+    }
+
+    @Transactional
     public InstrutorResponseDTO updateInstrutor(Integer id, Instrutor dadosAtualizados) {
         Instrutor existente = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Instrutor não encontrado."));
@@ -73,6 +90,7 @@ public class InstrutorService {
         return new InstrutorResponseDTO(repository.save(existente));
     }
 
+    @Transactional
     public void deleteInstrutor(Integer id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Instrutor não encontrado.");

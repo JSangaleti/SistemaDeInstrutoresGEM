@@ -16,11 +16,11 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 
 @RestController
 @RequestMapping("/instrutores")
-@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class InstrutorController {
 
     private final InstrutorService service;
@@ -30,6 +30,7 @@ public class InstrutorController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public InstrutorResponseDTO create(
             @Validated(ValidationGroups.Create.class) @RequestBody Instrutor instrutor
     ) {
@@ -37,21 +38,31 @@ public class InstrutorController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public List<InstrutorResponseDTO> getList() {
         return service.getListInstrutor();
     }
 
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('INSTRUTOR')")
+    public InstrutorResponseDTO getMe(Authentication authentication) {
+        return service.getInstrutorPorCpf(authentication.getName());
+    }
+
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public InstrutorResponseDTO getById(@PathVariable Integer id) {
         return service.getInstrutor(id);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public InstrutorResponseDTO update(@PathVariable Integer id, @Valid @RequestBody Instrutor instrutor) {
         return service.updateInstrutor(id, instrutor);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public void delete(@PathVariable Integer id) {
         service.deleteInstrutor(id);
     }
