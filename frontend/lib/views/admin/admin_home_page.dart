@@ -9,6 +9,7 @@ import '../../services/metodo_service.dart';
 import '../../services/pessoa_service.dart';
 import '../../services/registro_aula_service.dart';
 import '../../widgets/logout_button.dart';
+import 'admin_alterar_senhas_page.dart';
 import '../admin_form/admin_form_page.dart';
 import '../admin_list/admin_list_page.dart';
 import '../aluno_form/aluno_form_page.dart';
@@ -236,6 +237,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 const SizedBox(height: 12),
                 _AcoesGrid(
                   children: [
+                    _AcaoRapidaCard(
+                      texto: 'Alterar senhas',
+                      icone: Icons.lock_reset,
+                      onTap: () => abrirTela(const AdminAlterarSenhasPage()),
+                    ),
                     _AcaoRapidaCard(
                       texto: 'Novo administrador',
                       icone: Icons.admin_panel_settings,

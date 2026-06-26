@@ -35,11 +35,8 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
   void initState() {
     super.initState();
 
-    if (widget.instrutor != null) {
-      cpfSelecionado = widget.instrutor!.cpf;
-    }
-
-    carregarPessoas();
+    cpfSelecionado = widget.instrutor?.cpf;
+    carregarDados();
   }
 
   @override
@@ -48,7 +45,7 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
     super.dispose();
   }
 
-  Future<void> carregarPessoas() async {
+  Future<void> carregarDados() async {
     try {
       final lista = await pessoaService.getPessoas();
 
@@ -68,9 +65,7 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
     if (!_formKey.currentState!.validate()) return;
 
     if (cpfSelecionado == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Selecione uma pessoa')));
+      _mostrarMensagem('Selecione uma pessoa.');
       return;
     }
 
@@ -97,9 +92,7 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erro ao salvar: $e')));
+      _mostrarMensagem('Erro ao salvar: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -116,8 +109,8 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
       return 'Informe a senha';
     }
 
-    if (senha.isNotEmpty && senha.length > 16) {
-      return 'Senha deve ter no máximo 16 caracteres';
+    if (senha.isNotEmpty && senha.length > 255) {
+      return 'Senha deve ter no máximo 255 caracteres';
     }
 
     return null;
@@ -125,6 +118,12 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
 
   String textoPessoa(Pessoa pessoa) {
     return '${pessoa.nome} - ${pessoa.cpf}';
+  }
+
+  void _mostrarMensagem(String mensagem) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensagem)));
   }
 
   Pessoa? pessoaSelecionada() {
@@ -153,60 +152,66 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
                 ),
               ),
             )
-          : Padding(
-              padding: const EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    SearchableSelectionField<Pessoa>(
-                      labelText: 'Pessoa',
-                      dialogTitle: 'Selecionar pessoa',
-                      items: pessoas,
-                      value: pessoaSelecionada(),
-                      itemTitle: textoPessoa,
-                      itemSubtitle: (pessoa) => pessoa.comumCompleta,
-                      itemSearchText: (pessoa) =>
-                          '${pessoa.nome} ${pessoa.cpf} ${pessoa.comumCompleta}',
-                      searchHintText: 'Buscar por nome, CPF ou comum...',
-                      onChanged: (pessoa) {
-                        setState(() {
-                          cpfSelecionado = pessoa?.cpf;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Selecione uma pessoa';
-                        }
-
-                        return null;
-                      },
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  _buildDadosPessoais(),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: salvando ? null : salvar,
+                    child: Text(
+                      salvando
+                          ? 'Salvando...'
+                          : isEdicao
+                          ? 'Salvar alterações'
+                          : 'Cadastrar',
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: senhaController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: isEdicao ? 'Nova senha (opcional)' : 'Senha',
-                        border: const OutlineInputBorder(),
-                      ),
-                      validator: validarSenha,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: salvando ? null : salvar,
-                      child: Text(
-                        salvando
-                            ? 'Salvando...'
-                            : isEdicao
-                            ? 'Salvar alterações'
-                            : 'Cadastrar',
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
+    );
+  }
+
+  Widget _buildDadosPessoais() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Dados do instrutor',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 12),
+        SearchableSelectionField<Pessoa>(
+          labelText: 'Pessoa',
+          dialogTitle: 'Selecionar pessoa',
+          items: pessoas,
+          value: pessoaSelecionada(),
+          itemTitle: textoPessoa,
+          itemSubtitle: (pessoa) => pessoa.comumCompleta,
+          itemSearchText: (pessoa) =>
+              '${pessoa.nome} ${pessoa.cpf} ${pessoa.comumCompleta}',
+          searchHintText: 'Buscar por nome, CPF ou comum...',
+          onChanged: (pessoa) {
+            setState(() {
+              cpfSelecionado = pessoa?.cpf;
+            });
+          },
+          validator: (value) => value == null ? 'Selecione uma pessoa' : null,
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: senhaController,
+          obscureText: true,
+          decoration: InputDecoration(
+            labelText: isEdicao ? 'Nova senha (opcional)' : 'Senha',
+            border: const OutlineInputBorder(),
+          ),
+          validator: validarSenha,
+        ),
+      ],
     );
   }
 }

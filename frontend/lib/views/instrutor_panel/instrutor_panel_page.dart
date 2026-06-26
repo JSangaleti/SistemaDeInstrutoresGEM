@@ -4,6 +4,7 @@ import '../../config/api_config.dart';
 import '../../widgets/logout_button.dart';
 import '../aluno_list/aluno_list_page.dart';
 import '../instrutor_historico/instrutor_historico_page.dart';
+import 'instrutor_perfil_page.dart';
 import '../registro_aula_list/registro_aula_list_page.dart';
 
 class InstrutorPanelPage extends StatelessWidget {
@@ -67,6 +68,13 @@ class InstrutorPanelPage extends StatelessWidget {
           const Text(
             'Ações principais',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          _InstrutorPanelCard(
+            titulo: 'Meu perfil',
+            descricao: 'Dados cadastrais e alteração de senha.',
+            icone: Icons.account_circle,
+            onTap: () => _abrirTela(context, const InstrutorPerfilPage()),
           ),
           const SizedBox(height: 12),
           _InstrutorPanelCard(
