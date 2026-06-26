@@ -61,9 +61,7 @@ class _InstrumentoListPageState extends State<InstrumentoListPage> {
   Future<void> adicionarInstrumento() async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const InstrumentoFormPage(),
-      ),
+      MaterialPageRoute(builder: (context) => const InstrumentoFormPage()),
     );
 
     if (resultado == true) {
@@ -144,54 +142,52 @@ class _InstrumentoListPageState extends State<InstrumentoListPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(child: Text('Erro ao carregar instrumentos:\n$erro'))
-              : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'Buscar instrumento...',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.search),
-                        ),
-                        onChanged: filtrarInstrumentos,
-                      ),
+          ? Center(child: Text('Erro ao carregar instrumentos:\n$erro'))
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      hintText: 'Buscar instrumento...',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.search),
                     ),
-                    Expanded(
-                      child: instrumentosFiltrados.isEmpty
-                          ? const Center(
-                              child: Text('Nenhum instrumento encontrado.'),
-                            )
-                          : ListView.separated(
-                              itemCount: instrumentosFiltrados.length,
-                              separatorBuilder: (context, index) =>
-                                  const Divider(height: 1),
-                              itemBuilder: (context, index) {
-                                final instrumento =
-                                    instrumentosFiltrados[index];
-
-                                return ListTile(
-                                  leading: CircleAvatar(
-                                    child: Text(
-                                      instrumento.nome.isNotEmpty
-                                          ? instrumento.nome[0].toUpperCase()
-                                          : '?',
-                                    ),
-                                  ),
-                                  title: Text(instrumento.nome),
-                                  onTap: () => editarInstrumento(instrumento),
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () =>
-                                        confirmarExclusao(instrumento),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
+                    onChanged: filtrarInstrumentos,
+                  ),
                 ),
+                Expanded(
+                  child: instrumentosFiltrados.isEmpty
+                      ? const Center(
+                          child: Text('Nenhum instrumento encontrado.'),
+                        )
+                      : ListView.separated(
+                          itemCount: instrumentosFiltrados.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final instrumento = instrumentosFiltrados[index];
+
+                            return ListTile(
+                              leading: CircleAvatar(
+                                child: Text(
+                                  instrumento.nome.isNotEmpty
+                                      ? instrumento.nome[0].toUpperCase()
+                                      : '?',
+                                ),
+                              ),
+                              title: Text(instrumento.nome),
+                              onTap: () => editarInstrumento(instrumento),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => confirmarExclusao(instrumento),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }

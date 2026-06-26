@@ -65,9 +65,7 @@ class _PessoaListPageState extends State<PessoaListPage> {
   Future<void> adicionarPessoa() async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const PessoaFormPage(),
-      ),
+      MaterialPageRoute(builder: (context) => const PessoaFormPage()),
     );
 
     if (resultado == true) {
@@ -94,9 +92,9 @@ class _PessoaListPageState extends State<PessoaListPage> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao carregar pessoa: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao carregar pessoa: $e')));
     }
   }
 
@@ -165,75 +163,74 @@ class _PessoaListPageState extends State<PessoaListPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Erro ao carregar pessoas:\n$erro',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'Buscar pessoa...',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.search),
-                        ),
-                        onChanged: filtrarPessoas,
-                      ),
-                    ),
-                    Expanded(
-                      child: pessoas.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'Nenhuma pessoa cadastrada.',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            )
-                          : pessoasFiltradas.isEmpty
-                              ? const Center(
-                                  child: Text(
-                                    'Nenhuma pessoa encontrada na busca.',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                )
-                              : ListView.separated(
-                                  itemCount: pessoasFiltradas.length,
-                                  separatorBuilder: (context, index) =>
-                                      const Divider(height: 1),
-                                  itemBuilder: (context, index) {
-                                    final pessoa = pessoasFiltradas[index];
-
-                                    return ListTile(
-                                      leading: CircleAvatar(
-                                        child: Text(
-                                          pessoa.nome.isNotEmpty
-                                              ? pessoa.nome[0].toUpperCase()
-                                              : '?',
-                                        ),
-                                      ),
-                                      title: Text(pessoa.nome),
-                                      subtitle: Text(
-                                        '${pessoa.cpf}\n${pessoa.comumCompleta}',
-                                      ),
-                                      isThreeLine: true,
-                                      onTap: () => editarPessoa(pessoa),
-                                      trailing: IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () =>
-                                            confirmarExclusao(pessoa),
-                                      ),
-                                    );
-                                  },
-                                ),
-                    ),
-                  ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Erro ao carregar pessoas:\n$erro',
+                  textAlign: TextAlign.center,
                 ),
+              ),
+            )
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      hintText: 'Buscar pessoa...',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: filtrarPessoas,
+                  ),
+                ),
+                Expanded(
+                  child: pessoas.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Nenhuma pessoa cadastrada.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )
+                      : pessoasFiltradas.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Nenhuma pessoa encontrada na busca.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )
+                      : ListView.separated(
+                          itemCount: pessoasFiltradas.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final pessoa = pessoasFiltradas[index];
+
+                            return ListTile(
+                              leading: CircleAvatar(
+                                child: Text(
+                                  pessoa.nome.isNotEmpty
+                                      ? pessoa.nome[0].toUpperCase()
+                                      : '?',
+                                ),
+                              ),
+                              title: Text(pessoa.nome),
+                              subtitle: Text(
+                                '${pessoa.cpf}\n${pessoa.comumCompleta}',
+                              ),
+                              isThreeLine: true,
+                              onTap: () => editarPessoa(pessoa),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => confirmarExclusao(pessoa),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }

@@ -1,47 +1,58 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
+import '../config/api_config.dart';
 import '../models/aluno.dart';
 import '../models/instrutor.dart';
 import '../models/registro_aula.dart';
 
 class RegistroAulaService {
-  static const String baseUrl = 'http://localhost:8080';
-
   Future<List<RegistroAula>> getRegistrosAula() async {
-    final response = await http.get(Uri.parse('$baseUrl/registro-aulas'));
+    final response = await ApiClient.get('/registro-aulas');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar registros de aula: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar registros de aula.',
+    );
 
     final List data = jsonDecode(response.body);
-    return data.map((e) => RegistroAula.fromJson(e)).toList();
+    return _ordenarPorDataDesc(
+      data.map((e) => RegistroAula.fromJson(e)).toList(),
+    );
+  }
+
+  Future<List<RegistroAula>> getMeuHistorico() async {
+    final response = await ApiClient.get('/registro-aulas/meu-historico');
+
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar meu histórico.',
+    );
+
+    final List data = jsonDecode(response.body);
+    return _ordenarPorDataDesc(
+      data.map((e) => RegistroAula.fromJson(e)).toList(),
+    );
   }
 
   Future<List<Aluno>> getAlunos() async {
-    final response = await http.get(Uri.parse('$baseUrl/alunos'));
+    final response = await ApiClient.get('/alunos');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar alunos: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar alunos.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Aluno.fromJson(e)).toList();
   }
 
   Future<List<Instrutor>> getInstrutores() async {
-    final response = await http.get(Uri.parse('$baseUrl/instrutores'));
+    final response = await ApiClient.get('/instrutores');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar instrutores: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar instrutores.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Instrutor.fromJson(e)).toList();
@@ -55,10 +66,9 @@ class RegistroAulaService {
     required String descricao,
     required String paraProximaAula,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/registro-aulas'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(
+    final response = await ApiClient.post(
+      '/registro-aulas',
+      jsonEncode(
         _body(
           alunoId: alunoId,
           instrutorId: instrutorId,
@@ -70,11 +80,11 @@ class RegistroAulaService {
       ),
     );
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(
-        'Erro ao criar registro de aula: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 201],
+      fallbackMessage: 'Erro ao criar registro de aula.',
+    );
   }
 
   Future<void> editarRegistroAula({
@@ -86,10 +96,9 @@ class RegistroAulaService {
     required String descricao,
     String? paraProximaAula,
   }) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/registro-aulas/$id'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
+    final response = await ApiClient.put(
+      '/registro-aulas/$id',
+      jsonEncode({
         'id': id,
         ..._body(
           alunoId: alunoId,
@@ -102,23 +111,20 @@ class RegistroAulaService {
       }),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao editar registro de aula: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao editar registro de aula.',
+    );
   }
 
   Future<void> deletarRegistroAula(int id) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl/registro-aulas/$id'),
-    );
+    final response = await ApiClient.delete('/registro-aulas/$id');
 
-    if (response.statusCode != 200 && response.statusCode != 204) {
-      throw Exception(
-        'Erro ao excluir registro de aula: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 204],
+      fallbackMessage: 'Erro ao excluir registro de aula.',
+    );
   }
 
   Map<String, dynamic> _body({
@@ -145,5 +151,16 @@ class RegistroAulaService {
     }
 
     return body;
+  }
+
+  List<RegistroAula> _ordenarPorDataDesc(List<RegistroAula> registros) {
+    registros.sort((a, b) {
+      final dataA = a.data ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final dataB = b.data ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final porData = dataB.compareTo(dataA);
+      if (porData != 0) return porData;
+      return b.id.compareTo(a.id);
+    });
+    return registros;
   }
 }

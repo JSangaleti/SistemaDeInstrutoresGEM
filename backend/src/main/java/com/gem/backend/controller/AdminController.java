@@ -3,15 +3,20 @@ package com.gem.backend.controller;
 import com.gem.backend.dto.AdminResponseDTO;
 import com.gem.backend.model.Admin;
 import com.gem.backend.service.AdminService;
+import com.gem.backend.validation.ValidationGroups;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/admins")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class AdminController {
 
     private final AdminService service;
@@ -21,7 +26,9 @@ public class AdminController {
     }
 
     @PostMapping
-    public ResponseEntity<AdminResponseDTO> create(@Valid @RequestBody Admin admin) {
+    public ResponseEntity<AdminResponseDTO> create(
+            @Validated(ValidationGroups.Create.class) @RequestBody Admin admin
+    ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createAdmin(admin));
     }
 
@@ -36,7 +43,7 @@ public class AdminController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AdminResponseDTO> update(@PathVariable Integer id, @RequestBody Admin admin) {
+    public ResponseEntity<AdminResponseDTO> update(@PathVariable Integer id, @Valid @RequestBody Admin admin) {
         return ResponseEntity.ok(service.updateAdmin(id, admin));
     }
 

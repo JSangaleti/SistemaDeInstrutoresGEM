@@ -7,10 +7,7 @@ import '../aluno_form/aluno_form_page.dart';
 class AlunoDetailPage extends StatefulWidget {
   final int alunoId;
 
-  const AlunoDetailPage({
-    super.key,
-    required this.alunoId,
-  });
+  const AlunoDetailPage({super.key, required this.alunoId});
 
   @override
   State<AlunoDetailPage> createState() => _AlunoDetailPageState();
@@ -57,9 +54,7 @@ class _AlunoDetailPageState extends State<AlunoDetailPage> {
 
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => AlunoFormPage(aluno: alunoAtual),
-      ),
+      MaterialPageRoute(builder: (context) => AlunoFormPage(aluno: alunoAtual)),
     );
 
     if (resultado == true) {
@@ -90,69 +85,178 @@ class _AlunoDetailPageState extends State<AlunoDetailPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Erro ao carregar aluno:\n$erro',
-                      textAlign: TextAlign.center,
-                    ),
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Erro ao carregar aluno:\n$erro',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          : alunoAtual == null
+          ? const Center(child: Text('Aluno não encontrado.'))
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                CircleAvatar(
+                  radius: 36,
+                  child: Text(
+                    alunoAtual.nome.isNotEmpty
+                        ? alunoAtual.nome[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(fontSize: 28),
                   ),
-                )
-              : alunoAtual == null
-                  ? const Center(child: Text('Aluno não encontrado.'))
-                  : ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        CircleAvatar(
-                          radius: 36,
-                          child: Text(
-                            alunoAtual.nome.isNotEmpty
-                                ? alunoAtual.nome[0].toUpperCase()
-                                : '?',
-                            style: const TextStyle(fontSize: 28),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: Text(
-                            alunoAtual.nome,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        _InfoCard(
-                          titulo: 'CPF',
-                          valor: alunoAtual.cpf ?? 'Não informado',
-                          icone: Icons.badge,
-                        ),
-                        _InfoCard(
-                          titulo: 'Comum',
-                          valor: alunoAtual.comumCompleta,
-                          icone: Icons.location_city,
-                        ),
-                        _InfoCard(
-                          titulo: 'Cidade',
-                          valor: alunoAtual.comumCidade ?? 'Não informada',
-                          icone: Icons.location_on,
-                        ),
-                        _InfoCard(
-                          titulo: 'Estado/UF',
-                          valor: alunoAtual.comumUF ?? 'Não informado',
-                          icone: Icons.map,
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: editarAluno,
-                          icon: const Icon(Icons.edit),
-                          label: const Text('Editar aluno'),
-                        ),
-                      ],
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    alunoAtual.nome,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _InfoCard(
+                  titulo: 'CPF',
+                  valor: alunoAtual.cpf ?? 'Não informado',
+                  icone: Icons.badge,
+                ),
+                _InfoCard(
+                  titulo: 'Comum',
+                  valor: alunoAtual.comumCompleta,
+                  icone: Icons.location_city,
+                ),
+                _InfoCard(
+                  titulo: 'Cidade',
+                  valor: alunoAtual.comumCidade ?? 'Não informada',
+                  icone: Icons.location_on,
+                ),
+                _InfoCard(
+                  titulo: 'Estado/UF',
+                  valor: alunoAtual.comumUF ?? 'Não informado',
+                  icone: Icons.map,
+                ),
+                _InstrumentosCard(aluno: alunoAtual),
+                _MetodosCard(aluno: alunoAtual),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: editarAluno,
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Editar aluno'),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class _InstrumentosCard extends StatelessWidget {
+  final Aluno aluno;
+
+  const _InstrumentosCard({required this.aluno});
+
+  @override
+  Widget build(BuildContext context) {
+    final instrumentos = [...aluno.instrumentos]
+      ..sort((a, b) {
+        if (a.principal == b.principal) {
+          return a.nome.toLowerCase().compareTo(b.nome.toLowerCase());
+        }
+        return a.principal ? -1 : 1;
+      });
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const ListTile(
+            leading: Icon(Icons.music_note),
+            title: Text('Instrumentos'),
+          ),
+          if (instrumentos.isEmpty)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text('Nenhum instrumento informado.'),
+            )
+          else
+            ...instrumentos.map(
+              (instrumento) => ListTile(
+                dense: true,
+                leading: Icon(
+                  instrumento.principal ? Icons.star : Icons.music_note,
+                  color: instrumento.principal
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                ),
+                title: Text(instrumento.nome),
+                trailing: instrumento.principal
+                    ? const Chip(label: Text('Principal'))
+                    : null,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetodosCard extends StatelessWidget {
+  final Aluno aluno;
+
+  const _MetodosCard({required this.aluno});
+
+  @override
+  Widget build(BuildContext context) {
+    final instrumentoPrincipal = aluno.instrumentoPrincipal;
+    final metodos =
+        aluno.metodos
+            .where(
+              (metodo) =>
+                  instrumentoPrincipal != null &&
+                  metodo.instrumentoId == instrumentoPrincipal.id,
+            )
+            .toList()
+          ..sort(
+            (a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()),
+          );
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.menu_book),
+            title: const Text('Métodos em estudo'),
+            subtitle: instrumentoPrincipal == null
+                ? const Text('Instrumento principal não definido')
+                : Text('Instrumento principal: ${instrumentoPrincipal.nome}'),
+          ),
+          if (metodos.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text(
+                instrumentoPrincipal == null
+                    ? 'Defina o instrumento principal para visualizar os métodos.'
+                    : 'Nenhum método informado para o instrumento principal.',
+              ),
+            )
+          else
+            ...metodos.map(
+              (metodo) => ListTile(
+                dense: true,
+                leading: const Icon(Icons.book_outlined),
+                title: Text(metodo.nome),
+                subtitle: Text(metodo.instrumentoTexto),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -177,10 +281,7 @@ class _InfoCard extends StatelessWidget {
       child: ListTile(
         leading: Icon(icone),
         title: Text(titulo),
-        subtitle: Text(
-          texto,
-          style: const TextStyle(fontSize: 16),
-        ),
+        subtitle: Text(texto, style: const TextStyle(fontSize: 16)),
       ),
     );
   }

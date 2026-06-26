@@ -1,33 +1,29 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
+import '../config/api_config.dart';
 import '../models/instrumento.dart';
 import '../models/metodo.dart';
 
 class MetodoService {
-  static const String baseUrl = 'http://localhost:8080';
-
   Future<List<Metodo>> getMetodos() async {
-    final response = await http.get(Uri.parse('$baseUrl/metodos'));
+    final response = await ApiClient.get('/metodos');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar métodos: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar métodos.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Metodo.fromJson(e)).toList();
   }
 
   Future<List<Instrumento>> getInstrumentos() async {
-    final response = await http.get(Uri.parse('$baseUrl/instrumentos'));
+    final response = await ApiClient.get('/instrumentos');
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao buscar instrumentos: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar instrumentos.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Instrumento.fromJson(e)).toList();
@@ -37,22 +33,19 @@ class MetodoService {
     required String nome,
     required int instrumentoId,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/metodos'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
+    final response = await ApiClient.post(
+      '/metodos',
+      jsonEncode({
         'nome': nome,
-        'instrumento': {
-          'id': instrumentoId,
-        },
+        'instrumento': {'id': instrumentoId},
       }),
     );
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(
-        'Erro ao criar método: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 201],
+      fallbackMessage: 'Erro ao criar método.',
+    );
   }
 
   Future<void> editarMetodo({
@@ -60,34 +53,28 @@ class MetodoService {
     required String nome,
     required int instrumentoId,
   }) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/metodos/$id'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
+    final response = await ApiClient.put(
+      '/metodos/$id',
+      jsonEncode({
         'id': id,
         'nome': nome,
-        'instrumento': {
-          'id': instrumentoId,
-        },
+        'instrumento': {'id': instrumentoId},
       }),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao editar método: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao editar método.',
+    );
   }
 
   Future<void> deletarMetodo(int id) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl/metodos/$id'),
-    );
+    final response = await ApiClient.delete('/metodos/$id');
 
-    if (response.statusCode != 200 && response.statusCode != 204) {
-      throw Exception(
-        'Erro ao excluir método: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 204],
+      fallbackMessage: 'Erro ao excluir método.',
+    );
   }
 }

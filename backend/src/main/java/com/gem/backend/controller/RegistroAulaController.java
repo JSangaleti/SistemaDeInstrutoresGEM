@@ -12,7 +12,8 @@ import com.gem.backend.dto.RegistroAulaResponseDTO;
 import com.gem.backend.model.RegistroAula;
 import com.gem.backend.service.RegistroAulaService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -20,30 +21,51 @@ import java.util.List;
 @RequestMapping("/registro-aulas")
 public class RegistroAulaController {
 
-    @Autowired
-    private RegistroAulaService service;
+    private final RegistroAulaService service;
+
+    public RegistroAulaController(RegistroAulaService service) {
+        this.service = service;
+    }
 
     @PostMapping
-    public RegistroAulaResponseDTO create(@Valid @RequestBody RegistroAula aula) {
-        return new RegistroAulaResponseDTO(service.createRegistroAula(aula));
+    @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
+    public RegistroAulaResponseDTO create(
+            @Valid @RequestBody RegistroAula aula,
+            Authentication authentication
+    ) {
+        return service.createRegistroAula(aula, authentication);
     }
 
     @GetMapping
-    public List<RegistroAulaResponseDTO> getList() {
-        return service.getListRegistroAula().stream().map(RegistroAulaResponseDTO::new).toList();
+    @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
+    public List<RegistroAulaResponseDTO> getList(Authentication authentication) {
+        return service.getListRegistroAula(authentication);
+    }
+
+    @GetMapping("/meu-historico")
+    @PreAuthorize("hasRole('ALUNO')")
+    public List<RegistroAulaResponseDTO> getMeuHistorico(Authentication authentication) {
+        return service.getHistoricoDoAlunoAutenticado(authentication.getName());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR','ALUNO')")
     public RegistroAulaResponseDTO getById(@PathVariable Integer id) {
-        return new RegistroAulaResponseDTO(service.getRegistroAula(id));
+        return service.getRegistroAula(id);
     }
 
     @PutMapping("/{id}")
-    public RegistroAulaResponseDTO update(@PathVariable Integer id, @RequestBody RegistroAula aula) {
-        return new RegistroAulaResponseDTO(service.updateRegistroAula(id, aula));
+    @PreAuthorize("hasAnyRole('ADMIN','INSTRUTOR')")
+    public RegistroAulaResponseDTO update(
+            @PathVariable Integer id,
+            @Valid @RequestBody RegistroAula aula,
+            Authentication authentication
+    ) {
+        return service.updateRegistroAula(id, aula, authentication);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void delete(@PathVariable Integer id) {
         service.deleteRegistroAula(id);
     }

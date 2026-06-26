@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../../models/comum.dart';
 import '../../models/instrutor.dart';
+import '../../models/pessoa.dart';
 import '../../services/instrutor_service.dart';
+import '../../services/pessoa_service.dart';
+import '../../widgets/searchable_selection.dart';
 
 class InstrutorFormPage extends StatefulWidget {
   final Instrutor? instrutor;
 
-  const InstrutorFormPage({
-    super.key,
-    this.instrutor,
-  });
+  const InstrutorFormPage({super.key, this.instrutor});
 
   @override
   State<InstrutorFormPage> createState() => _InstrutorFormPageState();
@@ -19,13 +18,12 @@ class InstrutorFormPage extends StatefulWidget {
 class _InstrutorFormPageState extends State<InstrutorFormPage> {
   final _formKey = GlobalKey<FormState>();
   final InstrutorService service = InstrutorService();
+  final PessoaService pessoaService = PessoaService();
 
-  final TextEditingController nomeController = TextEditingController();
-  final TextEditingController cpfController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
 
-  List<Comum> comuns = [];
-  int? comumSelecionadaId;
+  List<Pessoa> pessoas = [];
+  String? cpfSelecionado;
 
   bool loading = true;
   bool salvando = false;
@@ -36,30 +34,23 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
   @override
   void initState() {
     super.initState();
-    carregarComuns();
 
-    if (widget.instrutor != null) {
-      nomeController.text = widget.instrutor!.nome;
-      cpfController.text = widget.instrutor!.cpf ?? '';
-      senhaController.text = '';
-      comumSelecionadaId = widget.instrutor!.comumId;
-    }
+    cpfSelecionado = widget.instrutor?.cpf;
+    carregarDados();
   }
 
   @override
   void dispose() {
-    nomeController.dispose();
-    cpfController.dispose();
     senhaController.dispose();
     super.dispose();
   }
 
-  Future<void> carregarComuns() async {
+  Future<void> carregarDados() async {
     try {
-      final lista = await service.getComuns();
+      final lista = await pessoaService.getPessoas();
 
       setState(() {
-        comuns = lista;
+        pessoas = lista;
         loading = false;
       });
     } catch (e) {
@@ -73,10 +64,8 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
   Future<void> salvar() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (comumSelecionadaId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecione uma comum')),
-      );
+    if (cpfSelecionado == null) {
+      _mostrarMensagem('Selecione uma pessoa.');
       return;
     }
 
@@ -88,16 +77,13 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
       if (isEdicao) {
         await service.editarInstrutor(
           id: widget.instrutor!.id,
-          nome: nomeController.text.trim(),
-          cpf: cpfController.text.trim(),
-          comumId: comumSelecionadaId!,
+          cpf: cpfSelecionado!,
+          senha: senhaController.text.trim(),
         );
       } else {
         await service.criarInstrutor(
-          nome: nomeController.text.trim(),
-          cpf: cpfController.text.trim(),
+          cpf: cpfSelecionado!,
           senha: senhaController.text.trim(),
-          comumId: comumSelecionadaId!,
         );
       }
 
@@ -106,9 +92,7 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao salvar: $e')),
-      );
+      _mostrarMensagem('Erro ao salvar: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -118,49 +102,37 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
     }
   }
 
-  String? validarCpf(String? value) {
-    final cpf = value?.trim() ?? '';
-
-    if (cpf.isEmpty) {
-      return 'Informe o CPF';
-    }
-
-    if (cpf.length != 11) {
-      return 'CPF deve ter 11 dígitos';
-    }
-
-    if (!RegExp(r'^[0-9]+$').hasMatch(cpf)) {
-      return 'CPF deve conter apenas números';
-    }
-
-    return null;
-  }
-
   String? validarSenha(String? value) {
-    if (isEdicao) return null;
-
     final senha = value?.trim() ?? '';
 
-    if (senha.isEmpty) {
+    if (!isEdicao && senha.isEmpty) {
       return 'Informe a senha';
     }
 
-    if (senha.length > 16) {
-      return 'Senha deve ter no máximo 16 caracteres';
+    if (senha.isNotEmpty && senha.length > 255) {
+      return 'Senha deve ter no máximo 255 caracteres';
     }
 
     return null;
   }
 
-    String textoComum(Comum comum) {
-    final partes = <String>[
-        comum.nome,
-        comum.cidade ?? '',
-        comum.estado ?? '',
-    ].where((item) => item.trim().isNotEmpty).toList();
+  String textoPessoa(Pessoa pessoa) {
+    return '${pessoa.nome} - ${pessoa.cpf}';
+  }
 
-    return partes.join(' - ');
+  void _mostrarMensagem(String mensagem) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensagem)));
+  }
+
+  Pessoa? pessoaSelecionada() {
+    for (final pessoa in pessoas) {
+      if (pessoa.cpf == cpfSelecionado) return pessoa;
     }
+
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -171,104 +143,75 @@ class _InstrutorFormPageState extends State<InstrutorFormPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Erro ao carregar comuns:\n$erro',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Form(
-                    key: _formKey,
-                    child: ListView(
-                      children: [
-                        TextFormField(
-                          controller: nomeController,
-                          decoration: const InputDecoration(
-                            labelText: 'Nome',
-                            border: OutlineInputBorder(),
-                          ),
-                          textCapitalization: TextCapitalization.words,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Informe o nome';
-                            }
-
-                            if (value.trim().length > 64) {
-                              return 'Nome deve ter no máximo 64 caracteres';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: cpfController,
-                          enabled: !isEdicao,
-                          decoration: const InputDecoration(
-                            labelText: 'CPF',
-                            border: OutlineInputBorder(),
-                            helperText: 'Digite apenas números',
-                          ),
-                          keyboardType: TextInputType.number,
-                          validator: validarCpf,
-                        ),
-                        const SizedBox(height: 16),
-                        if (!isEdicao) ...[
-                          TextFormField(
-                            controller: senhaController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Senha',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: validarSenha,
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                        DropdownButtonFormField<int>(
-                          initialValue: comumSelecionadaId,
-                          decoration: const InputDecoration(
-                            labelText: 'Comum',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: comuns.map((comum) {
-                            return DropdownMenuItem<int>(
-                              value: comum.id,
-                              child: Text(textoComum(comum)),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              comumSelecionadaId = value;
-                            });
-                          },
-                          validator: (value) {
-                            if (value == null) {
-                              return 'Selecione uma comum';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: salvando ? null : salvar,
-                          child: Text(
-                            salvando
-                                ? 'Salvando...'
-                                : isEdicao
-                                    ? 'Salvar alterações'
-                                    : 'Cadastrar',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Erro ao carregar pessoas:\n$erro',
+                  textAlign: TextAlign.center,
                 ),
+              ),
+            )
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  _buildDadosPessoais(),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: salvando ? null : salvar,
+                    child: Text(
+                      salvando
+                          ? 'Salvando...'
+                          : isEdicao
+                          ? 'Salvar alterações'
+                          : 'Cadastrar',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildDadosPessoais() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Dados do instrutor',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 12),
+        SearchableSelectionField<Pessoa>(
+          labelText: 'Pessoa',
+          dialogTitle: 'Selecionar pessoa',
+          items: pessoas,
+          value: pessoaSelecionada(),
+          itemTitle: textoPessoa,
+          itemSubtitle: (pessoa) => pessoa.comumCompleta,
+          itemSearchText: (pessoa) =>
+              '${pessoa.nome} ${pessoa.cpf} ${pessoa.comumCompleta}',
+          searchHintText: 'Buscar por nome, CPF ou comum...',
+          onChanged: (pessoa) {
+            setState(() {
+              cpfSelecionado = pessoa?.cpf;
+            });
+          },
+          validator: (value) => value == null ? 'Selecione uma pessoa' : null,
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: senhaController,
+          obscureText: true,
+          decoration: InputDecoration(
+            labelText: isEdicao ? 'Nova senha (opcional)' : 'Senha',
+            border: const OutlineInputBorder(),
+          ),
+          validator: validarSenha,
+        ),
+      ],
     );
   }
 }

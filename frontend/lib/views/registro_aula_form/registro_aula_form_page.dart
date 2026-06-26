@@ -4,6 +4,7 @@ import '../../models/aluno.dart';
 import '../../models/instrutor.dart';
 import '../../models/registro_aula.dart';
 import '../../services/registro_aula_service.dart';
+import '../../widgets/searchable_selection.dart';
 
 class RegistroAulaFormPage extends StatefulWidget {
   final RegistroAula? registro;
@@ -31,12 +32,12 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
   final TextEditingController paraProximaAulaController =
       TextEditingController();
   final TextEditingController dataController = TextEditingController();
-  final TextEditingController alunoController = TextEditingController();
 
   List<Aluno> alunos = [];
   List<Instrutor> instrutores = [];
   int? alunoSelecionadoId;
   int? instrutorSelecionadoId;
+  _ComumFiltro? comumFiltroSelecionada;
   int? presenteSelecionado;
   DateTime? dataSelecionada;
 
@@ -76,7 +77,6 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
     descricaoController.dispose();
     paraProximaAulaController.dispose();
     dataController.dispose();
-    alunoController.dispose();
     super.dispose();
   }
 
@@ -91,7 +91,6 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
         alunos = alunosLista;
         instrutores = instrutoresLista;
         _preencherRelacionamentosPorNome();
-        _atualizarAlunoController();
         loading = false;
       });
     } catch (e) {
@@ -151,84 +150,6 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
       dataSelecionada = data;
       dataController.text = _formatarData(dataSelecionada);
     });
-  }
-
-  Future<void> selecionarAluno() async {
-    final aluno = await showDialog<Aluno>(
-      context: context,
-      builder: (dialogContext) {
-        String busca = '';
-
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            final alunosFiltrados = filtrarAlunos(busca);
-
-            return AlertDialog(
-              title: const Text('Selecionar aluno'),
-              content: SizedBox(
-                width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      autofocus: true,
-                      decoration: const InputDecoration(
-                        hintText: 'Buscar por nome, CPF ou comum...',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.search),
-                      ),
-                      onChanged: (value) {
-                        setDialogState(() {
-                          busca = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    Flexible(
-                      child: alunosFiltrados.isEmpty
-                          ? const Center(
-                              child: Text('Nenhum aluno encontrado.'),
-                            )
-                          : ListView.separated(
-                              shrinkWrap: true,
-                              itemCount: alunosFiltrados.length,
-                              separatorBuilder: (context, index) =>
-                                  const Divider(height: 1),
-                              itemBuilder: (context, index) {
-                                final aluno = alunosFiltrados[index];
-
-                                return ListTile(
-                                  title: Text(aluno.nome),
-                                  subtitle: Text(textoAlunoDetalhes(aluno)),
-                                  onTap: () =>
-                                      Navigator.pop(dialogContext, aluno),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Cancelar'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    if (aluno == null) return;
-
-    setState(() {
-      alunoSelecionadoId = aluno.id;
-      _atualizarAlunoController();
-    });
-
-    _formKey.currentState?.validate();
   }
 
   Future<void> salvar() async {
@@ -337,17 +258,6 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
     return '$cpf - ${aluno.comumCompleta}';
   }
 
-  List<Aluno> filtrarAlunos(String texto) {
-    final busca = texto.trim().toLowerCase();
-    if (busca.isEmpty) return alunos;
-
-    return alunos.where((aluno) {
-      return aluno.nome.toLowerCase().contains(busca) ||
-          (aluno.cpf ?? '').toLowerCase().contains(busca) ||
-          aluno.comumCompleta.toLowerCase().contains(busca);
-    }).toList();
-  }
-
   Aluno? alunoSelecionado() {
     for (final aluno in alunos) {
       if (aluno.id == alunoSelecionadoId) return aluno;
@@ -356,9 +266,56 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
     return null;
   }
 
-  void _atualizarAlunoController() {
-    final aluno = alunoSelecionado();
-    alunoController.text = aluno == null ? '' : textoAluno(aluno);
+  Instrutor? instrutorSelecionado() {
+    for (final instrutor in instrutores) {
+      if (instrutor.id == instrutorSelecionadoId) return instrutor;
+    }
+
+    return null;
+  }
+
+  List<_ComumFiltro> filtrosComumAluno() {
+    final filtros = <String, _ComumFiltro>{};
+
+    for (final aluno in alunos) {
+      final label = aluno.comumCompleta.trim();
+      if (label.isEmpty || label == 'Sem comum') continue;
+      filtros.putIfAbsent(label, () => _ComumFiltro(label));
+    }
+
+    final lista = filtros.values.toList();
+    lista.sort((a, b) => a.label.compareTo(b.label));
+    return lista;
+  }
+
+  List<Aluno> alunosDisponiveis() {
+    final filtro = comumFiltroSelecionada;
+    if (filtro == null) return alunos;
+
+    return alunos.where((aluno) {
+      return aluno.comumCompleta.trim() == filtro.label;
+    }).toList();
+  }
+
+  void selecionarFiltroComum(_ComumFiltro? filtro) {
+    setState(() {
+      comumFiltroSelecionada = filtro;
+
+      final alunoAtual = alunoSelecionado();
+      if (alunoAtual != null &&
+          filtro != null &&
+          alunoAtual.comumCompleta.trim() != filtro.label) {
+        alunoSelecionadoId = null;
+      }
+    });
+
+    _formKey.currentState?.validate();
+  }
+
+  void limparFiltroComum() {
+    setState(() {
+      comumFiltroSelecionada = null;
+    });
   }
 
   String textoInstrutorFixo() {
@@ -403,15 +360,43 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           children: [
-                            TextFormField(
-                              controller: alunoController,
-                              readOnly: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Aluno',
-                                border: OutlineInputBorder(),
-                                suffixIcon: Icon(Icons.search),
-                              ),
-                              onTap: selecionarAluno,
+                            SearchableSelectionField<_ComumFiltro>(
+                              labelText: 'Filtro por comum',
+                              dialogTitle: 'Filtrar alunos por comum',
+                              items: filtrosComumAluno(),
+                              value: comumFiltroSelecionada,
+                              itemTitle: (item) => item.label,
+                              itemSearchText: (item) => item.label,
+                              searchHintText:
+                                  'Buscar por comum, cidade ou estado...',
+                              emptyText: 'Nenhuma comum encontrada.',
+                              suffixIcon: comumFiltroSelecionada == null
+                                  ? const Icon(Icons.filter_list)
+                                  : IconButton(
+                                      onPressed: limparFiltroComum,
+                                      icon: const Icon(Icons.clear),
+                                      tooltip: 'Limpar filtro',
+                                    ),
+                              onChanged: selecionarFiltroComum,
+                            ),
+                            const SizedBox(height: 16),
+                            SearchableSelectionField<Aluno>(
+                              labelText: 'Aluno',
+                              dialogTitle: 'Selecionar aluno',
+                              items: alunosDisponiveis(),
+                              value: alunoSelecionado(),
+                              itemTitle: (aluno) => aluno.nome,
+                              itemSubtitle: textoAlunoDetalhes,
+                              itemSearchText: (aluno) =>
+                                  '${aluno.nome} ${aluno.cpf ?? ''} ${aluno.comumCompleta}',
+                              searchHintText:
+                                  'Buscar por nome, CPF ou comum...',
+                              emptyText: 'Nenhum aluno encontrado.',
+                              onChanged: (aluno) {
+                                setState(() {
+                                  alunoSelecionadoId = aluno?.id;
+                                });
+                              },
                               validator: (value) {
                                 if (alunoSelecionadoId == null) {
                                   return 'Selecione um aluno';
@@ -430,24 +415,21 @@ class _RegistroAulaFormPageState extends State<RegistroAulaFormPage> {
                                 child: Text(textoInstrutorFixo()),
                               )
                             else
-                              DropdownButtonFormField<int>(
-                                initialValue: instrutorSelecionadoId,
-                                decoration: const InputDecoration(
-                                  labelText: 'Instrutor',
-                                  border: OutlineInputBorder(),
-                                ),
-                                items: instrutores.map((instrutor) {
-                                  return DropdownMenuItem<int>(
-                                    value: instrutor.id,
-                                    child: Text(
-                                      instrutor.nome,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
+                              SearchableSelectionField<Instrutor>(
+                                labelText: 'Instrutor',
+                                dialogTitle: 'Selecionar instrutor',
+                                items: instrutores,
+                                value: instrutorSelecionado(),
+                                itemTitle: (instrutor) => instrutor.nome,
+                                itemSubtitle: (instrutor) =>
+                                    '${instrutor.cpf ?? 'CPF não informado'} - ${instrutor.comumCompleta}',
+                                itemSearchText: (instrutor) =>
+                                    '${instrutor.nome} ${instrutor.cpf ?? ''} ${instrutor.comumCompleta}',
+                                searchHintText:
+                                    'Buscar por nome, CPF ou comum...',
+                                onChanged: (instrutor) {
                                   setState(() {
-                                    instrutorSelecionadoId = value;
+                                    instrutorSelecionadoId = instrutor?.id;
                                   });
                                 },
                                 validator: (value) {
@@ -596,4 +578,21 @@ class _SecaoFormulario extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ComumFiltro {
+  final String label;
+
+  const _ComumFiltro(this.label);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is _ComumFiltro &&
+            runtimeType == other.runtimeType &&
+            label == other.label;
+  }
+
+  @override
+  int get hashCode => label.hashCode;
 }

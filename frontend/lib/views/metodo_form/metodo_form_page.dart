@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 import '../../models/instrumento.dart';
 import '../../models/metodo.dart';
 import '../../services/metodo_service.dart';
+import '../../widgets/searchable_selection.dart';
 
 class MetodoFormPage extends StatefulWidget {
   final Metodo? metodo;
 
-  const MetodoFormPage({
-    super.key,
-    this.metodo,
-  });
+  const MetodoFormPage({super.key, this.metodo});
 
   @override
   State<MetodoFormPage> createState() => _MetodoFormPageState();
@@ -69,9 +67,9 @@ class _MetodoFormPageState extends State<MetodoFormPage> {
     if (!_formKey.currentState!.validate()) return;
 
     if (instrumentoSelecionadoId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecione um instrumento')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Selecione um instrumento')));
       return;
     }
 
@@ -98,9 +96,9 @@ class _MetodoFormPageState extends State<MetodoFormPage> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao salvar método: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao salvar método: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -108,6 +106,14 @@ class _MetodoFormPageState extends State<MetodoFormPage> {
         });
       }
     }
+  }
+
+  Instrumento? instrumentoSelecionado() {
+    for (final instrumento in instrumentos) {
+      if (instrumento.id == instrumentoSelecionadoId) return instrumento;
+    }
+
+    return null;
   }
 
   @override
@@ -119,75 +125,71 @@ class _MetodoFormPageState extends State<MetodoFormPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-              ? Center(child: Text('Erro ao carregar instrumentos:\n$erro'))
-              : Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Form(
-                    key: _formKey,
-                    child: ListView(
-                      children: [
-                        TextFormField(
-                          controller: nomeController,
-                          decoration: const InputDecoration(
-                            labelText: 'Nome do método',
-                            border: OutlineInputBorder(),
-                          ),
-                          textCapitalization: TextCapitalization.words,
-                          validator: (value) {
-                            final nome = value?.trim() ?? '';
+          ? Center(child: Text('Erro ao carregar instrumentos:\n$erro'))
+          : Padding(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    TextFormField(
+                      controller: nomeController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nome do método',
+                        border: OutlineInputBorder(),
+                      ),
+                      textCapitalization: TextCapitalization.words,
+                      validator: (value) {
+                        final nome = value?.trim() ?? '';
 
-                            if (nome.isEmpty) {
-                              return 'Informe o nome do método';
-                            }
+                        if (nome.isEmpty) {
+                          return 'Informe o nome do método';
+                        }
 
-                            if (nome.length > 64) {
-                              return 'Nome deve ter no máximo 64 caracteres';
-                            }
+                        if (nome.length > 64) {
+                          return 'Nome deve ter no máximo 64 caracteres';
+                        }
 
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<int>(
-                          initialValue: instrumentoSelecionadoId,
-                          decoration: const InputDecoration(
-                            labelText: 'Instrumento',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: instrumentos.map((instrumento) {
-                            return DropdownMenuItem<int>(
-                              value: instrumento.id,
-                              child: Text(instrumento.nome),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              instrumentoSelecionadoId = value;
-                            });
-                          },
-                          validator: (value) {
-                            if (value == null) {
-                              return 'Selecione um instrumento';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: salvando ? null : salvar,
-                          child: Text(
-                            salvando
-                                ? 'Salvando...'
-                                : isEdicao
-                                    ? 'Salvar alterações'
-                                    : 'Cadastrar',
-                          ),
-                        ),
-                      ],
+                        return null;
+                      },
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    SearchableSelectionField<Instrumento>(
+                      labelText: 'Instrumento',
+                      dialogTitle: 'Selecionar instrumento',
+                      items: instrumentos,
+                      value: instrumentoSelecionado(),
+                      itemTitle: (instrumento) => instrumento.nome,
+                      itemSearchText: (instrumento) => instrumento.nome,
+                      searchHintText: 'Buscar por nome do instrumento...',
+                      onChanged: (instrumento) {
+                        setState(() {
+                          instrumentoSelecionadoId = instrumento?.id;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Selecione um instrumento';
+                        }
+
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: salvando ? null : salvar,
+                      child: Text(
+                        salvando
+                            ? 'Salvando...'
+                            : isEdicao
+                            ? 'Salvar alterações'
+                            : 'Cadastrar',
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 }

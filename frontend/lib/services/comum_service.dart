@@ -1,28 +1,28 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
+import '../config/api_config.dart';
 import '../models/comum.dart';
 
 class ComumService {
-  static const String baseUrl = 'http://localhost:8080';
-
   Future<List<Comum>> getComuns() async {
-    final response = await http.get(Uri.parse('$baseUrl/comuns'));
+    final response = await ApiClient.get('/comuns');
 
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao buscar comuns: ${response.statusCode}');
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar comuns.',
+    );
 
     final List data = jsonDecode(response.body);
     return data.map((e) => Comum.fromJson(e)).toList();
   }
 
   Future<Comum> getComumById(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/comuns/$id'));
+    final response = await ApiClient.get('/comuns/$id');
 
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao buscar comum: ${response.statusCode}');
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao buscar comum.',
+    );
 
     final data = jsonDecode(response.body);
     return Comum.fromJson(data);
@@ -41,17 +41,13 @@ class ComumService {
       "bairro": bairro?.trim().isEmpty == true ? null : bairro,
     };
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/comuns'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
+    final response = await ApiClient.post('/comuns', jsonEncode(body));
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(
-        'Erro ao criar comum: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 201],
+      fallbackMessage: 'Erro ao criar comum.',
+    );
   }
 
   Future<void> editarComum({
@@ -69,26 +65,21 @@ class ComumService {
       "bairro": bairro?.trim().isEmpty == true ? null : bairro,
     };
 
-    final response = await http.put(
-      Uri.parse('$baseUrl/comuns/$id'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
+    final response = await ApiClient.put('/comuns/$id', jsonEncode(body));
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Erro ao editar comum: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      fallbackMessage: 'Erro ao editar comum.',
+    );
   }
 
   Future<void> deletarComum(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/comuns/$id'));
+    final response = await ApiClient.delete('/comuns/$id');
 
-    if (response.statusCode != 200 && response.statusCode != 204) {
-      throw Exception(
-        'Erro ao excluir comum: ${response.statusCode} - ${response.body}',
-      );
-    }
+    ApiClient.ensureSuccess(
+      response,
+      acceptedStatusCodes: [200, 204],
+      fallbackMessage: 'Erro ao excluir comum.',
+    );
   }
 }

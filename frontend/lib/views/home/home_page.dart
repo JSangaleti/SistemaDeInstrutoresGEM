@@ -1,27 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../services/aluno_service.dart';
-import '../../services/comum_service.dart';
-import '../../services/instrumento_service.dart';
-import '../../services/instrutor_service.dart';
-import '../../services/metodo_service.dart';
-import '../../services/pessoa_service.dart';
-import '../../services/registro_aula_service.dart';
-import '../aluno_form/aluno_form_page.dart';
-import '../aluno_list/aluno_list_page.dart';
-import '../comum_form/comum_form_page.dart';
-import '../comum_list/comum_list_page.dart';
-import '../instrumento_form/instrumento_form_page.dart';
-import '../instrumento_list/instrumento_list_page.dart';
-import '../instrutor_form/instrutor_form_page.dart';
-import '../instrutor_list/instrutor_list_page.dart';
+import '../../services/auth_service.dart';
+import '../admin/admin_home_page.dart';
+import '../aluno_area/aluno_home_page.dart';
 import '../instrutor_panel/instrutor_panel_page.dart';
-import '../metodo_form/metodo_form_page.dart';
-import '../metodo_list/metodo_list_page.dart';
-import '../pessoa_form/pessoa_form_page.dart';
-import '../pessoa_list/pessoa_list_page.dart';
-import '../registro_aula_form/registro_aula_form_page.dart';
-import '../registro_aula_list/registro_aula_list_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -31,260 +13,182 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final AlunoService alunoService = AlunoService();
-  final PessoaService pessoaService = PessoaService();
-  final ComumService comumService = ComumService();
-  final InstrumentoService instrumentoService = InstrumentoService();
-  final InstrutorService instrutorService = InstrutorService();
-  final MetodoService metodoService = MetodoService();
-  final RegistroAulaService registroAulaService = RegistroAulaService();
+  final _formKey = GlobalKey<FormState>();
+  final _authService = AuthService();
+  final _cpfController = TextEditingController();
+  final _senhaController = TextEditingController();
 
-  bool loading = true;
-  String? erro;
-
-  int totalAlunos = 0;
-  int totalPessoas = 0;
-  int totalComuns = 0;
-  int totalInstrumentos = 0;
-  int totalInstrutores = 0;
-  int totalMetodos = 0;
-  int totalRegistrosAula = 0;
+  String _perfil = 'ALUNO';
+  bool _loading = false;
+  String? _erro;
 
   @override
-  void initState() {
-    super.initState();
-    carregarDados();
+  void dispose() {
+    _cpfController.dispose();
+    _senhaController.dispose();
+    super.dispose();
   }
 
-  Future<void> carregarDados() async {
+  String _cpfSemMascara() {
+    return _cpfController.text.replaceAll(RegExp(r'\D'), '');
+  }
+
+  Widget _paginaPorPerfil() {
+    return switch (_perfil) {
+      'ADMIN' => const AdminHomePage(),
+      'INSTRUTOR' => const InstrutorPanelPage(),
+      _ => const AlunoHomePage(),
+    };
+  }
+
+  Future<void> _entrar() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() {
-      loading = true;
-      erro = null;
+      _loading = true;
+      _erro = null;
     });
 
     try {
-      final alunos = await alunoService.getAlunos();
-      final pessoas = await pessoaService.getPessoas();
-      final comuns = await comumService.getComuns();
-      final instrumentos = await instrumentoService.getInstrumentos();
-      final instrutores = await instrutorService.getInstrutores();
-      final metodos = await metodoService.getMetodos();
-      final registrosAula = await registroAulaService.getRegistrosAula();
+      await _authService.login(
+        cpf: _cpfSemMascara(),
+        senha: _senhaController.text,
+        perfil: _perfil,
+      );
 
-      setState(() {
-        totalAlunos = alunos.length;
-        totalPessoas = pessoas.length;
-        totalComuns = comuns.length;
-        totalInstrumentos = instrumentos.length;
-        totalInstrutores = instrutores.length;
-        totalMetodos = metodos.length;
-        totalRegistrosAula = registrosAula.length;
-        loading = false;
-      });
+      if (!mounted) return;
+
+      await Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => _paginaPorPerfil()),
+        (route) => false,
+      );
     } catch (e) {
       setState(() {
-        erro = e.toString();
-        loading = false;
+        _erro = e.toString().replaceFirst('Exception: ', '');
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
-  Future<void> abrirTela(Widget page) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => page),
-    );
-
-    carregarDados();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sistema GEM'),
-        actions: [
-          IconButton(
-            onPressed: carregarDados,
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Atualizar',
-          ),
-        ],
-      ),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : erro != null
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Erro ao carregar dados:\n$erro',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Bem-vindo ao Sistema de Gestão do GEM',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Gerencie alunos, instrutores, pessoas, comuns, instrumentos, métodos e registros de aula cadastrados no sistema.',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 24),
-                  _AcaoRapidaButton(
-                    texto: 'Acessar área do instrutor',
-                    icone: Icons.dashboard,
-                    onPressed: () => abrirTela(const InstrutorPanelPage()),
-                  ),
-                  const SizedBox(height: 24),
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _ResumoCard(
-                        titulo: 'Alunos',
-                        total: totalAlunos,
-                        icone: Icons.school,
-                        onTap: () => abrirTela(const AlunoListPage()),
+                      Icon(Icons.music_note, color: colorScheme.onPrimary, size: 40),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Sistema GEM',
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(color: colorScheme.onPrimary),
                       ),
-                      _ResumoCard(
-                        titulo: 'Pessoas',
-                        total: totalPessoas,
-                        icone: Icons.people,
-                        onTap: () => abrirTela(const PessoaListPage()),
-                      ),
-                      _ResumoCard(
-                        titulo: 'Comuns',
-                        total: totalComuns,
-                        icone: Icons.location_city,
-                        onTap: () => abrirTela(const ComumListPage()),
-                      ),
-                      _ResumoCard(
-                        titulo: 'Instrumentos',
-                        total: totalInstrumentos,
-                        icone: Icons.music_note,
-                        onTap: () => abrirTela(const InstrumentoListPage()),
-                      ),
-                      _ResumoCard(
-                        titulo: 'Instrutores',
-                        total: totalInstrutores,
-                        icone: Icons.co_present,
-                        onTap: () => abrirTela(const InstrutorListPage()),
-                      ),
-                      _ResumoCard(
-                        titulo: 'Métodos',
-                        total: totalMetodos,
-                        icone: Icons.menu_book,
-                        onTap: () => abrirTela(const MetodoListPage()),
-                      ),
-                      _ResumoCard(
-                        titulo: 'Registros de Aula',
-                        total: totalRegistrosAula,
-                        icone: Icons.event_note,
-                        onTap: () => abrirTela(const RegistroAulaListPage()),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Entre com CPF, senha e perfil para acessar sua área.',
+                        style: TextStyle(color: colorScheme.onPrimary),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
-                  const Text(
-                    'Ações rápidas',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  _AcaoRapidaButton(
-                    texto: 'Cadastrar novo aluno',
-                    icone: Icons.person_add,
-                    onPressed: () => abrirTela(const AlunoFormPage()),
-                  ),
-                  _AcaoRapidaButton(
-                    texto: 'Cadastrar nova pessoa',
-                    icone: Icons.person,
-                    onPressed: () => abrirTela(const PessoaFormPage()),
-                  ),
-                  _AcaoRapidaButton(
-                    texto: 'Cadastrar nova comum',
-                    icone: Icons.add_business,
-                    onPressed: () => abrirTela(const ComumFormPage()),
-                  ),
-                  _AcaoRapidaButton(
-                    texto: 'Cadastrar novo instrumento',
-                    icone: Icons.music_note,
-                    onPressed: () => abrirTela(const InstrumentoFormPage()),
-                  ),
-                  _AcaoRapidaButton(
-                    texto: 'Cadastrar novo instrutor',
-                    icone: Icons.co_present,
-                    onPressed: () => abrirTela(const InstrutorFormPage()),
-                  ),
-                  _AcaoRapidaButton(
-                    texto: 'Cadastrar novo método',
-                    icone: Icons.menu_book,
-                    onPressed: () => abrirTela(const MetodoFormPage()),
-                  ),
-                  _AcaoRapidaButton(
-                    texto: 'Cadastrar novo registro de aula',
-                    icone: Icons.event_note,
-                    onPressed: () => abrirTela(const RegistroAulaFormPage()),
-                  ),
-                ],
-              ),
-            ),
-    );
-  }
-}
-
-class _ResumoCard extends StatelessWidget {
-  final String titulo;
-  final int total;
-  final IconData icone;
-  final VoidCallback onTap;
-
-  const _ResumoCard({
-    required this.titulo,
-    required this.total,
-    required this.icone,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 220,
-      child: Card(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(icone, size: 36),
+                ),
                 const SizedBox(height: 16),
-                Text(
-                  titulo,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text('Login', style: Theme.of(context).textTheme.titleLarge),
+                          const SizedBox(height: 16),
+                          SegmentedButton<String>(
+                            segments: const [
+                              ButtonSegment(value: 'ALUNO', label: Text('Aluno'), icon: Icon(Icons.school)),
+                              ButtonSegment(value: 'INSTRUTOR', label: Text('Instrutor'), icon: Icon(Icons.co_present)),
+                              ButtonSegment(value: 'ADMIN', label: Text('Admin'), icon: Icon(Icons.admin_panel_settings)),
+                            ],
+                            selected: {_perfil},
+                            onSelectionChanged: (value) {
+                              setState(() {
+                                _perfil = value.first;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _cpfController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'CPF',
+                              prefixIcon: Icon(Icons.badge),
+                            ),
+                            validator: (value) {
+                              final cpf = (value ?? '').replaceAll(RegExp(r'\D'), '');
+                              if (cpf.length != 11) {
+                                return 'Informe um CPF com 11 dígitos';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _senhaController,
+                            obscureText: true,
+                            decoration: const InputDecoration(
+                              labelText: 'Senha',
+                              prefixIcon: Icon(Icons.lock),
+                            ),
+                            validator: (value) {
+                              if ((value ?? '').isEmpty) {
+                                return 'Informe a senha';
+                              }
+                              return null;
+                            },
+                          ),
+                          if (_erro != null) ...[
+                            const SizedBox(height: 12),
+                            _MensagemErro(texto: _erro!),
+                          ],
+                          const SizedBox(height: 20),
+                          FilledButton.icon(
+                            onPressed: _loading ? null : _entrar,
+                            icon: _loading
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.login),
+                            label: Text(_loading ? 'Entrando...' : 'Entrar'),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  total.toString(),
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text('cadastrados'),
               ],
             ),
           ),
@@ -294,26 +198,32 @@ class _ResumoCard extends StatelessWidget {
   }
 }
 
-class _AcaoRapidaButton extends StatelessWidget {
+class _MensagemErro extends StatelessWidget {
   final String texto;
-  final IconData icone;
-  final VoidCallback onPressed;
 
-  const _AcaoRapidaButton({
-    required this.texto,
-    required this.icone,
-    required this.onPressed,
-  });
+  const _MensagemErro({required this.texto});
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icone),
-        label: Text(texto),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: colorScheme.onErrorContainer),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              texto,
+              style: TextStyle(color: colorScheme.onErrorContainer),
+            ),
+          ),
+        ],
       ),
     );
   }

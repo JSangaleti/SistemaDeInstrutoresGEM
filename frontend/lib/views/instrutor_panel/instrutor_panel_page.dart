@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../config/api_config.dart';
+import '../../widgets/logout_button.dart';
 import '../aluno_list/aluno_list_page.dart';
 import '../instrutor_historico/instrutor_historico_page.dart';
+import 'instrutor_perfil_page.dart';
 import '../registro_aula_list/registro_aula_list_page.dart';
 
 class InstrutorPanelPage extends StatelessWidget {
@@ -17,9 +20,13 @@ class InstrutorPanelPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final instrutorId = AuthSession.usuarioId;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Área do Instrutor')),
+      appBar: AppBar(
+        title: const Text('Área do Instrutor'),
+        actions: const [LogoutButton()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -64,6 +71,13 @@ class InstrutorPanelPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _InstrutorPanelCard(
+            titulo: 'Meu perfil',
+            descricao: 'Dados cadastrais e alteração de senha.',
+            icone: Icons.account_circle,
+            onTap: () => _abrirTela(context, const InstrutorPerfilPage()),
+          ),
+          const SizedBox(height: 12),
+          _InstrutorPanelCard(
             titulo: 'Alunos',
             descricao: 'Consultar, cadastrar e editar alunos.',
             icone: Icons.school,
@@ -76,7 +90,11 @@ class InstrutorPanelPage extends StatelessWidget {
             icone: Icons.event_note,
             onTap: () => _abrirTela(
               context,
-              const RegistroAulaListPage(exibirExcluir: false),
+              RegistroAulaListPage(
+                exibirExcluir: false,
+                instrutorFixoId: instrutorId,
+                instrutorFixoNome: AuthSession.nome,
+              ),
             ),
           ),
           const SizedBox(height: 12),

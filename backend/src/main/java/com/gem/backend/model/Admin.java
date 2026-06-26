@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import com.gem.backend.validation.ValidationGroups;
 
 @Entity
 @Table(name = "admins")
@@ -13,9 +14,9 @@ public class Admin {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "Senha é obrigatória.")
-    @Size(max = 16, message = "Senha deve ter no máximo 16 caracteres.")
-    @Column(length = 16, nullable = false)
+    @NotBlank(message = "Senha é obrigatória.", groups = ValidationGroups.Create.class)
+    @Size(max = 255, message = "Senha deve ter no máximo 255 caracteres.")
+    @Column(length = 255, nullable = false)
     private String senha;
 
     @NotNull(message = "Pessoa é obrigatória.")
